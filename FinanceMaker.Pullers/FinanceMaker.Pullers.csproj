@@ -17,8 +17,6 @@
   <ItemGroup>
     <Folder Include="PricesPullers\" />
     <Folder Include="PricesPullers\Interfaces\" />
-    <Folder Include="TickerPullers\" />
-    <Folder Include="TickerPullers\Interfaces\" />
     <Folder Include="NewsPullers\" />
     <Folder Include="NewsPullers\Interfaces\" />
   </ItemGroup>
