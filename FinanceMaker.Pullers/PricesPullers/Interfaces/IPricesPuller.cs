@@ -1,4 +1,5 @@
 ﻿using FinanceMaker.Common.Models;
+using FinanceMaker.Common.Models.Tickers;
 
 namespace FinanceMaker.Pullers.PricesPullers.Interfaces
 {

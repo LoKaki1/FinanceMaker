@@ -10,9 +10,14 @@
     <None Remove="Models\" />
     <None Remove="Models\Tickers\" />
     <None Remove="Models\Pullers\" />
+    <None Remove="Models\Finance\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Tickers\" />
     <Folder Include="Models\Pullers\" />
+    <Folder Include="Models\Finance\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.16403" />
   </ItemGroup>
 </Project>
