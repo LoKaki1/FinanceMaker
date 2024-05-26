@@ -5,6 +5,6 @@ namespace FinanceMaker.Filters.MarketFilters.Interfaces
 {
     public interface IMarketFilter
     {
-        Task<MarketFiltersResult> FilterTickersMarket(Ticker ticker, IEnumerable<Ticker> relatedTickers);
+        Task<MarketFiltersResult> FilterTickersMarket(string ticker, IEnumerable<string> relatedTickers);
     }
 }

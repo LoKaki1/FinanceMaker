@@ -10,14 +10,18 @@
     <None Remove="Models\" />
     <None Remove="Models\Tickers\" />
     <None Remove="Models\Pullers\" />
-    <None Remove="Models\Finance\" />
+    <None Remove="Models\Pullers\Enums\" />
+    <None Remove="Resolvers\" />
+    <None Remove="Resolvers\Abstracts\" />
+    <None Remove="Resolvers\Interfaces\" />
+    <None Remove="LogicContainers\Abstracts\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Tickers\" />
     <Folder Include="Models\Pullers\" />
-    <Folder Include="Models\Finance\" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.16403" />
+    <Folder Include="Models\Pullers\Enums\" />
+    <Folder Include="Resolvers\" />
+    <Folder Include="Resolvers\Abstracts\" />
+    <Folder Include="Resolvers\Interfaces\" />
   </ItemGroup>
 </Project>

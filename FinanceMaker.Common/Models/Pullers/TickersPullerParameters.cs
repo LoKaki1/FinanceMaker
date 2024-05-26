@@ -4,8 +4,8 @@
 	{
 		public double MinPrice { get; set; }
 		public double MaxPrice { get; set; }
-		public int Volume { get; set; }
-	
+		public int MinAvarageVolume { get; set; }
+		public int MaxAvarageVolume { get; set; }
 		public float PresentageOfChange { get; set; }
 	}
 }

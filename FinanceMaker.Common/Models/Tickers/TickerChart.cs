@@ -4,9 +4,14 @@ namespace FinanceMaker.Common.Models.Tickers
 {
     public record TickerChart
 	{
-		public string Ticker { get; set; }
-		public IEnumerable<FinanceCandleStick> Price { get; set; } 
-		public IDictionary<string, object> ExtraData { get; set; }
-	}
+        public string Ticker { get; set; }
+		public IEnumerable<FinanceCandleStick> Prices { get; set; }
+
+        public TickerChart(string ticker, IEnumerable<FinanceCandleStick> price)
+        {
+            Ticker = ticker;
+            Prices = price;
+        }
+    }
 }
 

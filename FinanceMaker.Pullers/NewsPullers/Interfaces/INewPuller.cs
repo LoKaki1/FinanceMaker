@@ -3,9 +3,9 @@ using FinanceMaker.Common.Models.Tickers;
 
 namespace FinanceMaker.Pullers.NewsPullers.Interfaces
 {
-    public interface INewPuller
+    public interface INewsPuller
 	{
-		Task<TickerNews> PullNews(Ticker ticker);
+		Task<TickerNews> PullNews(string ticker, CancellationToken cancellationToken);
 	}
 }
 

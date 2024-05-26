@@ -2,8 +2,14 @@
 {
     public record TickerNews
 	{
-		public Ticker Ticker { get; set; }
+        public string Ticker { get; set; }
 		public IEnumerable<string> NewsUrl { get; set; }
+
+        public TickerNews(string ticker, IEnumerable<string> newsUrl)
+        {
+            Ticker = ticker;
+            NewsUrl = newsUrl;
+        }
 	}
 }
 
