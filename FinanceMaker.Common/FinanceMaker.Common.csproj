@@ -15,6 +15,7 @@
     <None Remove="Resolvers\Abstracts\" />
     <None Remove="Resolvers\Interfaces\" />
     <None Remove="LogicContainers\Abstracts\" />
+    <None Remove="Models\Finance\Enums\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\Tickers\" />
@@ -23,5 +24,9 @@
     <Folder Include="Resolvers\" />
     <Folder Include="Resolvers\Abstracts\" />
     <Folder Include="Resolvers\Interfaces\" />
+    <Folder Include="Models\Finance\Enums\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.16440" />
   </ItemGroup>
 </Project>

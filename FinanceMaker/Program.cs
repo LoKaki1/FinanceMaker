@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using FinanceMaker.Algorithms.Chart;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers;
@@ -9,6 +10,13 @@ using FinanceMaker.Pullers.TickerPullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.GtkSharp;
+using OxyPlot.Series;
+using QuantConnect;
+using CandlestickSeries = QuantConnect.CandlestickSeries;
+using CandlestickSeriesOxy = OxyPlot.Series.CandleStickSeries;
 
 Console.WriteLine("Hello, World!");
 
@@ -83,22 +91,23 @@ if (tickersPuller is null ||
     pricesPuller is null ||
     newsPuller is null) return;
 
-var result = await tickersPuller.ScanTickers(new TickersPullerParameters()
+var result = (await tickersPuller.ScanTickers(new TickersPullerParameters()
 {
     MinAvarageVolume = 100_000,
     MaxAvarageVolume = 1_000_000,
     MaxPrice = 20,
     MinPrice = 3,
     PresentageOfChange = 20
-}, CancellationToken.None);
+}, CancellationToken.None)).ToList();
 
-var data = new List<(string, TickerChart, TickerNews)>();
+result.Add("NIO");
+var data = new List<(string ticker, TickerChart chart, TickerNews news)>();
 
 foreach (var ticker in result)
 {
     var prices = await pricesPuller.GetTickerPrices(ticker,
                                                     FinanceMaker.Common.Models.Pullers.Enums.Period.Daily,
-                                                    DateTime.Now.AddYears(-1),
+                                                    DateTime.Now.AddYears(-7),
                                                     DateTime.Now,
                                                     CancellationToken.None);
     var chart = await newsPuller.PullNews(ticker, CancellationToken.None);
@@ -106,6 +115,63 @@ foreach (var ticker in result)
     data.Add((ticker, prices, chart));
 }
 
-Console.Write(data);
+var gon = new List<(string s, IEnumerable<double> a)>();
+foreach(var tickerData in data)
+{
+    var supportAndResitance = SupportAndResistanceLevels.GetSupportResistanceLevels(tickerData.chart);
+    gon.Add((tickerData.ticker, supportAndResitance));
+}
 
+Chart chart1 = new Chart("NIO");
+for (int i = 0; i < gon.Count; i++)
+{
+    var series = new CandlestickSeries(data[i].ticker, i);
+
+    foreach(var point in data[i].chart.Prices)
+    {
+        series.AddPoint(point.Candlestick);
+    }
+
+
+    chart1.AddSeries(series);
+}
+
+var plotModel = new PlotModel { Title = "Test" };
+var dateAxis = new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "YY/MM/dd", IntervalType = DateTimeIntervalType.Days, MajorGridlineStyle = LineStyle.Solid, MinorGridlineStyle = LineStyle.Dot };
+var valueAxis = new LinearAxis
+{
+    Position = AxisPosition.Left,
+    Title = "Price",
+    MajorGridlineStyle = LineStyle.Solid,
+    MinorGridlineStyle = LineStyle.Dot
+};
+plotModel.Axes.Add(dateAxis);
+plotModel.Axes.Add(valueAxis);
+
+var candleStickSeries = new CandlestickSeriesOxy
+{
+    Color = OxyColors.Black,
+    IncreasingColor = OxyColors.DarkGreen,
+    DecreasingColor = OxyColors.DarkRed,
+    DataFieldHigh = "High",
+    DataFieldX = "Date",
+    DataFieldOpen = "Open",
+    DataFieldClose = "Close",
+    DataFieldLow = "Low"
+};
+
+var dg = data.Last().chart.Prices.Select(_ => new HighLowItem
+{
+    High = (double)_.High,
+    Low = (double)_.Low,
+    Close = (double)_.Close,
+    Open = (double)_.Open,
+    X = _.Time.ToOADate()
+});
+candleStickSeries.Items.AddRange(dg);
+plotModel.Series.Add(candleStickSeries);
+var plotView = new PlotView()
+{
+    Model = plotModel
+};
 

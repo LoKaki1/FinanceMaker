@@ -7,11 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="SupportAndResistance\" />
     <None Remove="News\" />
+    <None Remove="Chart\" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="SupportAndResistance\" />
     <Folder Include="News\" />
+    <Folder Include="Chart\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
   </ItemGroup>
 </Project>
