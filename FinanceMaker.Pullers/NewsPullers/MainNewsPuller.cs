@@ -13,17 +13,16 @@ namespace FinanceMaker.Pullers.NewsPullers
             m_NewsPuller = newsPuller;
         }
 
-        public async Task<TickerNews> PullNews(string ticker, CancellationToken cancellationToken)
+        public async Task<IEnumerable<string>> PullNews(string ticker, CancellationToken cancellationToken)
         {
             var pullersTasks = m_NewsPuller.Select(puller => puller.PullNews(ticker, cancellationToken))
                                            .ToArray();
 
             var newsResult = await Task.WhenAll(pullersTasks);
-            var news = newsResult.SelectMany(tickerNews => tickerNews.NewsUrl)
+            var news = newsResult.SelectMany(tickerNews => tickerNews)
                                   .ToArray();
-            var tickerNews = new TickerNews(ticker, news);
 
-            return tickerNews;
+            return news;
         }
     }
 }

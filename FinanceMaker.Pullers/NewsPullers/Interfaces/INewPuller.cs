@@ -5,7 +5,7 @@ namespace FinanceMaker.Pullers.NewsPullers.Interfaces
 {
     public interface INewsPuller
 	{
-		Task<TickerNews> PullNews(string ticker, CancellationToken cancellationToken);
+		Task<IEnumerable<string>> PullNews(string ticker, CancellationToken cancellationToken);
 	}
 }
 

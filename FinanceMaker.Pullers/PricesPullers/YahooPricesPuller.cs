@@ -23,7 +23,7 @@ namespace FinanceMaker.Pullers.PricesPullers
         }
 
 
-        public async Task<TickerChart> GetTickerPrices(string ticker,
+        public async Task<IEnumerable<FinanceCandleStick>> GetTickerPrices(string ticker,
                                                        Period period,
                                                        DateTime startDate,
                                                        DateTime endDate,
@@ -39,9 +39,7 @@ namespace FinanceMaker.Pullers.PricesPullers
             var tickerCandles = historicalData.Select(data => new FinanceCandleStick(data.DateTime, data.Open, data.Close, data.High, data.Low, data.Volume))
                                               .ToArray();
 
-            var chart = new TickerChart(ticker, tickerCandles);
-
-            return chart;
+            return tickerCandles;
         }
 
         public bool IsRelevant(Period args)

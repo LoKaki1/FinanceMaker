@@ -28,8 +28,17 @@ namespace FinanceMaker.Algorithms.Chart
                     levels.Add((double)tickerChart.Prices[i].Low);
                 }
             }
+			List<double> distinctedLevels = new List<double>();
+			var epsilon = 0.1;
+			for(int i = 0; i < levels.Count; i++)
+			{
+				if (!distinctedLevels.Any(level => level + level * epsilon >= levels[i] && levels[i] >= level - level * epsilon))
+				{
+					distinctedLevels.Add(levels[i]);
+				}
+			}
 
-			return levels;
+			return distinctedLevels;
 		}
 
 

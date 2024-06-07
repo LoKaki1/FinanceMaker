@@ -15,7 +15,7 @@ namespace FinanceMaker.Pullers.NewsPullers
             m_NewsUrl = "https://www.google.com/search?q={0}&tbm=nws&hl=en";
         }
 
-        public async Task<TickerNews> PullNews(string ticker, CancellationToken cancellationToken)
+        public async Task<IEnumerable<string>> PullNews(string ticker, CancellationToken cancellationToken)
         {
             var client = m_RequestService.CreateClient();
             client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
@@ -31,9 +31,7 @@ namespace FinanceMaker.Pullers.NewsPullers
                              .Where(href => !string.IsNullOrEmpty(href))
                              .ToArray();
 
-            var tickerNews = new TickerNews(ticker, hrefs);
-
-            return tickerNews;
+            return hrefs;
         }
     }
 
