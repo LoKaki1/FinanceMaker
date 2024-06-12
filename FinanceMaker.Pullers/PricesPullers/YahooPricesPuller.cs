@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Common.Models.Finance;
+﻿using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Common.Resolvers.Interfaces;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
@@ -18,23 +19,22 @@ namespace FinanceMaker.Pullers.PricesPullers
             {
                 {  Period.Daily, YahooPeriod.Daily },
                 {  Period.Weekly, YahooPeriod.Weekly },
-                { Period.Monthly, YahooPeriod.Monthly }
+                {  Period.Monthly, YahooPeriod.Monthly }
             };
         }
 
 
-        public async Task<IEnumerable<FinanceCandleStick>> GetTickerPrices(string ticker,
-                                                       Period period,
-                                                       DateTime startDate,
-                                                       DateTime endDate,
-                                                       CancellationToken cancellationToken)
+        public async Task<IEnumerable<FinanceCandleStick>> GetTickerPrices(PricesPullerParameters pricesPullerParameters,
+                                                                           CancellationToken cancellationToken)
         {
+            var period = pricesPullerParameters.Period;
+            
             if (!m_PeriodToPeriod.TryGetValue(period, out YahooPeriod yahooPeriod))
             {
                 throw new NotImplementedException($"Yahoo api doesn't support {Enum.GetName(period)} as a period");
             }
 
-            var historicalData = await Yahoo.GetHistoricalAsync(ticker, startDate, endDate, yahooPeriod, cancellationToken);
+            var historicalData = await Yahoo.GetHistoricalAsync(pricesPullerParameters.Ticker, pricesPullerParameters.StartTime, pricesPullerParameters.EndTime, yahooPeriod, cancellationToken);
 
             var tickerCandles = historicalData.Select(data => new FinanceCandleStick(data.DateTime, data.Open, data.Close, data.High, data.Low, data.Volume))
                                               .ToArray();
@@ -42,9 +42,9 @@ namespace FinanceMaker.Pullers.PricesPullers
             return tickerCandles;
         }
 
-        public bool IsRelevant(Period args)
+        public bool IsRelevant(PricesPullerParameters args)
         {
-            return m_PeriodToPeriod.ContainsKey(args);
+            return m_PeriodToPeriod.ContainsKey(args.Period);
         }
     }
 }
