@@ -1,4 +1,5 @@
 ﻿using System;
+using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 
@@ -18,8 +19,7 @@ namespace FinanceMaker.Pullers.NewsPullers
         public async Task<IEnumerable<string>> PullNews(string ticker, CancellationToken cancellationToken)
         {
             var client = m_RequestService.CreateClient();
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-            
+            client.AddBrowserUserAgent();
             var url = string.Format(m_NewsUrl, ticker);
             var googleResponse = await client.GetAsync(url, cancellationToken);
             var htmlContent = await googleResponse.Content.ReadAsStringAsync(cancellationToken);

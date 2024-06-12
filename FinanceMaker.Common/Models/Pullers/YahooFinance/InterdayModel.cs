@@ -7,11 +7,11 @@
 
     public class Chart
     {
-        public Result[] result { get; set; }
+        public YahooResponse[] result { get; set; }
         public object error { get; set; }
     }
 
-    public class Result
+    public class YahooResponse
     {
         public long[] timestamp { get; set; }
         public Indicators indicators { get; set; }

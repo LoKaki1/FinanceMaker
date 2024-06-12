@@ -1,9 +1,9 @@
 ﻿using FinanceMaker.Common;
+using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Common.Models.Pullers.YahooFinance;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
-using System.Net.Http.Json;
 
 namespace FinanceMaker.Pullers;
 
@@ -35,8 +35,50 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
             throw new NotImplementedException($"Yahoo interday api doesn't support {Enum.GetName(period)} as a period");
         }
 
-        var client  = m_RequestsService.CreateClient();
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
+        var yahooResponse = await PullDataFromYahoo(pricesPullerParameters, yahooPeriod, cancellationToken);
+        
+        var candles = CreateCandlesFromYahoo(yahooResponse);
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException();
+        }
+
+        return candles;
+    }
+
+    public bool IsRelevant(PricesPullerParameters args)
+    {
+        return m_RelevantPeriods.ContainsKey(args.Period) && args.EndTime - args.StartTime < TimeSpan.FromDays(7);
+    }
+
+    private FinanceCandleStick[] CreateCandlesFromYahoo(YahooResponse yahooResponse)
+    {
+        var timestamps = yahooResponse.timestamp;
+        var indicators = yahooResponse.indicators.quote.First();
+        var candles = new FinanceCandleStick[timestamps.Length];
+
+        for (int i = 0; i < timestamps.Length; i++)
+        {
+            var candleDate = DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).DateTime;
+            var open = indicators.open[i] ?? indicators.open[i - 1] ?? 0;
+            var close = indicators.close[i] ?? indicators.close[i - 1] ?? 0;
+            var low = indicators.low[i] ?? indicators.low[i - 1] ?? 0;
+            var high = indicators.high[i] ?? indicators.high[i - 1] ?? 0;
+            var volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
+
+            candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
+        }
+
+        return candles;
+    }
+
+    private async Task<YahooResponse> PullDataFromYahoo(PricesPullerParameters pricesPullerParameters,
+                                                        string yahooPeriod,
+                                                        CancellationToken cancellationToken)
+    {
+        var client = m_RequestsService.CreateClient();
+        client.AddBrowserUserAgent();
         var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime).ToUnixTimeSeconds();
         var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime).ToUnixTimeSeconds();
 
@@ -56,36 +98,11 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
         var result = yahooResponse?.chart?.result?.FirstOrDefault();
         var indicators = result?.indicators?.quote?.FirstOrDefault();
 
-        if (result is null || indicators is null)
+        if (result is null || indicators is null || result.timestamp is null)
         {
             throw new ArgumentException($"Yahoo api returned null for those params:\n{pricesPullerParameters}");
         }
 
-        var timestamps = result.timestamp;
-        var candles = new FinanceCandleStick[timestamps.Length];
-
-        for(int i = 0; i < timestamps.Length; i++)
-        {
-            var candleDate = DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).DateTime ;
-            var open = indicators.open[i] ?? indicators.open[i - 1] ?? 0;
-            var close = indicators.close[i] ?? indicators.close[i - 1] ?? 0;
-            var low = indicators.low[i] ?? indicators.low[i - 1] ?? 0;
-            var high= indicators.high[i] ?? indicators.high[i - 1] ?? 0;
-            var volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
-
-            candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
-        }
-
-        if (cancellationToken.IsCancellationRequested)
-        {
-            throw new OperationCanceledException();
-        }
-
-        return candles;
-    }
-
-    public bool IsRelevant(PricesPullerParameters args)
-    {
-        return m_RelevantPeriods.ContainsKey(args.Period) && args.EndTime - args.StartTime < TimeSpan.FromDays(7);
+        return result;
     }
 }
