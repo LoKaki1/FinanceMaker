@@ -66,7 +66,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         for(int i = 0; i < timestamps.Length; i++)
         {
-            var candleDate = DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).Date;
+            var candleDate = DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).DateTime ;
             var open = indicators.open[i] ?? indicators.open[i - 1] ?? 0;
             var close = indicators.close[i] ?? indicators.close[i - 1] ?? 0;
             var low = indicators.low[i] ?? indicators.low[i - 1] ?? 0;
