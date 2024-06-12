@@ -46,12 +46,12 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         if (!response.IsSuccessStatusCode)
         {
-            var failedContent = await response.Content.ReadAsStringAsync();
+            var failedContent = await response.Content.ReadAsStringAsync(cancellationToken);
 
             throw new InvalidDataException(failedContent);
         }
 
-        var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>();
+        var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>(cancellationToken);
 
         var result = yahooResponse?.chart?.result?.FirstOrDefault();
         var indicators = result?.indicators?.quote?.FirstOrDefault();
@@ -74,6 +74,11 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
             var volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
 
             candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            throw new OperationCanceledException();
         }
 
         return candles;
