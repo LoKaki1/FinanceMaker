@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Pullers.NewsPullers;
+﻿using FinanceMaker.Pullers;
+using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 using FinanceMaker.Pullers.PricesPullers;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
@@ -19,9 +20,12 @@ services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
 services.AddSingleton<MainTickersPuller>();
 
 services.AddSingleton<YahooPricesPuller>();
+services.AddSingleton<YahooInterdayPricesPuller>();
 services.AddSingleton(sp => new IPricesPuller[]
 {
-    sp.GetService<YahooPricesPuller>()
+    sp.GetService<YahooPricesPuller>(),
+    sp.GetService<YahooInterdayPricesPuller>(),
+
 });
 services.AddSingleton<MainPricesPuller>();
 services.AddSingleton<GoogleNewsPuller>();

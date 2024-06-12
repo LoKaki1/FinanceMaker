@@ -2,7 +2,7 @@
 
 namespace FinanceMaker.Common.Models.Finance
 {
-	public sealed class FinanceCandleStick
+    public sealed class FinanceCandleStick
 	{
 		public DateTime Time => Candlestick?.Time ?? DateTime.MaxValue;
 		public decimal Open => Candlestick?.Open ?? 0;
@@ -12,8 +12,24 @@ namespace FinanceMaker.Common.Models.Finance
 
 		public decimal Volume { get; set; }
 		public Candlestick Candlestick { get; set; }
+        public FinanceCandleStick(
+			DateTime dateTime,
+			float open,
+			float close,
+			float high,
+			float low,
+			float volume)
+        {
+            Candlestick = new Candlestick(
+                dateTime,
+                Convert.ToDecimal(open),
+                Convert.ToDecimal(high),
+                Convert.ToDecimal(low),
+                Convert.ToDecimal(close));
+            Volume = Convert.ToDecimal(volume);
+        }
 
-		public FinanceCandleStick(
+        public FinanceCandleStick(
             DateTime dateTime,
             decimal open,
             decimal close,
