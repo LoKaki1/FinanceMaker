@@ -37,9 +37,21 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         var client  = m_RequestsService.CreateClient();
         client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
-        var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, pricesPullerParameters.StartTime.Ticks, pricesPullerParameters.EndTime.Ticks, yahooPeriod);
+        var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime).ToUnixTimeSeconds();
+        var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime).ToUnixTimeSeconds();
 
-        var yahooResponse = await client.GetFromJsonAsync<InterdayModel>(url, cancellationToken);
+        var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);
+
+        var response = await client.GetAsync(url, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            var failedContent = await response.Content.ReadAsStringAsync();
+
+            throw new InvalidDataException(failedContent);
+        }
+
+        var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>();
 
         var result = yahooResponse?.chart?.result?.FirstOrDefault();
         var indicators = result?.indicators?.quote?.FirstOrDefault();
@@ -54,12 +66,12 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         for(int i = 0; i < timestamps.Length; i++)
         {
-            var candleDate = new DateTime(timestamps[i]);
-            var open = indicators.open[i];
-            var close = indicators.close[i];
-            var low = indicators.low[i];
-            var high= indicators.high[i];
-            var volume = indicators.volume[i];
+            var candleDate = DateTimeOffset.FromUnixTimeSeconds(timestamps[i]).Date;
+            var open = indicators.open[i] ?? indicators.open[i - 1] ?? 0;
+            var close = indicators.close[i] ?? indicators.close[i - 1] ?? 0;
+            var low = indicators.low[i] ?? indicators.low[i - 1] ?? 0;
+            var high= indicators.high[i] ?? indicators.high[i - 1] ?? 0;
+            var volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
 
             candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
         }

@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Common.Models.Finance;
+﻿using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Pullers.PricesPullers;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,9 @@ namespace FinanaceMaker.Server.Controllers
                                                           [FromQuery] Period period,
                                                           CancellationToken cancellationToken)
         {
-            return m_PricesPuller.GetTickerPrices(ticker, period, start, end, cancellationToken);
+            var parameters = new PricesPullerParameters(ticker, start, end, period);
+
+            return m_PricesPuller.GetTickerPrices(parameters, cancellationToken);
         }
     }
 }

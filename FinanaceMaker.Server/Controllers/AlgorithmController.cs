@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FinanceMaker.Algorithms.Chart;
+using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.PricesPullers;
@@ -30,7 +31,9 @@ namespace FinanaceMaker.Server.Controllers
                                                           [FromQuery] Period period,
                                                           CancellationToken cancellationToken)
         {
-            var prices = await m_PricesPuller.GetTickerPrices(ticker, period, start, end, cancellationToken);
+            var parameters = new PricesPullerParameters(ticker, start, end, period);
+
+            var prices = await m_PricesPuller.GetTickerPrices(parameters, cancellationToken);
             var levels = SupportAndResistanceLevels.GetSupportResistanceLevels(new TickerChart(ticker, prices));
 
             return levels;

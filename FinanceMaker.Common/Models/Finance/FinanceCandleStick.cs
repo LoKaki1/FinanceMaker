@@ -1,4 +1,5 @@
 ﻿using QuantConnect;
+using System.Text.Json.Serialization;
 
 namespace FinanceMaker.Common.Models.Finance
 {
@@ -11,6 +12,7 @@ namespace FinanceMaker.Common.Models.Finance
 		public decimal Low => Candlestick?.Low ?? 0;
 
 		public decimal Volume { get; set; }
+		[JsonIgnore]
 		public Candlestick Candlestick { get; set; }
         public FinanceCandleStick(
 			DateTime dateTime,

@@ -13,7 +13,6 @@
 
     public class Result
     {
-        public Meta meta { get; set; }
         public long[] timestamp { get; set; }
         public Indicators indicators { get; set; }
     }
@@ -117,11 +116,11 @@
 
     public class Quote
     {
-        public float[] high { get; set; }
-        public float[] open { get; set; }
-        public float[] low { get; set; }
-        public float[] close { get; set; }
-        public int[] volume { get; set; }
+        public float?[] high { get; set; }
+        public float?[] open { get; set; }
+        public float?[] low { get; set; }
+        public float?[] close { get; set; }
+        public int?[] volume { get; set; }
     }
 
 }
