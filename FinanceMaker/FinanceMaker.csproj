@@ -16,9 +16,6 @@
     <PackageReference Include="ServiceExtensions.Hosting" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="gtk-sharp, Version=3.0.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\FinanceMaker.Algorithms\FinanceMaker.Algorithms.csproj" />
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
     <ProjectReference Include="..\FinanceMaker.Filters\FinanceMaker.Filters.csproj" />
