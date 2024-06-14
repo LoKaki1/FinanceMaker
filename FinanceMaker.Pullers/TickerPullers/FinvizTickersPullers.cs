@@ -1,4 +1,5 @@
 ﻿
+using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
@@ -24,10 +25,11 @@ namespace FinanceMaker.Pullers.TickerPullers
         public async Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
         {
             var httpClient = m_RequestService.CreateClient();
+            httpClient.AddBrowserUserAgent();
 
             var url = string.Join("", m_FinvizUrl, GenerateParams(scannerParams));
-            httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36");
             var finvizResult = await httpClient.GetAsync(url, cancellationToken);
+
             if (!finvizResult.IsSuccessStatusCode)
             {
                 throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
