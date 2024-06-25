@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Pullers;
+﻿using FinanaceMaker.Server.Middlewares;
+using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 using FinanceMaker.Pullers.PricesPullers;
@@ -49,7 +50,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseMiddleware<CorsPolicyHandler>();
 app.UseAuthorization();
 
 app.MapControllers();

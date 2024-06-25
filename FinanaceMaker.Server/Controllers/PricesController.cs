@@ -27,7 +27,7 @@ namespace FinanaceMaker.Server.Controllers
                                                           CancellationToken cancellationToken)
         {
             var parameters = new PricesPullerParameters(ticker, start, end, period);
-
+            
             return m_PricesPuller.GetTickerPrices(parameters, cancellationToken);
         }
     }
