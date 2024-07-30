@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Algorithms", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Filters", "FinanceMaker.Filters\FinanceMaker.Filters.csproj", "{EA215011-8897-49F9-AA17-E4A0B32959D1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Trades.Creator", "FinanceMaker.Trades.Creator\FinanceMaker.Trades.Creator.csproj", "{87AF21B2-6FFA-4F0B-ABBC-D5CCD1E12A7E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Trades.Publisher", "FinanceMaker.Trades.Publisher\FinanceMaker.Trades.Publisher.csproj", "{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Ideas", "FinanceMaker.Ideas\FinanceMaker.Ideas.csproj", "{82DCED21-8081-4C2E-A25E-3109011B5066}"
@@ -47,10 +45,6 @@ Global
 		{EA215011-8897-49F9-AA17-E4A0B32959D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA215011-8897-49F9-AA17-E4A0B32959D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA215011-8897-49F9-AA17-E4A0B32959D1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{87AF21B2-6FFA-4F0B-ABBC-D5CCD1E12A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{87AF21B2-6FFA-4F0B-ABBC-D5CCD1E12A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{87AF21B2-6FFA-4F0B-ABBC-D5CCD1E12A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{87AF21B2-6FFA-4F0B-ABBC-D5CCD1E12A7E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}.Release|Any CPU.ActiveCfg = Release|Any CPU

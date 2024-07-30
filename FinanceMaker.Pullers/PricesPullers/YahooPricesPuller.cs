@@ -1,7 +1,5 @@
 ﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Tickers;
-using FinanceMaker.Common.Resolvers.Interfaces;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using YahooFinanceApi;
 using Period = FinanceMaker.Common.Models.Pullers.Enums.Period;

@@ -30,9 +30,12 @@ services.AddSingleton(sp => new IPricesPuller[]
 });
 services.AddSingleton<MainPricesPuller>();
 services.AddSingleton<GoogleNewsPuller>();
+services.AddSingleton<YahooFinanceNewsPuller>();
 services.AddSingleton(sp => new INewsPuller[]
 {
-    sp.GetService<GoogleNewsPuller>()
+    sp.GetService<GoogleNewsPuller>(),
+    sp.GetService<YahooFinanceNewsPuller>(),
+
 });
 services.AddSingleton<MainNewsPuller>();
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
