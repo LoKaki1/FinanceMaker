@@ -1,7 +1,5 @@
 ﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Pullers.Enums;
-using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Common.Resolvers.Abstracts;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 

@@ -1,7 +1,6 @@
-﻿using System;
-namespace FinanceMaker.Common.Models.Pullers.Enums
+﻿namespace FinanceMaker.Common.Models.Pullers.Enums
 {
-	public enum Period
+    public enum Period
 	{
 		OneMinute = 0,
 		ThreeMinutes = 1,

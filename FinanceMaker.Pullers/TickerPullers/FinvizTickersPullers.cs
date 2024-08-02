@@ -48,14 +48,16 @@ namespace FinanceMaker.Pullers.TickerPullers
 
         private string GenerateParams(TickersPullerParameters scannerParams)
         {
+            // TODO: Make it better (I'm sure you'll find a way)
             var maxPrice = scannerParams.MaxPrice;
             var minPrice = scannerParams.MinPrice;
             var maxAverageVolume = scannerParams.MaxAvarageVolume;
             var minAverageVolume = scannerParams.MinAvarageVolume;
-            var minPresentOfChange = scannerParams.PresentageOfChange;
+            var minPresentOfChange = scannerParams.MinPresentageOfChange;
+            var maxPresentageOfChange = scannerParams.MaxPresentageOfChange;
             //&f = sh_avgvol_100to1000,sh_price_u10,ta_change_u20,targetprice_a30 &
             var finvizParams = $"&f=sh_avgvol_{minAverageVolume / 1000}to{maxAverageVolume / 1000}," +
-                $"sh_price_{minPrice}to{maxPrice},ta_change_u{minPresentOfChange}&ft=4";
+                $"sh_price_{minPrice}to{maxPrice},ta_change_{minPresentOfChange}to{maxPresentageOfChange}&ft=4";
 
             return finvizParams;
         }

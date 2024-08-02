@@ -1,7 +1,4 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using FinanceMaker.Algorithms.Chart;
-using FinanceMaker.Common.Models.Pullers;
-using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 using FinanceMaker.Pullers.PricesPullers;
@@ -10,8 +7,6 @@ using FinanceMaker.Pullers.TickerPullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using QuantConnect;
-using CandlestickSeries = QuantConnect.CandlestickSeries;
 
 Console.WriteLine("Hello, World!");
 

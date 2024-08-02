@@ -13,6 +13,8 @@
         public Task Invoke(HttpContext httpContext)
         {
             httpContext.Response.Headers.AccessControlAllowOrigin = "*";
+            httpContext.Response.Headers.AccessControlAllowMethods = "POST,GET";
+            httpContext.Response.Headers.AccessControlRequestMethod = "POST,GET ";
 
             return _next(httpContext);
         }

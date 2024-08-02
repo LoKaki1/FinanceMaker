@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +23,9 @@ namespace FinanaceMaker.Server.Controllers
         [HttpGet]
         public Task<IEnumerable<string>> GetTickerNews([FromQuery] string ticker, CancellationToken cancellationToken)
         {
-            return m_NewsPuller.PullNews(ticker, cancellationToken);
+            var newsParams = NewsPullerParameters.GetTodayParams(ticker);
+
+            return m_NewsPuller.PullNews(newsParams, cancellationToken);
         }
     }
 }

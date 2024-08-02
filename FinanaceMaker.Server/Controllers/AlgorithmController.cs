@@ -34,7 +34,7 @@ namespace FinanaceMaker.Server.Controllers
             var parameters = new PricesPullerParameters(ticker, start, end, period);
 
             var prices = await m_PricesPuller.GetTickerPrices(parameters, cancellationToken);
-            var levels = SupportAndResistanceLevels.GetSupportResistanceLevels(new TickerChart(ticker, prices));
+            var levels = KeyLevels.GetKeyLevels(new TickerChart(ticker, prices));
 
             return levels;
         }

@@ -22,6 +22,5 @@
     <ProjectReference Include="..\FinanceMaker.Ideas\FinanceMaker.Ideas.csproj" />
     <ProjectReference Include="..\FinanceMaker.Pullers\FinanceMaker.Pullers.csproj" />
     <ProjectReference Include="..\FinanceMaker.Trades.Publisher\FinanceMaker.Trades.Publisher.csproj" />
-    <ProjectReference Include="..\FinanceMaker.Trades.Creator\FinanceMaker.Trades.Creator.csproj" />
   </ItemGroup>
 </Project>
