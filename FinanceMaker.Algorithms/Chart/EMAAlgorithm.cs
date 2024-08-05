@@ -5,7 +5,8 @@ using QuantConnect.Orders.Fills;
 
 namespace FinanceMaker.Algorithms.Chart
 {
-	public static class CalculateEMA
+	public static class EMACaluclator
+
 	{
 		public static IEnumerable<decimal> CalculateEMA(IEnumerable<FinanceCandleStick> financeCandleSticks, int period = 10)
 		{

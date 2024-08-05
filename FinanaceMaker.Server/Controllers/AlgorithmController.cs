@@ -25,7 +25,7 @@ namespace FinanaceMaker.Server.Controllers
 
         // GET: api/values
         [HttpGet]
-        public async Task<IEnumerable<double>> SupportAndResistance([FromQuery] string ticker,
+        public async Task<IEnumerable<double>> KeyLevels([FromQuery] string ticker,
                                                           [FromQuery] DateTime start,
                                                           [FromQuery] DateTime end,
                                                           [FromQuery] Period period,
@@ -34,7 +34,7 @@ namespace FinanaceMaker.Server.Controllers
             var parameters = new PricesPullerParameters(ticker, start, end, period);
 
             var prices = await m_PricesPuller.GetTickerPrices(parameters, cancellationToken);
-            var levels = KeyLevels.GetKeyLevels(new TickerChart(ticker, prices));
+            var levels = FinanceMaker.Algorithms.Chart.KeyLevels.GetKeyLevels(prices);
 
             return levels;
         }

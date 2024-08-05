@@ -15,7 +15,7 @@ namespace FinanceMaker.Algorithms.Chart
 
 			if (financeCandleSticks.First().EMA == 0)
 			{
-                CalculateEMA.CalculateEMA(financeCandleSticks);
+                EMACaluclator.CalculateEMA(financeCandleSticks);
 			}
 
             for (int i = backCandles; i < count; i++)

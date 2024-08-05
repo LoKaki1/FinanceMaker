@@ -12,7 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="News\" />
-    <Folder Include="Chart\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />

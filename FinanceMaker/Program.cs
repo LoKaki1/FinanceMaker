@@ -5,8 +5,11 @@ using FinanceMaker.Pullers.PricesPullers;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Pullers.TickerPullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
+using FinanceMaker.Common.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Threading;
+using HtmlAgilityPack;
 
 Console.WriteLine("Hello, World!");
 
@@ -47,32 +50,32 @@ Console.WriteLine("Hello, World!");
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 //
 
-var builder = Host.CreateApplicationBuilder();
-var services = builder.Services;
-services.AddHttpClient();
-services.AddSingleton<FinvizTickersPuller>();
-services.AddSingleton(sp => new IParamtizedTickersPuller[]
-{
-    sp.GetService<FinvizTickersPuller>()
-});
-services.AddSingleton(sp => Array.Empty<ITickerPuller>());
-services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
-services.AddSingleton<MainTickersPuller>();
+//var builder = Host.CreateApplicationBuilder();
+//var services = builder.Services;
+//services.AddHttpClient();
+//services.AddSingleton<FinvizTickersPuller>();
+//services.AddSingleton(sp => new IParamtizedTickersPuller[]
+//{
+//    sp.GetService<FinvizTickersPuller>()
+//});
+//services.AddSingleton(sp => Array.Empty<ITickerPuller>());
+//services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
+//services.AddSingleton<MainTickersPuller>();
 
-services.AddSingleton<YahooPricesPuller>();
-services.AddSingleton(sp => new IPricesPuller[]
-{
-    sp.GetService<YahooPricesPuller>()
-});
-services.AddSingleton<MainPricesPuller>();
-services.AddSingleton<GoogleNewsPuller>();
-services.AddSingleton(sp => new INewsPuller[]
-{
-    sp.GetService<GoogleNewsPuller>()
-});
-services.AddSingleton<MainNewsPuller>();
+//services.AddSingleton<YahooPricesPuller>();
+//services.AddSingleton(sp => new IPricesPuller[]
+//{
+//    sp.GetService<YahooPricesPuller>()
+//});
+//services.AddSingleton<MainPricesPuller>();
+//services.AddSingleton<GoogleNewsPuller>();
+//services.AddSingleton(sp => new INewsPuller[]
+//{
+//    sp.GetService<GoogleNewsPuller>()
+//});
+//services.AddSingleton<MainNewsPuller>();
 
-var app = builder.Build();
+//var app = builder.Build();
 //var tickersPuller = app.Services.GetService<MainTickersPuller>();
 //var pricesPuller = app.Services.GetService<MainPricesPuller>();
 //var newsPuller = app.Services.GetService<MainNewsPuller>();
@@ -164,4 +167,23 @@ var app = builder.Build();
 // {
 //     Model = plotModel
 // };
+var finvizUrl = "https://finviz.com/screener.ashx?v=111&f=news_date_today&ft=4&ah_change_10to100";
+var httpClient = new HttpClient();
+httpClient.AddBrowserUserAgent();
 
+var finvizResult = await httpClient.GetAsync(finvizUrl);
+if (!finvizResult.IsSuccessStatusCode)
+{
+    throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
+}
+
+var finvizHtml = await finvizResult.Content.ReadAsStringAsync();
+var node = new HtmlDocument();
+node.Load($"<tbody{finvizHtml.Split("<tbody>").Last().Split("</tbody>").First()}</tbody>");
+
+var technicalFinviz = node.DocumentNode.SelectNodes("//*[contains(@id,\"ta_\"]")
+                                       .Select(_ => _.Attributes["id"].Value.Split("ta_")
+                                                                            .Last())
+                                       .ToArray();
+
+Console.ReadLine();
