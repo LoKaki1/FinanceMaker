@@ -8,9 +8,9 @@ namespace FinanceMaker.Algorithms.Chart
     public static class BreakoutDetection
 	{
 		public static IEnumerable<TrendTypes> DetectBreakoutCandles(IEnumerable<FinanceCandleStick> financeCandleSticks,
-															 int backCandles,
-															 int window,
-                                                             int numOfCandlesToBeConsideredAsBreakout)
+															 		int backCandles,
+															 		int window,
+                                                             		int numOfCandlesToBeConsideredAsBreakout)
 		{
 			if (financeCandleSticks.All(_ => _.Pivot == Pivot.Unchanged))
 			{
