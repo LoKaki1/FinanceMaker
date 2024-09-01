@@ -1,6 +1,4 @@
-﻿using QuantConnect.Orders.Fills;
-
-namespace FinanceMaker.Common;
+﻿namespace FinanceMaker.Common;
 
 public enum AlgorithmType
 {

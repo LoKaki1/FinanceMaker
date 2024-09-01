@@ -37,6 +37,7 @@
     <None Remove="Middlewares\" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Controllers/Algorithms/" />
     <Folder Include="Middlewares\" />
   </ItemGroup>
 </Project>

@@ -1,4 +1,6 @@
 ﻿using FinanaceMaker.Server.Middlewares;
+using FinanceMaker.Algorithms;
+using FinanceMaker.Common;
 using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
@@ -37,6 +39,19 @@ services.AddSingleton(sp => new INewsPuller[]
     sp.GetService<YahooFinanceNewsPuller>(),
 
 });
+
+services.AddSingleton<EMARunner>();
+services.AddSingleton<BreakOutDetectionRunner>();
+
+services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput, object>>>(
+    sp => 
+    [
+        sp.GetService<EMARunner>(),
+        sp.GetService<BreakOutDetectionRunner>()
+    ]
+);
+
+services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<MainNewsPuller>();
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>

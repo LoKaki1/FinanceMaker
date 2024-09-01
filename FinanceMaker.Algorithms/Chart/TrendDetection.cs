@@ -8,14 +8,14 @@ namespace FinanceMaker.Algorithms.Chart
 	public static class TrendDetection
 	{
 		public static IEnumerable<TrendTypes>
-			CaluclateCandlesTrend(IEnumerable< FinanceCandleStick> financeCandleSticks, int backCandles = 15)	
+			CaluclateCandlesTrend(IEnumerable< FinanceCandleStick> financeCandleSticks, CancellationToken token, int backCandles = 15)	
 		{
 			var count = financeCandleSticks.GetNonEnumeratedCount();
 			var trendTypes = new TrendTypes[count];
 
 			if (financeCandleSticks.First().EMA == 0)
 			{
-                EMACaluclator.CalculateEMA(financeCandleSticks);
+                EMACaluclator.CalculateEMA(financeCandleSticks, token);
 			}
 
             for (int i = backCandles; i < count; i++)
