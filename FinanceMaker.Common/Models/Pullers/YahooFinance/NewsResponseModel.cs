@@ -1,6 +1,7 @@
 ﻿using System;
 namespace FinanceMaker.Common.Models.Pullers.YahooFinance
 {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 	public class NewsResponseModel
 	{
         public Data data { get; set; }
@@ -96,6 +97,6 @@ namespace FinanceMaker.Common.Models.Pullers.YahooFinance
         public List<Stream> stream { get; set; }
     }
 
-
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
 }
