@@ -1,4 +1,5 @@
-﻿using FinanaceMaker.Server.Middlewares;
+﻿using FinanaceMaker.Server;
+using FinanaceMaker.Server.Middlewares;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
 using FinanceMaker.Pullers;
@@ -13,53 +14,47 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddHttpClient();
-services.AddSingleton<FinvizTickersPuller>();
 services.AddSingleton(sp => new IParamtizedTickersPuller[]
 {
-    sp.GetService<FinvizTickersPuller>()
+    sp.AddAndGetService<FinvizTickersPuller>(services)
 });
 services.AddSingleton(sp => Array.Empty<ITickerPuller>());
 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
 services.AddSingleton<MainTickersPuller>();
 
-services.AddSingleton<YahooPricesPuller>();
-services.AddSingleton<YahooInterdayPricesPuller>();
 services.AddSingleton(sp => new IPricesPuller[]
 {
-    sp.GetService<YahooPricesPuller>(),
-    sp.GetService<YahooInterdayPricesPuller>(),
+    sp.AddAndGetService<YahooPricesPuller>(services),
+    sp.AddAndGetService<YahooInterdayPricesPuller>(services),
 
 });
 services.AddSingleton<MainPricesPuller>();
-services.AddSingleton<GoogleNewsPuller>();
-services.AddSingleton<YahooFinanceNewsPuller>();
 services.AddSingleton(sp => new INewsPuller[]
 {
-    sp.GetService<GoogleNewsPuller>(),
-    sp.GetService<YahooFinanceNewsPuller>(),
+    sp.AddAndGetService<GoogleNewsPuller>(services),
+    sp.AddAndGetService<YahooFinanceNewsPuller>(services),
 
 });
-
-services.AddSingleton<EMARunner>();
-services.AddSingleton<BreakOutDetectionRunner>();
 
 services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput, object>>>(
     sp => 
     [
-        sp.GetService<EMARunner>(),
-        sp.GetService<BreakOutDetectionRunner>()
+        sp.AddAndGetService<EMARunner>(services),
+        sp.AddAndGetService<BreakOutDetectionRunner>(services)
     ]
 );
 
 services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<MainNewsPuller>();
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
                       policy =>
                       {
-                          policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                          policy.AllowAnyOrigin()
+                                .AllowAnyMethod()
+                                .AllowAnyHeader();
                       });
 });
 
