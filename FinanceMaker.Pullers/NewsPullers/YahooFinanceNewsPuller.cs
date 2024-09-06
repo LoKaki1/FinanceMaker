@@ -29,14 +29,14 @@ namespace FinanceMaker.Pullers.NewsPullers
 
             if (!response.IsSuccessStatusCode || !cancellationToken.IsCancellationRequested)
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var yahooResult = await response.Content.ReadAsAsync<NewsResponseModel>(cancellationToken);
 
             if (yahooResult is null || yahooResult.status != "OK")
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var newsStream = yahooResult?.data?.tickerStream?.stream;
