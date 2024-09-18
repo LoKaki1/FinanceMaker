@@ -8,10 +8,11 @@ namespace FinanceMaker.Algorithms.Chart
 	public static class EMACaluclator
 
 	{
-		public static IEnumerable<decimal> CalculateEMA(IEnumerable<FinanceCandleStick> financeCandleSticks, CancellationToken token, int period = 10)
+		public static IEnumerable<EMACandleStick> CalculateEMA(IEnumerable<FinanceCandleStick> financeCandleSticks, CancellationToken token, int period = 10)
 		{
             var count = financeCandleSticks.GetNonEnumeratedCount();
             decimal[] emaValues = new decimal[count];
+            var eMACandleSticks = new EMACandleStick[financeCandleSticks.GetNonEnumeratedCount()];
             decimal[] prices = financeCandleSticks.Select(_ => _.Close)
                                                   .ToArray();
 
@@ -24,7 +25,7 @@ namespace FinanceMaker.Algorithms.Chart
             {
                 ema = ((prices[i] - ema) * multiplier) + ema;
                 emaValues[i] = ema;
-                financeCandleSticks.ElementAt(i).EMA = ema;
+                eMACandleSticks[i] = new EMACandleStick(financeCandleSticks.ElementAt(i), (float)ema);
 
                 if (token.IsCancellationRequested)
                 {
@@ -33,7 +34,7 @@ namespace FinanceMaker.Algorithms.Chart
             }
 
 
-            return emaValues;
+            return eMACandleSticks;
         }
 	}
 }

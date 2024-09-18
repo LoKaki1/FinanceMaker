@@ -1,10 +1,11 @@
-﻿using FinanceMaker.Common.Models.Finance.Enums;
+﻿using CloneExtensions;
+using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
 using System.Text.Json.Serialization;
 
 namespace FinanceMaker.Common.Models.Finance
 {
-    public sealed class FinanceCandleStick
+    public class FinanceCandleStick
 	{
 		#region Boring Data
 
@@ -19,7 +20,6 @@ namespace FinanceMaker.Common.Models.Finance
 
 		#region Amazing Data
 
-		public decimal EMA { get; set; }
 		public TrendTypes EMASignal { get; set; }
 		public TrendTypes BreakThrough { get; set; } 
 		public Pivot Pivot { get; set; }
@@ -50,7 +50,6 @@ namespace FinanceMaker.Common.Models.Finance
             Volume = Convert.ToDecimal(volume);
 			EMASignal = TrendTypes.NoChange;
 			BreakThrough = TrendTypes.NoChange;
-            EMA = 0;
 			Pivot = Pivot.Unchanged;
         }
 
@@ -65,7 +64,12 @@ namespace FinanceMaker.Common.Models.Finance
 			Candlestick = new Candlestick(dateTime, open, high, low, close);
 			Volume = volume; 
 		}
-
+		public FinanceCandleStick(
+            FinanceCandleStick candleStick)
+		{
+			Candlestick = candleStick.Candlestick.GetClone();
+			Volume = candleStick.Volume;
+		}
 
 		public FinanceCandleStick(Candlestick candlestick)
 		{

@@ -13,9 +13,9 @@ namespace FinanceMaker.Algorithms.Chart
 			var count = financeCandleSticks.GetNonEnumeratedCount();
 			var trendTypes = new TrendTypes[count];
 
-			if (financeCandleSticks.First().EMA == 0)
+			if (financeCandleSticks is not IEnumerable<EMACandleStick> emaCandleStick)
 			{
-                EMACaluclator.CalculateEMA(financeCandleSticks, token);
+                emaCandleStick = EMACaluclator.CalculateEMA(financeCandleSticks, token);
 			}
 
             for (int i = backCandles; i < count; i++)
@@ -25,11 +25,11 @@ namespace FinanceMaker.Algorithms.Chart
 
 				for (int j = i - backCandles; j < i + 1; j++)
 				{
-					up = Math.Max(financeCandleSticks.ElementAt(i).Open,
-								  financeCandleSticks.ElementAt(i).Close) >= financeCandleSticks.ElementAt(i).EMA;
+					up = Math.Max(emaCandleStick.ElementAt(i).Open,
+								  emaCandleStick.ElementAt(i).Close) >= emaCandleStick.ElementAt(i).EMA;
 
-                    down = Math.Min(financeCandleSticks.ElementAt(i).Open,
-                                  financeCandleSticks.ElementAt(i).Close) <= financeCandleSticks.ElementAt(i).EMA;
+                    down = Math.Min(emaCandleStick.ElementAt(i).Open,
+                                  emaCandleStick.ElementAt(i).Close) <= emaCandleStick.ElementAt(i).EMA;
                 }
 
 				if (up && down)

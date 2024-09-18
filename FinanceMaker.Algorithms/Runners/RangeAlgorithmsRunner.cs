@@ -8,4 +8,5 @@ public class RangeAlgorithmsRunner : ResolverBase<IAlgorithmRunner<RangeAlgorith
     public RangeAlgorithmsRunner(IEnumerable<IAlgorithmRunner<RangeAlgorithmInput, object>> logicsToResolve) : base(logicsToResolve)
     {
     }
+
 }
