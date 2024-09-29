@@ -1,4 +1,5 @@
 using System;
+using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
 
 namespace FinanceMaker.Common.Models.Finance;
@@ -6,7 +7,8 @@ namespace FinanceMaker.Common.Models.Finance;
 public class EMACandleStick : FinanceCandleStick
 {
     public decimal EMA { get; set; }
-
+    public TrendTypes TrendTypes { get; set; }
+    
     public EMACandleStick(DateTime dateTime, float open, float close, float high, float low, float volume) : base(dateTime, open, close, high, low, volume)
     {
         EMA = 0;

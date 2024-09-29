@@ -1,7 +1,9 @@
-﻿using FinanaceMaker.Server;
+﻿using System.Security.Policy;
+using FinanaceMaker.Server;
 using FinanaceMaker.Server.Middlewares;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
@@ -36,14 +38,18 @@ services.AddSingleton(sp => new INewsPuller[]
 
 });
 
-services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput, object>>>(
+services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
     sp => 
-    [
-        sp.AddAndGetService<EMARunner>(services),
-        sp.AddAndGetService<BreakOutDetectionRunner>(services)
-    ]
+    {
+        TickerRangeAlgorithmRunnerBase<EMACandleStick> runner1 = sp.AddAndGetService<EMARunner>(services);
+        var runner2 = sp.AddAndGetService<BreakOutDetectionRunner>(services);
+        var runner3 = sp.AddAndGetService<KeyLevelsRunner>(services);
+        
+        
+        return [runner1, runner2, runner3];
+    }
 );
-
+ 
 services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<MainNewsPuller>();
 

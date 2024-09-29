@@ -4,6 +4,10 @@ namespace FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 
 public class GeneralOutputIdea
 {
-    public required string Description { get; set; }
-    
+    public string Description { get; set; }
+
+    public GeneralOutputIdea(string description)
+    {
+        Description = description;
+    }
 }

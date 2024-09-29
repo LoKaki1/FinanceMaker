@@ -6,7 +6,8 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
 
-public abstract class TickerRangeAlgorithmRunnerBase<T> : IAlgorithmRunner<RangeAlgorithmInput, object> 
+public abstract class TickerRangeAlgorithmRunnerBase<T> : IAlgorithmRunner<RangeAlgorithmInput> 
+    where T : FinanceCandleStick
 {
     private readonly IPricesPuller m_PricesPuller;
     
@@ -33,14 +34,13 @@ public abstract class TickerRangeAlgorithmRunnerBase<T> : IAlgorithmRunner<Range
     {
         return args.Algorithm == Algorithm;
     }
-
-    async Task<IEnumerable<object>> IAlgorithmRunner<RangeAlgorithmInput, object>.Run(RangeAlgorithmInput input, CancellationToken cancellationToken)
+    async Task<IEnumerable<FinanceCandleStick>> IAlgorithmRunner<RangeAlgorithmInput>.Run(RangeAlgorithmInput input, CancellationToken cancellationToken)
     {
         var result = await Run(input, cancellationToken);
 
         if (result is IEnumerable<T> actualResult)
         {
-            return (IEnumerable<object>) actualResult;
+            return actualResult;
         }
 
         throw new Exception($"Bad result {result}");

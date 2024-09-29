@@ -7,7 +7,7 @@ namespace FinanceMaker.Algorithms.Chart
 {
     public static class BreakoutDetection
 	{
-		public static IEnumerable<TrendTypes> DetectBreakoutCandles(IEnumerable<FinanceCandleStick> financeCandleSticks,
+		public static IEnumerable<EMACandleStick> DetectBreakoutCandles(IEnumerable<FinanceCandleStick> financeCandleSticks,
 															 		int backCandles,
 															 		int window,
                                                              		int numOfCandlesToBeConsideredAsBreakout)
@@ -18,6 +18,7 @@ namespace FinanceMaker.Algorithms.Chart
             }
 
 			var arr = financeCandleSticks.ToArray();
+			var emaCnadles = new EMACandleStick[arr.Length];
 			var breakouts = new TrendTypes[arr.Length];
 
 			for (int i = 0; i < arr.Length; i++)
@@ -26,9 +27,13 @@ namespace FinanceMaker.Algorithms.Chart
 				var breakout = IsItBreakoutCandle(arr, i, backCandles, window, numOfCandlesToBeConsideredAsBreakout);
 				breakouts[i] = breakout;
 				arr[i].BreakThrough = breakout;
+				emaCnadles[i] = new EMACandleStick(arr[i], 0)
+				{
+					BreakThrough = breakout
+				};
 			}
 
-			return breakouts;
+			return emaCnadles;
 		}
 
 		private static TrendTypes IsItBreakoutCandle(FinanceCandleStick[] financeCandleSticks,

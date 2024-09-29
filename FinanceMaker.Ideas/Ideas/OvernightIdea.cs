@@ -54,5 +54,7 @@ public sealed class OvernightIdea : IdeaBase<TechnicalIDeaInput, GeneralOutputId
             // There fore we need to warp the candlestick in a base class which contains them and each 
             // algorithm is gonna add its own data to the class and its dervitives 
         }
+
+        return new GeneralOutputIdea("gon");
     }
 }

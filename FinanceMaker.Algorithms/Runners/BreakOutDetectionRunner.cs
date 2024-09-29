@@ -6,7 +6,7 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
 
-public class BreakOutDetectionRunner : TickerRangeAlgorithmRunnerBase<TrendTypes>
+public class BreakOutDetectionRunner : TickerRangeAlgorithmRunnerBase<EMACandleStick>
 {
     public override Algorithm Algorithm => Algorithm.BreakoutDetection;
     
@@ -15,9 +15,10 @@ public class BreakOutDetectionRunner : TickerRangeAlgorithmRunnerBase<TrendTypes
 
     }
 
-    public override Task<IEnumerable<TrendTypes>> Run(IEnumerable<FinanceCandleStick> input, CancellationToken cancellationToken)
+    public override Task<IEnumerable<EMACandleStick>> Run(IEnumerable<FinanceCandleStick> input, CancellationToken cancellationToken)
     {
         var breakoutResult = BreakoutDetection.DetectBreakoutCandles(input, 30, 30, 10 );
+        
         
         return Task.FromResult(breakoutResult);
     }

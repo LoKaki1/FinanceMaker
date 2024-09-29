@@ -5,7 +5,7 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
 
-public sealed class EMARunner : TickerRangeAlgorithmRunnerBase<decimal>
+public sealed class EMARunner : TickerRangeAlgorithmRunnerBase<EMACandleStick>
 {
     public override Algorithm Algorithm => Algorithm.EMA;
     
@@ -14,7 +14,7 @@ public sealed class EMARunner : TickerRangeAlgorithmRunnerBase<decimal>
     }
 
 
-    public override Task<IEnumerable<decimal>> Run(IEnumerable<FinanceCandleStick> input, CancellationToken cancellationToken)
+    public override Task<IEnumerable<EMACandleStick>> Run(IEnumerable<FinanceCandleStick> input, CancellationToken cancellationToken)
     {
         var emaResult = EMACaluclator.CalculateEMA(input, cancellationToken);
 

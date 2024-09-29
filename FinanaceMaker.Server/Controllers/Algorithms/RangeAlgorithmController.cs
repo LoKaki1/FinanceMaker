@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.Chart;
 using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.PricesPullers;
@@ -25,7 +26,7 @@ namespace FinanaceMaker.Server.Controllers.Algorithms
 
         // GET: api/values
         [HttpPost]
-        public  Task<IEnumerable<object>> Post([FromBody] RangeAlgorithmInput algorithmInput,
+        public  Task<IEnumerable<FinanceCandleStick>> Post([FromBody] RangeAlgorithmInput algorithmInput,
                                                           CancellationToken cancellationToken)
         {
             var relevant = m_AlgorithmRunner.Resolve(algorithmInput);
