@@ -7,6 +7,11 @@ namespace FinanceMaker.Common.Extensions
 		{
 			return enumerable.TryGetNonEnumeratedCount(out int count) ? count : enumerable.Count();
 		}
+
+		public static bool NullOrEmpty<T> (this IEnumerable<T> enumerable)
+		{
+			return enumerable is null || !enumerable.Any();
+		}
 	}
 }
 

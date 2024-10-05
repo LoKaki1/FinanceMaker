@@ -16,6 +16,7 @@ public sealed class OvernightIdea : IdeaBase<TechnicalIDeaInput, GeneralOutputId
     private readonly RangeAlgorithmsRunner m_AlgoRunner;
     private readonly IParamtizedTickersPuller m_Puller;
     private readonly Func<string, PricesPullerParameters> m_PricesPullerParams;
+    public override IdeaTypes Type => IdeaTypes.Overnight;
 
     public OvernightIdea(IParamtizedTickersPuller puller, RangeAlgorithmsRunner algoRunner)
     {
@@ -27,9 +28,17 @@ public sealed class OvernightIdea : IdeaBase<TechnicalIDeaInput, GeneralOutputId
                                                                       Period.Daily);
     }
 
-    public override IdeaTypes Type => IdeaTypes.Overnight;
-
-    protected override async Task<GeneralOutputIdea> CreateIdea(TechnicalIDeaInput input, CancellationToken cancellationToken)
+    // Do some intersting logic (like this shit)
+    // Now when I think about it lets let all the algos to return the candlestick (because now
+    // I need to get the candlesticks data to continue this amazing logic,
+    // For example: 
+    // Now I wanna check if the last price is closed to one of the keylevels
+    // There fore we need to warp the candlestick in a base class which contains them and each 
+    // algorithm is gonna add its own data to the class and its dervitives 
+    // Also we can ask our news puller, for news about this ticker, and ask chat gpt,
+    // to return some magic string whether the news were good or bad
+            
+    protected override async Task<IEnumerable<GeneralOutputIdea>> CreateIdea(TechnicalIDeaInput input, CancellationToken cancellationToken)
     {
         //TODO: I think we should find a good query for finding those using Finviz API (for now it will stay 100% custom)
         var scannerParams = input.TechnicalParams;
@@ -45,16 +54,11 @@ public sealed class OvernightIdea : IdeaBase<TechnicalIDeaInput, GeneralOutputId
 
             var keyLevelRunner = m_AlgoRunner.Resolve(algoInput);
             var keyLevels = await keyLevelRunner.Run(algoInput, cancellationToken);
-
-            // Do some intersting logic (like this shit)
-            // Now when I think about it lets let all the algos to return the candlestick (because now
-            // I need to get the candlesticks data to continue this amazing logic,
-            // For example: 
-            // Now I wanna check if the last price is closed to one of the keylevels
-            // There fore we need to warp the candlestick in a base class which contains them and each 
-            // algorithm is gonna add its own data to the class and its dervitives 
+            // The description above is what we want to make this function
+            
+            
         }
 
-        return new GeneralOutputIdea("gon");
+        return [ new GeneralOutputIdea("gon" ,"NIO") ];
     }
 }

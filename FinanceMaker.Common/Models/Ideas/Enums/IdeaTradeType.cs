@@ -1,7 +1,7 @@
 namespace FinanceMaker.Common.Models.Ideas.Enums;
 
-public enum IdeaTypes
+public enum IdeaTradeType
 {
-    EntryExit,
-    Overnight
+    Short,
+    Long
 }

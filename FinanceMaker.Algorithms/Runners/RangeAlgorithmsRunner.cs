@@ -10,4 +10,14 @@ public class RangeAlgorithmsRunner : ResolverBase<IAlgorithmRunner<RangeAlgorith
     {
     }
 
+    public async Task<IEnumerable<TOutput>> Run<TOutput>(RangeAlgorithmInput rangeAlgorithmInput,
+                                                         CancellationToken cancellationToken) 
+        where TOutput : FinanceCandleStick
+    {
+        var algoRunner = Resolve(rangeAlgorithmInput);
+        var algoResult = await algoRunner.Run(rangeAlgorithmInput, cancellationToken);
+
+        return algoResult is IEnumerable<TOutput> algoResultOutput ?
+               algoResultOutput : [];
+    }
 }

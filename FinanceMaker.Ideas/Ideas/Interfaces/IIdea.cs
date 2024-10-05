@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
@@ -9,6 +10,6 @@ public interface IIdea
 {
     IdeaTypes Type { get; }
 
-    Task<GeneralOutputIdea> CreateIdea(GeneralInputIdea input,
+    Task<IEnumerable<GeneralOutputIdea>> CreateIdea(GeneralInputIdea input,
                                        CancellationToken cancellationToken);
 }

@@ -11,7 +11,7 @@ public abstract class IdeaBase<TInput, TOutput> : IIdea where TInput : GeneralIn
 {
     public abstract IdeaTypes Type { get; }
 
-    public async Task<GeneralOutputIdea> CreateIdea(GeneralInputIdea input, CancellationToken cancellationToken)
+    public async Task<IEnumerable<GeneralOutputIdea>> CreateIdea(GeneralInputIdea input, CancellationToken cancellationToken)
     {
         if (input is null || input is not TInput actualInput)
         {
@@ -24,5 +24,5 @@ public abstract class IdeaBase<TInput, TOutput> : IIdea where TInput : GeneralIn
     }
 
 
-    protected abstract Task<TOutput> CreateIdea(TInput input, CancellationToken cancellationToken);
+    protected abstract Task<IEnumerable<TOutput>> CreateIdea(TInput input, CancellationToken cancellationToken);
 }

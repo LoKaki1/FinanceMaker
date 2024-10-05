@@ -41,7 +41,7 @@ services.AddSingleton(sp => new INewsPuller[]
 services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
     sp => 
     {
-        TickerRangeAlgorithmRunnerBase<EMACandleStick> runner1 = sp.AddAndGetService<EMARunner>(services);
+        var runner1 = sp.AddAndGetService<EMARunner>(services);
         var runner2 = sp.AddAndGetService<BreakOutDetectionRunner>(services);
         var runner3 = sp.AddAndGetService<KeyLevelsRunner>(services);
         
