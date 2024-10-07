@@ -12,4 +12,5 @@ public interface IIdea
 
     Task<IEnumerable<GeneralOutputIdea>> CreateIdea(GeneralInputIdea input,
                                        CancellationToken cancellationToken);
+
 }
