@@ -18,20 +18,16 @@ public sealed class KeyLevelsRunner : TickerRangeAlgorithmRunnerBase<KeyLevelCan
         var keyLevels = KeyLevels.GetKeyLevels(input);
         var keyLevelsCandleSticks = new List<KeyLevelCandleStick>();
         
-        foreach (var keyLevel in keyLevels)
+        // I don't like it because it reduces the number of candles
+        foreach (var candle in input)
         {
-            var closestCandle = input.FirstOrDefault(candle
+            var relevantKeyLevel = keyLevels.FirstOrDefault(keyLevel
                      => Math.Abs((double)candle.High - keyLevel) < 0.03 ||
                         Math.Abs((double)candle.Low - keyLevel) < 0.03);
 
-            if (closestCandle is null)
-            {
-                // How ??
+            // How ??
 
-                closestCandle = new FinanceCandleStick(DateTime.Now, 0f, 0f, 0, 0, 0);
-            }
-
-            var keylevelCandleStick = new KeyLevelCandleStick(closestCandle, (decimal)keyLevel);
+            var keylevelCandleStick = new KeyLevelCandleStick(candle, (decimal)relevantKeyLevel);
             keyLevelsCandleSticks.Add(keylevelCandleStick);
         }
 

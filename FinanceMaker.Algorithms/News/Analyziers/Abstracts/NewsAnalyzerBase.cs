@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
@@ -18,9 +18,11 @@ public abstract class NewsAnalyzerBase<TInput, TOutput> : INewsAnalyzer
         m_Puller = puller;
     }
 
-    public async Task<NewsAnalyzed> AnalyzeNews(NewsPullerParameters newsAnalyzerInput,
+    public virtual async Task<NewsAnalyzed> AnalyzeNews(NewsPullerParameters newsAnalyzerInput,
                                                 CancellationToken cancellationToken)
     {
+        var urls = await m_Puller.PullNews(newsAnalyzerInput, cancellationToken);
+        var input = Parse(newsAnalyzerInput, urls);
 
         var newsAnalyzed = await AnalyzeNews(input, cancellationToken);
 
@@ -31,7 +33,11 @@ public abstract class NewsAnalyzerBase<TInput, TOutput> : INewsAnalyzer
     {
         if (typeof(TInput) == typeof(NewsAnalyzerInput))
         {
-            var input = new NewsAnalyzerInput(newsAnalyzerInput, urls)
+            var input = new NewsAnalyzerInput(newsAnalyzerInput, urls);
+
+            return (TInput)input;
         }
+
+        throw new NotImplementedException($"No implementation for parsing: {typeof(TInput)}");
     }
 }
