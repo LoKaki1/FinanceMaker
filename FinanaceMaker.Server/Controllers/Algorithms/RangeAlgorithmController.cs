@@ -26,12 +26,12 @@ namespace FinanaceMaker.Server.Controllers.Algorithms
 
         // GET: api/values
         [HttpPost]
-        public  Task<IEnumerable<FinanceCandleStick>> Post([FromBody] RangeAlgorithmInput algorithmInput,
+        public Task<IEnumerable<FinanceCandleStick>> Post([FromBody] RangeAlgorithmInput algorithmInput,
                                                           CancellationToken cancellationToken)
         {
-            var relevant = m_AlgorithmRunner.Resolve(algorithmInput);
+            // This may cause some problems
 
-            return relevant.Run(algorithmInput, cancellationToken); 
+            return m_AlgorithmRunner.Run<FinanceCandleStick>(algorithmInput, cancellationToken);
         }
     }
 }
