@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -9,9 +9,6 @@
   <ItemGroup>
     <None Remove="News\" />
     <None Remove="Chart\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="News\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />

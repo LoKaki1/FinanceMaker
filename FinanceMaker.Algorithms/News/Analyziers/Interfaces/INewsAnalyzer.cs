@@ -1,5 +1,4 @@
 ﻿using FinanceMaker.Common.Models.Algorithms.Analyzers;
-using FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
 using FinanceMaker.Common.Models.Pullers;
 
 namespace FinanceMaker.Algorithms.News.Analyziers.Interfaces;
@@ -14,5 +13,5 @@ public interface INewsAnalyzer
     /// <returns>
     /// The Aanalyzed news
     ///  </returns>
-    Task<NewsAnalyzed> AnalyzeNews(NewsPullerParameters newsAnalyzerInput, CancellationToken cancellationToken);
+    Task<IEnumerable<NewsAnalyzed>> AnalyzeNews(NewsPullerParameters newsAnalyzerInput, CancellationToken cancellationToken);
 }

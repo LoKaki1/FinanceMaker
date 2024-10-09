@@ -1,5 +1,4 @@
-using System;
-using FinanceMaker.Algorithms;
+﻿using FinanceMaker.Algorithms;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;

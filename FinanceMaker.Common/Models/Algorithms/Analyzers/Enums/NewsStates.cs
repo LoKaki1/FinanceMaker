@@ -1,3 +1,5 @@
+﻿using System.ComponentModel;
+
 namespace FinanceMaker.Common.Models.Algorithms.Analyzers.Enums;
 
 /// <summary>
@@ -5,7 +7,10 @@ namespace FinanceMaker.Common.Models.Algorithms.Analyzers.Enums;
 /// </summary>
 public enum NewsStates
 {
+    [Description("None")]
     None = 0,
+    [Description("Good")]
     Good = 1,
+    [Description("Bad")]
     Bad = 2,
 }
