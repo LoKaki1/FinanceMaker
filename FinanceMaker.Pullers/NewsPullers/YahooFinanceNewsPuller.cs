@@ -43,7 +43,7 @@ namespace FinanceMaker.Pullers.NewsPullers
 
             if (newsStream is null)
             {
-                return Enumerable.Empty<string>();
+                return [];
             }
 
             var news = newsStream.Select(_ => _.content.canonicalUrl.url)

@@ -13,12 +13,12 @@ namespace FinanceMaker.Algorithms.News.Analyziers
     public sealed class KeywordsDetectorAnalysed : NewsAnalyzerBase<NewsAnalyzerInput, StateAnalyzerNew>
     {
         private readonly string[] m_GoodWords;
-        private readonly string[] m_BadWords;   
+        private readonly string[] m_BadWords;
         private readonly HtmlWeb m_NewsLoader;
 
         public KeywordsDetectorAnalysed(INewsPuller puller) : base(puller)
         {
-            m_GoodWords = 
+            m_GoodWords =
             [
                "Strong earnings",
                "Revenue growth",
@@ -88,7 +88,7 @@ namespace FinanceMaker.Algorithms.News.Analyziers
             m_NewsLoader = new HtmlWeb();
         }
 
-        protected override  Task<IEnumerable<StateAnalyzerNew>> AnalyzeNews(NewsAnalyzerInput input, CancellationToken cancellationToken)
+        protected override async Task<IEnumerable<StateAnalyzerNew>> AnalyzeNews(NewsAnalyzerInput input, CancellationToken cancellationToken)
         {
             // For now I'm only gonna pull this using the html agility pack
             // but in the future I will use some intersting web scrapping to load more and more of the articles because many of them are lazy loaded
@@ -98,15 +98,15 @@ namespace FinanceMaker.Algorithms.News.Analyziers
             var urls = input.Urls;
             var analysed = new List<StateAnalyzerNew>();
 
-            foreach(var url in urls)
+            foreach (var url in urls)
             {
-                var article = m_NewsLoader.Load(url);
+                var article = await m_NewsLoader.LoadFromWebAsync(url, cancellationToken);
                 var html = article.DocumentNode.OuterHtml;
                 // in the pullers we probably try to get their dates also
-                var isGood = m_GoodWords.Count(html.Contains);  
+                var isGood = m_GoodWords.Count(html.Contains);
                 var isBad = m_BadWords.Count(html.Contains);
                 var newsStates = NewsStates.None;
-                
+
                 if (isGood > isBad)
                 {
                     newsStates = NewsStates.Good;
@@ -130,7 +130,7 @@ namespace FinanceMaker.Algorithms.News.Analyziers
                 analysed.Add(analysedNews);
             }
 
-            return Task.FromResult((IEnumerable<StateAnalyzerNew>)analysed);
+            return analysed;
         }
     }
 }
