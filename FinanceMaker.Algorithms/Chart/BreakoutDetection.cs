@@ -6,81 +6,81 @@ using FinanceMaker.Common.Models.Finance.Enums;
 namespace FinanceMaker.Algorithms.Chart
 {
     public static class BreakoutDetection
-	{
-		public static IEnumerable<EMACandleStick> DetectBreakoutCandles(IEnumerable<FinanceCandleStick> financeCandleSticks,
-															 		int backCandles,
-															 		int window,
-                                                             		int numOfCandlesToBeConsideredAsBreakout)
-		{
-			if (financeCandleSticks.All(_ => _.Pivot == Pivot.Unchanged))
-			{
-				KeyLevels.GetKeyLevels(financeCandleSticks, window - 1);
+    {
+        public static IEnumerable<EMACandleStick> DetectBreakoutCandles(IEnumerable<FinanceCandleStick> financeCandleSticks,
+                                                                     int backCandles,
+                                                                     int window,
+                                                                     int numOfCandlesToBeConsideredAsBreakout)
+        {
+            if (financeCandleSticks.All(_ => _.Pivot == Pivot.Unchanged))
+            {
+                KeyLevels.GetKeyLevels(financeCandleSticks, window - 1);
             }
 
-			var arr = financeCandleSticks.ToArray();
-			var emaCnadles = new EMACandleStick[arr.Length];
-			var breakouts = new TrendTypes[arr.Length];
+            var arr = financeCandleSticks.ToArray();
+            var emaCnadles = new EMACandleStick[arr.Length];
+            var breakouts = new TrendTypes[arr.Length];
 
-			for (int i = 0; i < arr.Length; i++)
-			
-			{
-				var breakout = IsItBreakoutCandle(arr, i, backCandles, window, numOfCandlesToBeConsideredAsBreakout);
-				breakouts[i] = breakout;
-				arr[i].BreakThrough = breakout;
-				emaCnadles[i] = new EMACandleStick(arr[i], 0)
-				{
-					BreakThrough = breakout
-				};
-			}
+            for (int i = 0; i < arr.Length; i++)
 
-			return emaCnadles;
-		}
+            {
+                var breakout = IsItBreakoutCandle(arr, i, backCandles, window, numOfCandlesToBeConsideredAsBreakout);
+                breakouts[i] = breakout;
+                arr[i].BreakThrough = breakout;
+                emaCnadles[i] = new EMACandleStick(arr[i], 0)
+                {
+                    BreakThrough = breakout
+                };
+            }
 
-		private static TrendTypes IsItBreakoutCandle(FinanceCandleStick[] financeCandleSticks,
+            return emaCnadles;
+        }
+
+        private static TrendTypes IsItBreakoutCandle(FinanceCandleStick[] financeCandleSticks,
                                         int index,
                                         int backCandles,
                                         int window,
                                         int numOfCandlesToBeConsideredAsBreakout)
-		{
-			if (index <= (backCandles + window) || (index + window > financeCandleSticks.Length)) return TrendTypes.NoChange;
+        {
+            if (index <= (backCandles + window) || (index + window > financeCandleSticks.Length)) return TrendTypes.NoChange;
 
 
-			var smallArray = financeCandleSticks.Skip(index - backCandles - window)
-												.Take(financeCandleSticks.Length - index  - window)
-												.ToArray();
+            var smallArray = financeCandleSticks.Skip(index - backCandles - window)
+                                                .Take(financeCandleSticks.Length - index - window)
+                                                .ToArray();
 
-			var highs = smallArray.Where(_ => _.Pivot == Pivot.High)
-								  .Select(_ => _.High)
-								  .TakeLast(numOfCandlesToBeConsideredAsBreakout);
-			var lows = smallArray.Where(_ => _.Pivot == Pivot.Low)
+            var highs = smallArray.Where(_ => _.Pivot == Pivot.High)
+                                  .Select(_ => _.High)
+                                  .TakeLast(numOfCandlesToBeConsideredAsBreakout);
+            var lows = smallArray.Where(_ => _.Pivot == Pivot.Low)
                                   .Select(_ => _.Low)
                                   .TakeLast(numOfCandlesToBeConsideredAsBreakout);
 
-			var levelBreak = TrendTypes.NoChange;
-			var zoneWidth = 0.0002M;
+            var levelBreak = TrendTypes.NoChange;
+            var zoneWidth = 0.0002M;
 
-			if (lows.GetNonEnumeratedCount() == numOfCandlesToBeConsideredAsBreakout)
-			{
-				var supportCondition = true;
-				var lowAverage = lows.Average();
+            if (lows.GetNonEnumeratedCount() == numOfCandlesToBeConsideredAsBreakout)
+            {
+                var supportCondition = true;
+                var lowAverage = lows.Average();
 
-				foreach(var low in lows)
-				{
-					if (Math.Abs(lowAverage - low) > zoneWidth)
-					{
-						supportCondition = false;
-						break;
-					}
-				}
+                foreach (var low in lows)
+                {
+                    if (Math.Abs(lowAverage - low) > zoneWidth)
+                    {
+                        supportCondition = false;
+                        break;
+                    }
+                }
 
-				if (supportCondition && (lowAverage - financeCandleSticks[index].Close) > zoneWidth)
-				{
-					levelBreak = TrendTypes.Berish;
-				} 
-			}
+                if (supportCondition && (lowAverage - financeCandleSticks[index].Close) > zoneWidth)
+                {
+                    levelBreak = TrendTypes.Berish;
+                }
+            }
 
-			if (highs.GetNonEnumeratedCount() == numOfCandlesToBeConsideredAsBreakout)
-			{
+            if (highs.GetNonEnumeratedCount() == numOfCandlesToBeConsideredAsBreakout)
+            {
                 var resistanceCondition = true;
                 var highAverage = highs.Average();
 
@@ -100,8 +100,8 @@ namespace FinanceMaker.Algorithms.Chart
             }
 
 
-			return levelBreak;
+            return levelBreak;
         }
-	}
+    }
 }
 

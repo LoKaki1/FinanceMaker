@@ -6,40 +6,34 @@ using System.Text.Json.Serialization;
 namespace FinanceMaker.Common.Models.Finance
 {
     public class FinanceCandleStick
-	{
-		#region Boring Data
+    {
+        #region Boring Data
 
-		public DateTime Time => Candlestick?.Time ?? DateTime.MaxValue;
-		public decimal Open => Candlestick?.Open ?? 0;
-		public decimal Close => Candlestick?.Close ?? 0;
-		public decimal High => Candlestick?.High ?? 0;
-		public decimal Low => Candlestick?.Low ?? 0;
-		public decimal Volume { get; set; }
+        public DateTime Time => Candlestick?.Time ?? DateTime.MaxValue;
+        public float Open => (float?)(Candlestick?.Open) ?? 0f;
+        public float Close => (float?)(Candlestick?.Close) ?? 0f;
+        public float High => (float?)Candlestick?.High ?? 0;
+        public float Low => (float?)Candlestick?.Low ?? 0;
+        public int Volume { get; set; }
 
-		#endregion
+        #endregion
 
-		#region Amazing Data
 
-		public TrendTypes EMASignal { get; set; }
-		public TrendTypes BreakThrough { get; set; } 
-		public Pivot Pivot { get; set; }
 
-		#endregion
+        #region Why Do I do stuff Data
 
-		#region Why Do I do stuff Data
+        [JsonIgnore]
+        public Candlestick Candlestick { get; set; }
 
-		[JsonIgnore]
-		public Candlestick Candlestick { get; set; }
+        #endregion
 
-		#endregion
-
-		public FinanceCandleStick(
-			DateTime dateTime,
-			float open,
-			float close,
-			float high,
-			float low,
-			float volume)
+        public FinanceCandleStick(
+            DateTime dateTime,
+            float open,
+            float close,
+            float high,
+            float low,
+            int volume)
         {
             Candlestick = new Candlestick(
                 dateTime,
@@ -47,10 +41,10 @@ namespace FinanceMaker.Common.Models.Finance
                 Convert.ToDecimal(high),
                 Convert.ToDecimal(low),
                 Convert.ToDecimal(close));
-            Volume = Convert.ToDecimal(volume);
-			EMASignal = TrendTypes.NoChange;
-			BreakThrough = TrendTypes.NoChange;
-			Pivot = Pivot.Unchanged;
+            Volume = volume;
+            // EMASignal = TrendTypes.NoChange;
+            // BreakThrough = TrendTypes.NoChange;
+            // Pivot = Pivot.Unchanged;
         }
 
         public FinanceCandleStick(
@@ -59,22 +53,22 @@ namespace FinanceMaker.Common.Models.Finance
             decimal close,
             decimal high,
             decimal low,
-			decimal volume)
-		{
-			Candlestick = new Candlestick(dateTime, open, high, low, close);
-			Volume = volume; 
-		}
-		public FinanceCandleStick(
+            int volume)
+        {
+            Candlestick = new Candlestick(dateTime, open, high, low, close);
+            Volume = volume;
+        }
+        public FinanceCandleStick(
             FinanceCandleStick candleStick)
-		{
-			Candlestick = candleStick.Candlestick.GetClone();
-			Volume = candleStick.Volume;
-		}
+        {
+            Candlestick = candleStick.Candlestick.GetClone();
+            Volume = candleStick.Volume;
+        }
 
-		public FinanceCandleStick(Candlestick candlestick)
-		{
-			Candlestick = candlestick;
-		}
-	}
+        public FinanceCandleStick(Candlestick candlestick)
+        {
+            Candlestick = candlestick;
+        }
+    }
 }
 
