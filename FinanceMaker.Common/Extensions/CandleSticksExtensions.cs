@@ -23,8 +23,8 @@ public static class CandleSticksExtensions
     /// The closest levels 
     /// </returns>
     ///  <summary>
-    public static (IEnumerable<double> closestKeyLevels, double precentage) 
-    GetClosestToLastKeyLevels (this IEnumerable<KeyLevelCandleStick> keyLevelCandleSticks,
+    public static (IEnumerable<double> closestKeyLevels, double precentage)
+    GetClosestToLastKeyLevels(this IEnumerable<EMACandleStick> keyLevelCandleSticks,
                                int maxPresentage = 100,
                                int numberOfKeyLevels = 1)
     {
@@ -48,7 +48,7 @@ public static class CandleSticksExtensions
                 return (data, precentage);
             }
 
-            precentage++;                             
+            precentage++;
         }
 
         return ([], precentage);

@@ -1,5 +1,4 @@
-﻿using FinanceMaker.Algorithms.Chart;
-using FinanceMaker.Common;
+﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
@@ -28,6 +27,7 @@ public sealed class KeyLevelsRunner :
         var pivots = new Pivot[count];
         var levels = new List<double>();
         var emaCandles = new EMACandleStick[count];
+
         for (int i = 0; i < count; i++)
         {
             if (cancellationToken.IsCancellationRequested)

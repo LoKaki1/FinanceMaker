@@ -46,7 +46,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         // Now we want to run some algos on the relevant stocks 
 
         var ideas = new List<EntryExitOutputIdea>(relevantTickers.GetNonEnumeratedCount());
-        
+
         foreach (var ticker in relevantTickers)
         {
             var rangeParams = m_PricesPullerParams.Invoke(ticker);
@@ -55,18 +55,18 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             var keyLevelRunner = m_AlgoRunner.Resolve(algoInput);
             var keyLevels = await keyLevelRunner.Run(algoInput, cancellationToken);
 
-            if (keyLevels is not IEnumerable<KeyLevelCandleStick> candleSticks) continue;
+            if (keyLevels is not IEnumerable<EMACandleStick> candleSticks) continue;
 
             // For now let's keep it simple and will just use one keyLevel with a presentage of 2%
-            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage:2,
-                                                                               numberOfKeyLevels:1);
+            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 2,
+                                                                               numberOfKeyLevels: 1);
 
             if (closestKeyLevels.NullOrEmpty()) continue;
 
             var idea = CreateSingleIdea(ticker, candleSticks, closestKeyLevels);
             ideas.Add(idea);
         }
-        
+
         return ideas.OfType<TOutput>()
                     .ToArray();
     }
@@ -84,15 +84,15 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         // This means we probably wanna short the ticker
         var exitPrice = 0f;
         var stopLoss = 0f;
-        
+
         if ((double)current.Close <= entryPrice)
         {
-            exitPrice = (float) (entryPrice * 0.97);
+            exitPrice = (float)(entryPrice * 0.97);
             stopLoss = (float)(entryPrice * 1.02);
         }
         else
         {
-            exitPrice = (float) (entryPrice * 1.03);
+            exitPrice = (float)(entryPrice * 1.03);
             stopLoss = (float)(entryPrice * 0.98);
         }
 

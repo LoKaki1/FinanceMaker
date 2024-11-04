@@ -1,8 +1,6 @@
-﻿using FinanceMaker.Algorithms.Chart;
-using FinanceMaker.Common;
+﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Pullers.YahooFinance;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
