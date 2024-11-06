@@ -16,11 +16,12 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
     public YahooInterdayPricesPuller(IHttpClientFactory requestsService)
     {
         m_RequestsService = requestsService;
-        m_RelevantPeriods = new Dictionary<Period, string> 
+        m_RelevantPeriods = new Dictionary<Period, string>
         {
             { Period.OneMinute, "1m" },
             { Period.ThreeMinutes, "3m" },
-            { Period.OneHour, "1h"}
+            { Period.OneHour, "1h"},
+            { Period.Daily, "1d"}
         };
         m_FinanceUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?period1={1}&period2={2}&interval={3}&includePrePost=true&lang=en-US&region=US";
     }
@@ -29,14 +30,14 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
                                                                        CancellationToken cancellationToken)
     {
         var period = pricesPullerParameters.Period;
-        
+
         if (!m_RelevantPeriods.TryGetValue(period, out string? yahooPeriod))
         {
             throw new NotImplementedException($"Yahoo interday api doesn't support {Enum.GetName(period)} as a period");
         }
 
         var yahooResponse = await PullDataFromYahoo(pricesPullerParameters, yahooPeriod, cancellationToken);
-        
+
         var candles = CreateCandlesFromYahoo(yahooResponse);
 
         if (cancellationToken.IsCancellationRequested)
@@ -49,7 +50,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
     public bool IsRelevant(PricesPullerParameters args)
     {
-        return m_RelevantPeriods.ContainsKey(args.Period) && args.EndTime - args.StartTime < TimeSpan.FromDays(7);
+        return m_RelevantPeriods.ContainsKey(args.Period);
     }
 
     private FinanceCandleStick[] CreateCandlesFromYahoo(YahooResponse yahooResponse)

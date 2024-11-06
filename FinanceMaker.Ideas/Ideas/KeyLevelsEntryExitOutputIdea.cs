@@ -9,6 +9,7 @@ using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Ideas.Ideas.Abstracts;
+using FinanceMaker.Pullers.TickerPullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
 
 
@@ -26,7 +27,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
 
     public override IdeaTypes Type => IdeaTypes.EntryExit;
 
-    public KeyLevelsEntryExitOutputIdea(IParamtizedTickersPuller puller,
+    public KeyLevelsEntryExitOutputIdea(MainTickersPuller puller,
                                         RangeAlgorithmsRunner algoRunner)
     {
         m_Puller = puller;
@@ -55,7 +56,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             var keyLevelRunner = m_AlgoRunner.Resolve(algoInput);
             var keyLevels = await keyLevelRunner.Run(algoInput, cancellationToken);
 
-            if (keyLevels is not IEnumerable<EMACandleStick> candleSticks) continue;
+            if (keyLevels is not KeyLevelCandleSticks candleSticks) continue;
 
             // For now let's keep it simple and will just use one keyLevel with a presentage of 2%
             var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 2,
@@ -73,7 +74,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
 
     protected virtual EntryExitOutputIdea CreateSingleIdea(
         string ticker,
-        IEnumerable<KeyLevelCandleStick> candleSticks,
+        IEnumerable<EMACandleStick> candleSticks,
         IEnumerable<double> closestKeyLevels)
     {
 

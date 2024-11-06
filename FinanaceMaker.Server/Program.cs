@@ -2,8 +2,11 @@
 using FinanaceMaker.Server;
 using FinanaceMaker.Server.Middlewares;
 using FinanceMaker.Algorithms;
+using FinanceMaker.Algorithms.News.Analyziers;
+using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
@@ -16,42 +19,55 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 var services = builder.Services;
 services.AddHttpClient();
+// Can't use the extension (the service collection becomes read only after the build)
+services.AddSingleton<FinvizTickersPuller>();
 services.AddSingleton(sp => new IParamtizedTickersPuller[]
 {
-    sp.AddAndGetService<FinvizTickersPuller>(services)
+    sp.GetService<FinvizTickersPuller>()
 });
 services.AddSingleton(sp => Array.Empty<ITickerPuller>());
 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
 services.AddSingleton<MainTickersPuller>();
 
+services.AddSingleton<YahooPricesPuller>();
+services.AddSingleton<YahooInterdayPricesPuller>();
+
 services.AddSingleton(sp => new IPricesPuller[]
 {
-    sp.AddAndGetService<YahooPricesPuller>(services),
-    sp.AddAndGetService<YahooInterdayPricesPuller>(services),
+    // sp.GetService<YahooPricesPuller>(),
+    sp.GetService<YahooInterdayPricesPuller>(),
 
 });
-services.AddSingleton<MainPricesPuller>();
+services.AddSingleton<IPricesPuller, MainPricesPuller>();
+services.AddSingleton<GoogleNewsPuller>();
+services.AddSingleton<YahooFinanceNewsPuller>();
 services.AddSingleton(sp => new INewsPuller[]
 {
-    sp.AddAndGetService<GoogleNewsPuller>(services),
-    sp.AddAndGetService<YahooFinanceNewsPuller>(services),
+    sp.GetService<GoogleNewsPuller>(),
+    sp.GetService<YahooFinanceNewsPuller>(),
 
 });
 
+services.AddSingleton<KeyLevelsRunner>();
+services.AddSingleton<EMARunner>();
+services.AddSingleton<BreakOutDetectionRunner>();
+
 services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
-    sp => 
+    sp =>
     {
-        var runner1 = sp.AddAndGetService<EMARunner>(services);
-        var runner2 = sp.AddAndGetService<BreakOutDetectionRunner>(services);
-        var runner3 = sp.AddAndGetService<KeyLevelsRunner>(services);
-        
-        
+        var runner3 = sp.GetService<KeyLevelsRunner>();
+        var runner1 = sp.GetService<EMARunner>();
+        var runner2 = sp.GetService<BreakOutDetectionRunner>();
+
+
         return [runner1, runner2, runner3];
     }
 );
- 
+
 services.AddSingleton<RangeAlgorithmsRunner>();
-services.AddSingleton<MainNewsPuller>();
+services.AddSingleton<INewsPuller, MainNewsPuller>();
+services.AddSingleton<KeywordsDetectorAnalysed>();
+services.AddSingleton<OverNightBreakout>();
 
 builder.Services.AddCors(options =>
 {

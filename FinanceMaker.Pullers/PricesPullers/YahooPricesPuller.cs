@@ -7,8 +7,8 @@ using YahooPeriod = YahooFinanceApi.Period;
 
 namespace FinanceMaker.Pullers.PricesPullers
 {
-    public class YahooPricesPuller: IPricesPuller
-	{
+    public class YahooPricesPuller : IPricesPuller
+    {
         private readonly IDictionary<Period, YahooPeriod> m_PeriodToPeriod;
 
         public YahooPricesPuller()
@@ -26,15 +26,14 @@ namespace FinanceMaker.Pullers.PricesPullers
                                                                            CancellationToken cancellationToken)
         {
             var period = pricesPullerParameters.Period;
-            
+            var endDate = pricesPullerParameters.EndTime.Subtract(TimeSpan.FromDays(1));
             if (!m_PeriodToPeriod.TryGetValue(period, out YahooPeriod yahooPeriod))
             {
                 throw new NotImplementedException($"Yahoo api doesn't support {Enum.GetName(period)} as a period");
             }
+            var historicalData = await Yahoo.GetHistoricalAsync(pricesPullerParameters.Ticker, pricesPullerParameters.StartTime, endDate, yahooPeriod, cancellationToken);
 
-            var historicalData = await Yahoo.GetHistoricalAsync(pricesPullerParameters.Ticker, pricesPullerParameters.StartTime, pricesPullerParameters.EndTime, yahooPeriod, cancellationToken);
-
-            var tickerCandles = historicalData.Select(data => new FinanceCandleStick(data.DateTime, data.Open, data.Close, data.High, data.Low, data.Volume))
+            var tickerCandles = historicalData.Select(data => new FinanceCandleStick(data.DateTime, (float)data.Open, (float)data.Close, (float)data.High, (float)data.Low, (int)data.Volume))
                                               .ToArray();
 
             return tickerCandles;

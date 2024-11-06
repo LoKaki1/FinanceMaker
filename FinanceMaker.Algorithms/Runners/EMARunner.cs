@@ -5,7 +5,7 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
 
-public sealed class EMARunner : TickerRangeAlgorithmRunnerBase<EMACandleStick>
+public sealed class EMARunner : TickerRangeAlgorithmRunnerBase<IEnumerable<EMACandleStick>>
 {
     private readonly int m_Period;
     public override Algorithm Algorithm => Algorithm.EMA;

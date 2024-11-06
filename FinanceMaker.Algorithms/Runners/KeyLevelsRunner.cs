@@ -7,7 +7,7 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 namespace FinanceMaker.Algorithms;
 
 public sealed class KeyLevelsRunner :
-    TickerRangeAlgorithmRunnerBase<EMACandleStick>
+    TickerRangeAlgorithmRunnerBase<KeyLevelCandleSticks>
 {
     private int m_Neighbors;
     private float m_Epsilon;
@@ -20,15 +20,16 @@ public sealed class KeyLevelsRunner :
 
     public override Algorithm Algorithm => Algorithm.KeyLevels;
 
-    public override Task<IEnumerable<EMACandleStick>> Run(IEnumerable<FinanceCandleStick> input, CancellationToken cancellationToken)
+    public override Task<KeyLevelCandleSticks> Run(IEnumerable<FinanceCandleStick> input,
+                                                   CancellationToken cancellationToken)
     {
         var count = input.GetNonEnumeratedCount();
         var candlesArr = input.ToArray();
         var pivots = new Pivot[count];
-        var levels = new List<double>();
+        var levels = new List<float>();
         var emaCandles = new EMACandleStick[count];
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -40,12 +41,12 @@ public sealed class KeyLevelsRunner :
 
             if (pivot == Pivot.High)
             {
-                levels.Add((double)candlesArr[i].High);
+                levels.Add((float)candlesArr[i].High);
             }
 
             if (pivot == Pivot.Low)
             {
-                levels.Add((double)candlesArr[i].Low);
+                levels.Add((float)candlesArr[i].Low);
             }
 
             emaCandles[i] = new(candlesArr[i], 0)
@@ -54,7 +55,7 @@ public sealed class KeyLevelsRunner :
             };
         }
         // We need to return it some how I don't know why
-        List<double> distinctedLevels = [];
+        List<float> distinctedLevels = [];
         var epsilon = m_Epsilon;
 
         for (int i = 0; i < levels.Count; i++)
@@ -64,8 +65,8 @@ public sealed class KeyLevelsRunner :
                 distinctedLevels.Add(levels[i]);
             }
         }
-
-        return Task.FromResult((IEnumerable<EMACandleStick>)emaCandles);
+        return Task.FromResult(new KeyLevelCandleSticks(emaCandles, distinctedLevels));
+        // return Task.FromResult((IEnumerable<EMACandleStick>)emaCandles);
     }
 
     /// <summary>

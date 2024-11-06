@@ -2,8 +2,19 @@
 // using FinanceMaker.Common.Models.Finance.Enums;
 // using QuantConnect;
 
-// namespace FinanceMaker.Common.Models.Finance;
+namespace FinanceMaker.Common.Models.Finance;
 
+public class KeyLevelCandleSticks : List<EMACandleStick>
+{
+    public float[] KeyLevels { get; set; }
+
+    public KeyLevelCandleSticks(IEnumerable<EMACandleStick> eMACandleSticks,
+                                IEnumerable<float> keyLevels)
+        : base(eMACandleSticks)
+    {
+        KeyLevels = keyLevels.ToArray();
+    }
+}
 // // public class KeyLevelCandleStick : FinanceCandleStick
 // {
 //     public decimal KeyLevel { get; set; }

@@ -6,7 +6,8 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;
 
-public class BreakOutDetectionRunner : TickerRangeAlgorithmRunnerBase<EMACandleStick>
+public class BreakOutDetectionRunner :
+ TickerRangeAlgorithmRunnerBase<IEnumerable<EMACandleStick>>
 {
     private readonly int m_BackCandles;
     private readonly int m_Window;
