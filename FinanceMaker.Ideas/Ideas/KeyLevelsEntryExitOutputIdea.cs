@@ -59,7 +59,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             if (keyLevels is not KeyLevelCandleSticks candleSticks) continue;
 
             // For now let's keep it simple and will just use one keyLevel with a presentage of 2%
-            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 2,
+            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 1,
                                                                                numberOfKeyLevels: 1);
 
             if (closestKeyLevels.NullOrEmpty()) continue;
@@ -78,6 +78,10 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         IEnumerable<double> closestKeyLevels)
     {
 
+        if (candleSticks is not KeyLevelCandleSticks keyLevelsCandles)
+        {
+            throw new ArgumentException(nameof(candleSticks));
+        }
         var current = candleSticks.Last();
         var entryPrice = closestKeyLevels.First();
         // Probably I will change this for something better but for now lets take like 3 %
@@ -88,13 +92,17 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
 
         if ((double)current.Close <= entryPrice)
         {
-            exitPrice = (float)(entryPrice * 0.97);
-            stopLoss = (float)(entryPrice * 1.02);
+            // exitPrice = candleSticks.Where(m => m.Pivot)
+            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ - entryPrice * 0.97 > 0)
+                                                          .Min(_ => _ - entryPrice * 0.97);
+            stopLoss = (float)(entryPrice * 1.03);
+
         }
         else
         {
-            exitPrice = (float)(entryPrice * 1.03);
-            stopLoss = (float)(entryPrice * 0.98);
+            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ - entryPrice * 1.03 > 0)
+                                                         .Min(_ => _ - entryPrice * 1.03);
+            stopLoss = (float)(entryPrice * 0.97);
         }
 
         return new EntryExitOutputIdea($"We enter at: {entryPrice} we will take profit at: {exitPrice} but we are ready to loose at {stopLoss}",

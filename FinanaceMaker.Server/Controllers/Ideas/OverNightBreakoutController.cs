@@ -32,8 +32,8 @@ namespace FinanaceMaker.Server.Controllers.Ideas
                     MaxPrice = 40,
                     MaxAvarageVolume = 1_000_000_000,
                     MinAvarageVolume = 1_000_000,
-                    MinPresentageOfChange = 10,
-                    MaxPresentageOfChange = 30
+                    MinPresentageOfChange = 5,
+                    MaxPresentageOfChange = 20
                 }
             };
 
