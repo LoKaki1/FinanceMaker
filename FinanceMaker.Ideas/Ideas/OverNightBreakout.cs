@@ -26,13 +26,13 @@ public class OverNightBreakout : KeyLevelsEntryExitOutputIdea<TechnicalIDeaInput
         var from = DateTime.Now.Subtract(TimeSpan.FromDays(1));
         var to = DateTime.Now;
 
-        // foreach (var idea in ideas)
-        // {
-        //     var data = new NewsAnalyzerInput(idea.Ticker, from, to, []);
-        //     var analysed = await m_Analyzer.AnalyzeNews(data, cancellationToken);
-        //     idea.Analyzed = analysed.ToArray();
+        foreach (var idea in ideas)
+        {
+            var data = new NewsAnalyzerInput(idea.Ticker, from, to, []);
+            var analysed = await m_Analyzer.AnalyzeNews(data, cancellationToken);
+            idea.Analyzed = analysed.ToArray();
 
-        // }
+        }
 
         return ideas;
     }

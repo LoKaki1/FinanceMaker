@@ -65,6 +65,9 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             if (closestKeyLevels.NullOrEmpty()) continue;
 
             var idea = CreateSingleIdea(ticker, candleSticks, closestKeyLevels);
+
+            if (idea.IsEmpty()) continue;
+
             ideas.Add(idea);
         }
 
@@ -80,7 +83,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
 
         if (candleSticks is not KeyLevelCandleSticks keyLevelsCandles)
         {
-            throw new ArgumentException(nameof(candleSticks));
+            return EntryExitOutputIdea.Empy;
         }
         var current = candleSticks.Last();
         var entryPrice = closestKeyLevels.First();
@@ -103,6 +106,11 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ - entryPrice * 1.03 > 0)
                                                          .Min(_ => _ - entryPrice * 1.03);
             stopLoss = (float)(entryPrice * 0.97);
+        }
+        // No good levels were found to trade 
+        if (exitPrice == 0 || stopLoss == 0)
+        {
+            return EntryExitOutputIdea.Empy;
         }
 
         return new EntryExitOutputIdea($"We enter at: {entryPrice} we will take profit at: {exitPrice} but we are ready to loose at {stopLoss}",

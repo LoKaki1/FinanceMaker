@@ -66,7 +66,11 @@ services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
 
 services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<INewsPuller, MainNewsPuller>();
-services.AddSingleton<INewsAnalyzer, KeywordsDetectorAnalysed>();
+services.AddSingleton<KeywordsDetectorAnalysed>();
+services.AddSingleton<INewsAnalyzer[]>(sp => [
+    sp.GetService<KeywordsDetectorAnalysed>()
+]);
+services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
 services.AddSingleton<OverNightBreakout>();
 
 builder.Services.AddCors(options =>
