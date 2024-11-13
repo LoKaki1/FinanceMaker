@@ -7,7 +7,7 @@ namespace FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 public class EntryExitOutputIdea : GeneralOutputIdea
 {
     public static EntryExitOutputIdea Empy
-        = new EntryExitOutputIdea(string.Empty,
+        => new EntryExitOutputIdea(string.Empty,
             string.Empty,
             0,
             0,

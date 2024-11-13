@@ -96,8 +96,8 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         if ((double)current.Close <= entryPrice)
         {
             // exitPrice = candleSticks.Where(m => m.Pivot)
-            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ != entryPrice && _ - entryPrice * 0.97 > 0)
-                                                          .MinBy(_ => _ - entryPrice * 0.97);
+            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ != entryPrice && _ - entryPrice * 0.97 <= 0)
+                                                          .MaxBy(_ => _ - entryPrice * 0.97);
             stopLoss = (float)(entryPrice * 1.03);
 
         }
