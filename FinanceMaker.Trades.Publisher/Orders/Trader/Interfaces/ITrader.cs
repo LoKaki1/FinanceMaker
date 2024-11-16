@@ -1,7 +1,7 @@
 using System;
-using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
+using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
 
 namespace FinanceMaker.Publisher.Orders.Trader.Interfaces;
 

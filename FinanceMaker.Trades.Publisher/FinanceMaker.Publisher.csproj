@@ -18,6 +18,7 @@
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
     <PackageReference Include="Alpaca.Markets" Version="7.1.0" />
     <PackageReference Include="Alpaca.Markets.Extensions" Version="7.1.0" />
   </ItemGroup>

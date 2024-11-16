@@ -22,6 +22,7 @@ public interface ITrade
     /// <value></value>
     GeneralOutputIdea Idea { get; }
 
+    Guid TradeId { get; }
     /// <summary>
     /// Cancel the trade, close all its open opsitions and cancelling its continuation
     /// </summary>

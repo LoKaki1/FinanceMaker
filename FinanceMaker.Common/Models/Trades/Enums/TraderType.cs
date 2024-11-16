@@ -4,7 +4,7 @@ namespace FinanceMaker.Common.Models.Trades.Enums;
 public enum TraderType
 {
     EntryExit = 0,
-    ProfitStopLoss = 1,
+    StopLoss = 1,
     Market = 2,
     Dynamic = 4
 }

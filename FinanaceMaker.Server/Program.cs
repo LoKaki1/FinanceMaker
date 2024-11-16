@@ -7,6 +7,8 @@ using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Ideas.Ideas;
+using FinanceMaker.Publisher.Orders.Trader;
+using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
@@ -72,7 +74,7 @@ services.AddSingleton<INewsAnalyzer[]>(sp => [
 ]);
 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
 services.AddSingleton<OverNightBreakout>();
-
+services.AddSingleton<ITrader, AlpacaTrader>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
