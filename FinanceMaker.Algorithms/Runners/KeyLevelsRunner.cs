@@ -15,7 +15,7 @@ public sealed class KeyLevelsRunner :
     public KeyLevelsRunner(IPricesPuller pricesPuller) : base(pricesPuller)
     {
         m_Neighbors = 10;
-        m_Epsilon = 0.1f;
+        m_Epsilon = 0.005f;
     }
 
     public override Algorithm Algorithm => Algorithm.KeyLevels;

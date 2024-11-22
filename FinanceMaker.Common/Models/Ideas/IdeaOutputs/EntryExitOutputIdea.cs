@@ -11,22 +11,26 @@ public class EntryExitOutputIdea : GeneralOutputIdea
             string.Empty,
             0,
             0,
+            0,
             0);
     public float Entry { get; set; }
     public float Exit { get; set; }
     public float Stoploss { get; set; }
+    public int Quantity { get; set; }
     public IdeaTradeType Trade => Exit > Entry ? IdeaTradeType.Long : IdeaTradeType.Short;
     public NewsAnalyzed[] Analyzed { get; set; }
     public EntryExitOutputIdea(string description,
                                string ticker,
                                float entry,
                                float exit,
-                               float stoploss) : base(description, ticker)
+                               float stoploss,
+                               int quantity = 0) : base(description, ticker)
     {
         Entry = entry;
         Exit = exit;
         Stoploss = stoploss;
         Analyzed = [];
+        Quantity = quantity;
     }
 
     public bool IsEmpty()

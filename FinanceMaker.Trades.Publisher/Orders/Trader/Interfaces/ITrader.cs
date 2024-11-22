@@ -1,6 +1,7 @@
 using System;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
+using FinanceMaker.Common.Models.Trades.Trader;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
 
 namespace FinanceMaker.Publisher.Orders.Trader.Interfaces;
@@ -22,4 +23,5 @@ public interface ITrader
     /// <param name="cancellationToken">Cancel the initialize</param>
     /// <returns>Trade which related to this trade</returns>
     Task<ITrade> Trade(GeneralOutputIdea idea, CancellationToken cancellationToken);
+    Task<Position> GetClientPosition(CancellationToken cancellationToken);
 }

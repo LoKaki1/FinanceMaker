@@ -56,15 +56,22 @@ namespace FinanaceMaker.Server.Controllers.Trading
 
             result.AddRange(result2);
 
-            var trades = new List<Task<ITrade>>();
+            var tradesResult = new List<ITrade>();
+            var position = await m_Trader.GetClientPosition(cancellationToken);
+
+            var moneyForEachTrade = position.BuyingPower / result.Count;
+
             foreach (var idea in result)
             {
-                var trade = m_Trader.Trade(idea, cancellationToken);
+                if (idea is EntryExitOutputIdea entryExitOutputIdea)
+                {
+                    entryExitOutputIdea.Quantity = (int)(moneyForEachTrade / entryExitOutputIdea.Entry);
+                }
+                var trade = await m_Trader.Trade(idea, cancellationToken);
 
-                trades.Add(trade);
+                tradesResult.Add(trade);
             }
 
-            var tradesResult = await Task.WhenAll(trades);
 
             return tradesResult;
         }

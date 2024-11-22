@@ -7,18 +7,19 @@ namespace FinanceMaker.Publisher.Extensions;
 
 public static class AlpacaExtensions
 {
-    public static NewOrderRequest ConvertToAlpacaRequest(this EntryExitOutputIdea idea, int quantity)
+    public static NewOrderRequest ConvertToAlpacaRequest(this EntryExitOutputIdea idea)
     {
         var orderSide = idea.Trade == IdeaTradeType.Long ? OrderSide.Buy : OrderSide.Sell;
         var request = new NewOrderRequest(idea.Ticker,
-                                           quantity,
+                                           idea.Quantity,
                                            orderSide,
                                            OrderType.Limit,
                                            TimeInForce.Gtc)
         {
-            LimitPrice = (decimal)idea.Entry,
-            TakeProfitLimitPrice = (decimal)idea.Exit,
-            StopLossLimitPrice = (decimal)idea.Stoploss,
+            LimitPrice = (decimal)Math.Round(idea.Entry, 2),
+            TakeProfitLimitPrice = (decimal)Math.Round(idea.Exit, 2),
+            OrderClass = OrderClass.Bracket,
+            StopLossStopPrice = (decimal)Math.Round(idea.Stoploss, 2),
         };
 
         return request;

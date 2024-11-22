@@ -33,7 +33,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         m_Puller = puller;
         m_AlgoRunner = algoRunner;
         m_PricesPullerParams = (ticker) => new PricesPullerParameters(ticker,
-                                                                      DateTime.Now.AddYears(-2),
+                                                                      DateTime.Now.AddYears(-5),
                                                                       DateTime.Now,
                                                                       Period.Daily);
     }
@@ -59,7 +59,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
             if (keyLevels is not KeyLevelCandleSticks candleSticks) continue;
 
             // For now let's keep it simple and will just use one keyLevel with a presentage of 2%
-            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 1,
+            var (closestKeyLevels, _) = candleSticks.GetClosestToLastKeyLevels(maxPresentage: 2,
                                                                                numberOfKeyLevels: 1);
 
             if (closestKeyLevels.NullOrEmpty()) continue;

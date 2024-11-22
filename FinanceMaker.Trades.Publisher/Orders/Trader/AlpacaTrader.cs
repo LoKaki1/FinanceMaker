@@ -2,6 +2,7 @@ using System;
 using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
+using FinanceMaker.Common.Models.Trades.Trader;
 using FinanceMaker.Publisher.Extensions;
 using FinanceMaker.Publisher.Orders.Trader.Abstracts;
 using FinanceMaker.Publisher.Orders.Trades;
@@ -27,7 +28,7 @@ public class AlpacaTrader : TraderBase<EntryExitOutputIdea>
     }
     protected override async Task<ITrade> TradeInternal(EntryExitOutputIdea idea, CancellationToken cancellationToken)
     {
-        var request = idea.ConvertToAlpacaRequest(1000);
+        var request = idea.ConvertToAlpacaRequest();
 
         var order = await m_Client.PostOrderAsync(request, cancellationToken);
         var trade = new Trade(idea, order.OrderId, true);
@@ -46,5 +47,19 @@ public class AlpacaTrader : TraderBase<EntryExitOutputIdea>
         await trade.Cancel(cancellationToken);
 
         await m_Client.CancelOrderAsync(trade.TradeId, cancellationToken);
+    }
+
+    public override async Task<Position> GetClientPosition(CancellationToken cancellationToken)
+    {
+        var accountData = await m_Client.GetAccountAsync(cancellationToken);
+
+#pragma warning disable CS8629 // Nullable value type may be null.
+        var poposition = new Position()
+        {
+            BuyingPower = (float)accountData.BuyingPower,
+        };
+#pragma warning restore CS8629 // Nullable value type may be null.
+
+        return poposition;
     }
 }
