@@ -93,20 +93,25 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         var exitPrice = 0f;
         var stopLoss = 0f;
 
-        if ((double)current.Close <= entryPrice)
+        Func<float, bool> findKeyLevelDel
+                = (double)current.Close <= entryPrice ?
+                    _ => _ != entryPrice && _ - entryPrice * 0.97 <= 0 :
+                     _ => _ != entryPrice && _ - entryPrice * 1.03 > 0;
+        Func<IEnumerable<float>, float> mostRelevant = _ =>
         {
-            // exitPrice = candleSticks.Where(m => m.Pivot)
-            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ != entryPrice && _ - entryPrice * 0.97 <= 0)
-                                                          .MaxBy(_ => _ - entryPrice * 0.97);
-            stopLoss = (float)(entryPrice * 1.03);
+            if (_.GetNonEnumeratedCount() == 0)
+            {
+                return 0;
+            }
 
-        }
-        else
-        {
-            exitPrice = (float)keyLevelsCandles.KeyLevels.Where(_ => _ != entryPrice && _ - entryPrice * 1.03 > 0)
-                                                         .MinBy(_ => _ - entryPrice * 1.03);
-            stopLoss = (float)(entryPrice * 0.97);
-        }
+            return current.Close <= entryPrice
+                    ? _.MaxBy(_ => _ - entryPrice * 0.97)
+                    : _.MinBy(_ => _ - entryPrice * 1.03);
+        };
+        exitPrice = mostRelevant.Invoke(keyLevelsCandles.KeyLevels.Where(findKeyLevelDel));
+
+        stopLoss = current.Close <= entryPrice ? (float)(entryPrice * 1.03) : (float)(entryPrice * 0.97);
+
         // No good levels were found to trade 
         if (exitPrice == 0 || stopLoss == 0)
         {

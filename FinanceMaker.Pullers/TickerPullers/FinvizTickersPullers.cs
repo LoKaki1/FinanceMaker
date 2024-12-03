@@ -7,8 +7,8 @@ using QuantConnect;
 
 namespace FinanceMaker.Pullers.TickerPullers
 {
-	public sealed class FinvizTickersPuller: IParamtizedTickersPuller
-	{
+    public sealed class FinvizTickersPuller : IParamtizedTickersPuller
+    {
         private readonly IHttpClientFactory m_RequestService;
         private readonly string m_FinvizUrl;
         private readonly string m_FinvizStartSperator;
@@ -55,9 +55,14 @@ namespace FinanceMaker.Pullers.TickerPullers
             var minAverageVolume = scannerParams.MinAvarageVolume;
             var minPresentOfChange = scannerParams.MinPresentageOfChange;
             var maxPresentageOfChange = scannerParams.MaxPresentageOfChange;
+            var minVolume = scannerParams.MinVolume;
+            var maxVolume = scannerParams.MaxVolume;
             //&f = sh_avgvol_100to1000,sh_price_u10,ta_change_u20,targetprice_a30 &
-            var finvizParams = $"&f=sh_avgvol_{minAverageVolume / 1000}to{maxAverageVolume / 1000}," +
-                $"sh_price_{minPrice}to{maxPrice},ta_change_{minPresentOfChange}to{maxPresentageOfChange}&ft=4";
+            var finvizParams
+            = $"&f=sh_avgvol_{minAverageVolume / 1000}to{maxAverageVolume / 1000}," +
+                $"sh_price_{minPrice}to{maxPrice},ta_change_{minPresentOfChange}to{maxPresentageOfChange}," +
+                $"sh_curvol_o{minVolume / 1000}to{maxVolume / 1000}"
+                + "&ft=4";
 
             return finvizParams;
         }

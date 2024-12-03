@@ -32,6 +32,8 @@ namespace FinanaceMaker.Server.Controllers.Trading
                     MaxPrice = 40,
                     MaxAvarageVolume = 1_000_000_000,
                     MinAvarageVolume = 1_000_000,
+                    MinVolume = 3_000_000,
+                    MaxVolume = 3_000_000_000,
                     MinPresentageOfChange = 5,
                     MaxPresentageOfChange = 120
                 }
@@ -48,6 +50,8 @@ namespace FinanaceMaker.Server.Controllers.Trading
                     MaxPrice = 40,
                     MaxAvarageVolume = 1_000_000_000,
                     MinAvarageVolume = 1_000_000,
+                    MinVolume = 3_000_000,
+                    MaxVolume = 3_000_000_000,
                     MinPresentageOfChange = -5,
                     MaxPresentageOfChange = -40
                 }
