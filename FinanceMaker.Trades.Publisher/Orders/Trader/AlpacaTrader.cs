@@ -1,4 +1,5 @@
 using System;
+using Accord;
 using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
@@ -52,13 +53,14 @@ public class AlpacaTrader : TraderBase<EntryExitOutputIdea>
     public override async Task<Position> GetClientPosition(CancellationToken cancellationToken)
     {
         var accountData = await m_Client.GetAccountAsync(cancellationToken);
+        var accountPosition = await m_Client.ListPositionsAsync(cancellationToken);
+        float buyingPower = accountData.BuyingPower is null ? 0f : (float)accountData.BuyingPower.Value;
 
-#pragma warning disable CS8629 // Nullable value type may be null.
         var poposition = new Position()
         {
-            BuyingPower = (float)accountData.BuyingPower,
+            BuyingPower = buyingPower,
+            OpenedPositions = accountPosition.Select(_ => _.Symbol).ToArray()
         };
-#pragma warning restore CS8629 // Nullable value type may be null.
 
         return poposition;
     }

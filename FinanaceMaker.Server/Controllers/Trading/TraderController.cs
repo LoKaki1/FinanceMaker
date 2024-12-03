@@ -22,7 +22,30 @@ namespace FinanaceMaker.Server.Controllers.Trading
         }
 
         [HttpGet]
-        public async Task<IEnumerable<ITrade>> TradeOvernight(CancellationToken cancellationToken)
+        public Task<IEnumerable<ITrade>> TradeOvernight(CancellationToken cancellationToken)
+        {
+            return ShouldMoveToAnotherClass(cancellationToken);
+        }
+        [HttpGet]
+        public bool TradeOvernightForHours(CancellationToken cancellationToken)
+        {
+            var timer = new System.Timers.Timer(TimeSpan.FromHours(1));
+
+            timer.Elapsed += async (sender, e) =>
+            {
+                var now = DateTime.Now;
+                if (now.TimeOfDay.Hours >= 11 && now.TimeOfDay.Hours <= 23)
+                {
+                    await ShouldMoveToAnotherClass(cancellationToken);
+
+                }
+            };
+
+            timer.Start();
+
+            return true;
+        }
+        private async Task<IEnumerable<ITrade>> ShouldMoveToAnotherClass(CancellationToken cancellationToken)
         {
             TechnicalIDeaInput input = new TechnicalIDeaInput()
             {
@@ -62,10 +85,10 @@ namespace FinanaceMaker.Server.Controllers.Trading
 
             var tradesResult = new List<ITrade>();
             var position = await m_Trader.GetClientPosition(cancellationToken);
-
+            var openedPositoins = position.OpenedPositions;
             var moneyForEachTrade = position.BuyingPower / result.Count;
-
-            foreach (var idea in result)
+            var actualResult = result.Where(_ => openedPositoins.Contains(_.Ticker));
+            foreach (var idea in actualResult)
             {
                 if (idea is EntryExitOutputIdea entryExitOutputIdea)
                 {
@@ -75,8 +98,6 @@ namespace FinanaceMaker.Server.Controllers.Trading
 
                 tradesResult.Add(trade);
             }
-
-
             return tradesResult;
         }
     }

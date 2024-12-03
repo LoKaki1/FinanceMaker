@@ -8,4 +8,5 @@ namespace FinanceMaker.Common.Models.Trades.Trader;
 public class Position
 {
     public float BuyingPower { get; set; }
+    public required IEnumerable<string> OpenedPositions { get; set; }
 }
