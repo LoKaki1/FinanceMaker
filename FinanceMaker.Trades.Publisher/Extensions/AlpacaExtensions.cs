@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
@@ -14,12 +14,13 @@ public static class AlpacaExtensions
                                            idea.Quantity,
                                            orderSide,
                                            OrderType.Limit,
-                                           TimeInForce.Gtc)
+                                           TimeInForce.Day)
         {
             LimitPrice = (decimal)Math.Round(idea.Entry, 2),
             TakeProfitLimitPrice = (decimal)Math.Round(idea.Exit, 2),
             OrderClass = OrderClass.Bracket,
             StopLossStopPrice = (decimal)Math.Round(idea.Stoploss, 2),
+            ExtendedHours = true
         };
 
         return request;

@@ -15,4 +15,9 @@ public record RangeAlgorithmInput : PricesPullerParameters
     {
         Algorithm = algorithm;
     }
+
+    public RangeAlgorithmInput() : base()
+    {
+
+    }
 }

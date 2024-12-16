@@ -17,4 +17,7 @@ public record PricesPullerParameters
         Period = period;
     }
 
+    public PricesPullerParameters()
+    {
+    }
 }

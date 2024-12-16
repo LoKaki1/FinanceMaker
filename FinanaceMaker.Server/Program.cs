@@ -85,7 +85,8 @@ builder.Services.AddCors(options =>
                                 .AllowAnyHeader();
                       });
 });
-
+builder.Services.ConfigureHttpJsonOptions(options => 
+options.SerializerOptions.PropertyNameCaseInsensitive = false);
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

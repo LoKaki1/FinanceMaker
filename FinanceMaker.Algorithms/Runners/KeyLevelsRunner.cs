@@ -65,7 +65,8 @@ public sealed class KeyLevelsRunner :
                 distinctedLevels.Add(levels[i]);
             }
         }
-        return Task.FromResult(new KeyLevelCandleSticks(emaCandles, distinctedLevels));
+        var reuslt = new KeyLevelCandleSticks(emaCandles, distinctedLevels);
+        return Task.FromResult(reuslt);
         // return Task.FromResult((IEnumerable<EMACandleStick>)emaCandles);
     }
 

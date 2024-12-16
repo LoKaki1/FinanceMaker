@@ -1,6 +1,4 @@
-using System;
-using Accord;
-using Alpaca.Markets;
+﻿using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
 using FinanceMaker.Common.Models.Trades.Trader;
@@ -54,12 +52,20 @@ public class AlpacaTrader : TraderBase<EntryExitOutputIdea>
     {
         var accountData = await m_Client.GetAccountAsync(cancellationToken);
         var accountPosition = await m_Client.ListPositionsAsync(cancellationToken);
+        var accountOpenedOrders = await m_Client.ListOrdersAsync(new ListOrdersRequest(), cancellationToken);
         float buyingPower = accountData.BuyingPower is null ? 0f : (float)accountData.BuyingPower.Value;
 
         var poposition = new Position()
         {
             BuyingPower = buyingPower,
-            OpenedPositions = accountPosition.Select(_ => _.Symbol).ToArray()
+            OpenedPositions = accountPosition.Select(_ => _.Symbol).ToArray(),
+            Orders = accountOpenedOrders.Where(_ 
+            => _.OrderStatus.HasFlag(OrderStatus.New)
+            || _.OrderStatus.HasFlag(OrderStatus.PartialFill)
+            || _.OrderStatus.HasFlag(OrderStatus.PartiallyFilled)
+            || _.OrderStatus.HasFlag(OrderStatus.PendingNew)
+
+                ).Select(_ => _.Symbol).ToArray()
         };
 
         return poposition;

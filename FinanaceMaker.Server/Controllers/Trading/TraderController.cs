@@ -1,4 +1,4 @@
-using FinanceMaker.Common.Models.Ideas.IdeaInputs;
+﻿using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Ideas.Ideas;
@@ -26,9 +26,10 @@ namespace FinanaceMaker.Server.Controllers.Trading
         {
             return ShouldMoveToAnotherClass(cancellationToken);
         }
-        [HttpGet]
-        public bool TradeOvernightForHours(CancellationToken cancellationToken)
+        [HttpGet, Route(nameof(TradeOvernightForHours))]
+        public async Task<IEnumerable<ITrade>> TradeOvernightForHours(CancellationToken cancellationToken)
         {
+            var o = await ShouldMoveToAnotherClass(cancellationToken);
             var timer = new System.Timers.Timer(TimeSpan.FromHours(1));
 
             timer.Elapsed += async (sender, e) =>
@@ -43,7 +44,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
 
             timer.Start();
 
-            return true;
+            return o;
         }
         private async Task<IEnumerable<ITrade>> ShouldMoveToAnotherClass(CancellationToken cancellationToken)
         {
@@ -87,7 +88,8 @@ namespace FinanaceMaker.Server.Controllers.Trading
             var position = await m_Trader.GetClientPosition(cancellationToken);
             var openedPositoins = position.OpenedPositions;
             var moneyForEachTrade = position.BuyingPower / result.Count;
-            var actualResult = result.Where(_ => openedPositoins.Contains(_.Ticker));
+            var actualResult = result.Where(_ => !openedPositoins.Contains(_.Ticker) || !position.Orders.Contains(_.Ticker));
+            
             foreach (var idea in actualResult)
             {
                 if (idea is EntryExitOutputIdea entryExitOutputIdea)
