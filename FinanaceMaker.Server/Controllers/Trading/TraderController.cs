@@ -3,6 +3,7 @@ using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
+using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,12 @@ namespace FinanaceMaker.Server.Controllers.Trading
     public class TraderController : ControllerBase
     {
         private readonly OverNightBreakout m_Idea;
+        private readonly IBroker m_Broker;
         private readonly ITrader m_Trader;
-        public TraderController(OverNightBreakout ideal, ITrader trader)
+        public TraderController(OverNightBreakout ideal, IBroker broker, ITrader trader)
         {
             m_Idea = ideal;
+            m_Broker = broker;
             m_Trader = trader;
         }
 
@@ -35,7 +38,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
             timer.Elapsed += async (sender, e) =>
             {
                 var now = DateTime.Now;
-                if (now.TimeOfDay.Hours >= 11 && now.TimeOfDay.Hours <= 23)
+                if (now.TimeOfDay >= TimeSpan.FromHours(16)+ TimeSpan.FromMinutes(30) && now.TimeOfDay.Hours <= 23)
                 {
                     await ShouldMoveToAnotherClass(cancellationToken);
 
@@ -46,49 +49,35 @@ namespace FinanaceMaker.Server.Controllers.Trading
 
             return o;
         }
+        [HttpGet, Route(nameof(ActiveateTrader))]
+        public IActionResult ActiveateTrader(CancellationToken cancellation)
+        {
+            var trader = m_Trader.Trade(cancellation);
+
+            return Ok();
+        }
         private async Task<IEnumerable<ITrade>> ShouldMoveToAnotherClass(CancellationToken cancellationToken)
         {
-            TechnicalIDeaInput input = new TechnicalIDeaInput()
+            var input = new TechnicalIdeaInput()
             {
-                TechnicalParams = new TickersPullerParameters
-                {
-                    MinPrice = 5,
-                    MaxPrice = 40,
-                    MaxAvarageVolume = 1_000_000_000,
-                    MinAvarageVolume = 1_000_000,
-                    MinVolume = 3_000_000,
-                    MaxVolume = 3_000_000_000,
-                    MinPresentageOfChange = 5,
-                    MaxPresentageOfChange = 120
-                }
+                TechnicalParams = TickersPullerParameters.BestBuyer
             };
-
 
             var result = (await m_Idea.CreateIdea(input, cancellationToken)).ToList();
 
-            input = new TechnicalIDeaInput()
+            input = new TechnicalIdeaInput()
             {
-                TechnicalParams = new TickersPullerParameters
-                {
-                    MinPrice = 5,
-                    MaxPrice = 40,
-                    MaxAvarageVolume = 1_000_000_000,
-                    MinAvarageVolume = 1_000_000,
-                    MinVolume = 3_000_000,
-                    MaxVolume = 3_000_000_000,
-                    MinPresentageOfChange = -5,
-                    MaxPresentageOfChange = -40
-                }
+                TechnicalParams = TickersPullerParameters.BestSellers
             };
             var result2 = await m_Idea.CreateIdea(input, cancellationToken);
 
             result.AddRange(result2);
 
             var tradesResult = new List<ITrade>();
-            var position = await m_Trader.GetClientPosition(cancellationToken);
+            var position = await m_Broker.GetClientPosition(cancellationToken);
             var openedPositoins = position.OpenedPositions;
             var moneyForEachTrade = position.BuyingPower / result.Count;
-            var actualResult = result.Where(_ => !openedPositoins.Contains(_.Ticker) || !position.Orders.Contains(_.Ticker));
+            var actualResult = result;
             
             foreach (var idea in actualResult)
             {
@@ -96,7 +85,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
                 {
                     entryExitOutputIdea.Quantity = (int)(moneyForEachTrade / entryExitOutputIdea.Entry);
                 }
-                var trade = await m_Trader.Trade(idea, cancellationToken);
+                var trade = await m_Broker.Trade(idea, cancellationToken);
 
                 tradesResult.Add(trade);
             }

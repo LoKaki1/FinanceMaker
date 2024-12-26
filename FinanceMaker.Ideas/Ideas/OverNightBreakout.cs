@@ -8,7 +8,7 @@ using FinanceMaker.Pullers.TickerPullers;
 
 namespace FinanceMaker.Ideas.Ideas;
 
-public class OverNightBreakout : KeyLevelsEntryExitOutputIdea<TechnicalIDeaInput, EntryExitOutputIdea>
+public class OverNightBreakout : KeyLevelsEntryExitOutputIdea<TechnicalIdeaInput, EntryExitOutputIdea>
 {
     private readonly INewsAnalyzer m_Analyzer;
     public OverNightBreakout(MainTickersPuller puller, RangeAlgorithmsRunner algoRunner, INewsAnalyzer analyzer) : base(puller, algoRunner)
@@ -16,7 +16,7 @@ public class OverNightBreakout : KeyLevelsEntryExitOutputIdea<TechnicalIDeaInput
         m_Analyzer = analyzer;
     }
 
-    protected override async Task<IEnumerable<EntryExitOutputIdea>> CreateIdea(TechnicalIDeaInput input, CancellationToken cancellationToken)
+    protected override async Task<IEnumerable<EntryExitOutputIdea>> CreateIdea(TechnicalIdeaInput input, CancellationToken cancellationToken)
     {
         input.TechnicalParams.MaxPresentageOfChange = 100;
         input.TechnicalParams.MinPresentageOfChange = 4;

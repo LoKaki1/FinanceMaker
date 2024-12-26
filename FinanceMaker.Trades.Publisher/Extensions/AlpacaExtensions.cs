@@ -14,14 +14,28 @@ public static class AlpacaExtensions
                                            idea.Quantity,
                                            orderSide,
                                            OrderType.Limit,
+                                           
                                            TimeInForce.Day)
         {
             LimitPrice = (decimal)Math.Round(idea.Entry, 2),
             TakeProfitLimitPrice = (decimal)Math.Round(idea.Exit, 2),
             OrderClass = OrderClass.Bracket,
             StopLossStopPrice = (decimal)Math.Round(idea.Stoploss, 2),
-            ExtendedHours = true
         };
+
+        return request;
+    }
+
+    public static NewOrderRequest ConvertToAlpacaCancelTrade(this EntryExitOutputIdea idea)
+    {
+        // we want the opposite here
+        var orderSide = idea.Trade == IdeaTradeType.Long ? OrderSide.Sell : OrderSide.Buy;
+        var request = new NewOrderRequest(idea.Ticker,
+                                           idea.Quantity,
+                                           orderSide,
+                                           OrderType.Market,
+                                           TimeInForce.Day);
+      
 
         return request;
     }

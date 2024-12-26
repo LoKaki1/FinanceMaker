@@ -7,15 +7,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Protfolio\**" />
+    <Compile Remove="Trades\**" />
+    <EmbeddedResource Remove="Protfolio\**" />
+    <EmbeddedResource Remove="Trades\**" />
+    <None Remove="Protfolio\**" />
+    <None Remove="Trades\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Protfolio\" />
     <None Remove="Trades\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Protfolio\" />
-    <Folder Include="Trades\" />
-  </ItemGroup>
    <ItemGroup>
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
+    <ProjectReference Include="..\FinanceMaker.Ideas\FinanceMaker.Ideas.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />

@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Common.Models.Pullers.Enums;
+﻿using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.Enums;
 
 namespace FinanceMaker.Common;
 
@@ -16,8 +17,10 @@ public record PricesPullerParameters
         EndTime = endTime;
         Period = period;
     }
+    public PricesPullerParameters() { }
 
-    public PricesPullerParameters()
+    public static PricesPullerParameters GetTodayParams(string ticker)
     {
+        return new(ticker, DateTime.Now.Subtract(TimeSpan.FromDays(1)), DateTime.Now, Period.OneMinute);
     }
 }

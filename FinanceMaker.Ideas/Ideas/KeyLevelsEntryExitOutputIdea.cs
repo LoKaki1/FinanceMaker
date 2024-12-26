@@ -17,7 +17,7 @@ namespace FinanceMaker.Ideas.Ideas;
 
 public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
      IdeaBase<TInput, TOutput>
-     where TInput : TechnicalIDeaInput
+     where TInput : TechnicalIdeaInput
      where TOutput : EntryExitOutputIdea
 
 {

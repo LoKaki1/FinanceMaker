@@ -1,4 +1,4 @@
-using FinanceMaker.Common.Models.Ideas.IdeaInputs;
+﻿using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Ideas.Ideas;
@@ -24,7 +24,7 @@ namespace FinanaceMaker.Server.Controllers.Ideas
         [HttpGet]
         public async Task<IEnumerable<EntryExitOutputIdea>> Get(CancellationToken token)
         {
-            TechnicalIDeaInput input = new TechnicalIDeaInput()
+            TechnicalIdeaInput input = new TechnicalIdeaInput()
             {
                 TechnicalParams = new TickersPullerParameters
                 {

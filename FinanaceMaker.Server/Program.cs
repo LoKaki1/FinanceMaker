@@ -1,14 +1,16 @@
-﻿using System.Security.Policy;
-using FinanaceMaker.Server;
-using FinanaceMaker.Server.Middlewares;
+﻿using FinanaceMaker.Server.Middlewares;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common;
-using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Ideas.IdeaInputs;
+using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Ideas.Ideas;
+using FinanceMaker.Ideas.Ideas.Abstracts;
 using FinanceMaker.Publisher.Orders.Trader;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
+using FinanceMaker.Publisher.Traders;
+using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Pullers;
 using FinanceMaker.Pullers.NewsPullers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
@@ -73,8 +75,10 @@ services.AddSingleton<INewsAnalyzer[]>(sp => [
     sp.GetService<KeywordsDetectorAnalysed>()
 ]);
 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
+services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
 services.AddSingleton<OverNightBreakout>();
-services.AddSingleton<ITrader, AlpacaTrader>();
+services.AddSingleton<IBroker, AlpacaBroker>();
+services.AddSingleton<ITrader, BracketTrader>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
