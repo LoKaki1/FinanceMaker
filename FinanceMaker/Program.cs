@@ -167,23 +167,43 @@ Console.WriteLine("Hello, World!");
 // {
 //     Model = plotModel
 // };
-var finvizUrl = "https://finviz.com/screener.ashx?v=111&f=news_date_today&ft=4&ah_change_10to100";
+//var finvizUrl = "https://finviz.com/screener.ashx?v=111&f=news_date_today&ft=4&ah_change_10to100";
+//var httpClient = new HttpClient();
+//httpClient.AddBrowserUserAgent();
+
+//var finvizResult = await httpClient.GetAsync(finvizUrl);
+//if (!finvizResult.IsSuccessStatusCode)
+//{
+//    throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
+//}
+
+//var finvizHtml = await finvizResult.Content.ReadAsStringAsync();
+//var node = new HtmlDocument();
+//node.Load($"<tbody{finvizHtml.Split("<tbody>").Last().Split("</tbody>").First()}</tbody>");
+
+//var technicalFinviz = node.DocumentNode.SelectNodes("//*[contains(@id,\"ta_\"]")
+//                                       .Select(_ => _.Attributes["id"].Value.Split("ta_")
+//                                                                            .Last())
+//                                       .ToArray();
+
+var finvizeUrl = "https://finviz.com/news.ashx?v=3";
 var httpClient = new HttpClient();
 httpClient.AddBrowserUserAgent();
-
-var finvizResult = await httpClient.GetAsync(finvizUrl);
+var finvizResult = await httpClient.GetAsync(finvizeUrl);
 if (!finvizResult.IsSuccessStatusCode)
 {
     throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
 }
-
 var finvizHtml = await finvizResult.Content.ReadAsStringAsync();
 var node = new HtmlDocument();
-node.Load($"<tbody{finvizHtml.Split("<tbody>").Last().Split("</tbody>").First()}</tbody>");
 
-var technicalFinviz = node.DocumentNode.SelectNodes("//*[contains(@id,\"ta_\"]")
-                                       .Select(_ => _.Attributes["id"].Value.Split("ta_")
-                                                                            .Last())
-                                       .ToArray();
+node.LoadHtml(finvizHtml);
+var nodes = node.DocumentNode.SelectNodes("//tr[@class=\"styled-row is-hoverable is-bordered is-rounded is-border-top is-hover-borders has-color-text news_table-row\"]");
+var news = nodes.Select(_ => new string[]
+{
+                _.SelectInnerSingleNode("//a[@class=\"nn-tab-link\"]").Attributes["href"].Value,
+                _.SelectInnerSingleNode("//span[@class=\"select-none font-semibold\"]").InnerText,
+                _.SelectInnerSingleNode("//a[@class=\"nn-tab-link\"]").InnerText
+}).ToArray();
 
 Console.ReadLine();

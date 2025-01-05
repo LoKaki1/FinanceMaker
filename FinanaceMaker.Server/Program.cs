@@ -49,6 +49,7 @@ services.AddSingleton(sp => new INewsPuller[]
 {
     sp.GetService<GoogleNewsPuller>(),
     sp.GetService<YahooFinanceNewsPuller>(),
+    sp.GetService<FinvizNewPuller>(),
 
 });
 

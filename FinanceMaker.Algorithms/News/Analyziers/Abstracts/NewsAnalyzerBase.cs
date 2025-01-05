@@ -2,6 +2,7 @@
 using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
 using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms.News.Analyziers.Abstracts;
@@ -28,7 +29,7 @@ public abstract class NewsAnalyzerBase<TInput, TOutput> : INewsAnalyzer
         return newsAnalyzed;
     }
     protected abstract Task<IEnumerable<TOutput>> AnalyzeNews(TInput input, CancellationToken cancellationToken);
-    protected virtual TInput Parse(NewsPullerParameters newsAnalyzerInput, IEnumerable<string> urls)
+    protected virtual TInput Parse(NewsPullerParameters newsAnalyzerInput, IEnumerable<NewsResult> urls)
     {
         if (typeof(TInput) == typeof(NewsAnalyzerInput))
         {

@@ -1,25 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="PricesPullers\" />
-    <None Remove="PricesPullers\Interfaces\" />
-    <None Remove="TickerPullers\" />
-    <None Remove="TickerPullers\Interfaces\" />
-    <None Remove="NewsPullers\" />
-    <None Remove="NewsPullers\Interfaces\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="PricesPullers\" />
-    <Folder Include="PricesPullers\Interfaces\" />
-    <Folder Include="NewsPullers\" />
-    <Folder Include="NewsPullers\Interfaces\" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
   </ItemGroup>

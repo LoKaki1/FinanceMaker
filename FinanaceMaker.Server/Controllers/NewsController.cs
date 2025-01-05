@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Pullers.NewsPullers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,7 +22,7 @@ namespace FinanaceMaker.Server.Controllers
         }
 
         [HttpGet]
-        public Task<IEnumerable<string>> GetTickerNews([FromQuery] string ticker, CancellationToken cancellationToken)
+        public Task<IEnumerable<NewsResult>> GetTickerNews([FromQuery] string ticker, CancellationToken cancellationToken)
         {
             var newsParams = NewsPullerParameters.GetTodayParams(ticker);
 

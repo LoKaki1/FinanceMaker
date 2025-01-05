@@ -7,25 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Models\" />
-    <None Remove="Models\Tickers\" />
-    <None Remove="Models\Pullers\" />
-    <None Remove="Models\Pullers\Enums\" />
-    <None Remove="Resolvers\" />
-    <None Remove="Resolvers\Abstracts\" />
-    <None Remove="Resolvers\Interfaces\" />
-    <None Remove="LogicContainers\Abstracts\" />
-    <None Remove="Models\Finance\Enums\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\Tickers\" />
-    <Folder Include="Models\Pullers\Enums\" />
-    <Folder Include="Resolvers\" />
-    <Folder Include="Resolvers\Abstracts\" />
-    <Folder Include="Resolvers\Interfaces\" />
-    <Folder Include="Models\Finance\Enums\" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.16440" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
   </ItemGroup>
 </Project>

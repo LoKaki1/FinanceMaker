@@ -1,19 +1,20 @@
-using FinanceMaker.Common.Models.Pullers;
+﻿using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using System.Collections.Generic;
 
 namespace FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
 
 public class NewsAnalyzerInput : NewsPullerParameters
 {
-    public IEnumerable<string> Urls { get; set; }
+    public IEnumerable<NewsResult> NewsResult { get; set; }
 
-    public NewsAnalyzerInput(string ticker, DateTime from, DateTime to, IEnumerable<string> urls)
+    public NewsAnalyzerInput(string ticker, DateTime from, DateTime to, IEnumerable<NewsResult> newResult)
     : base(ticker, from, to)
     {
-        Urls = urls;
+        NewsResult = newResult;
     }
 
-    public NewsAnalyzerInput(NewsPullerParameters puller, IEnumerable<string> urls)
+    public NewsAnalyzerInput(NewsPullerParameters puller, IEnumerable<NewsResult> urls)
         : this(puller.Ticker, puller.From, puller.To, urls)
     { }
 }

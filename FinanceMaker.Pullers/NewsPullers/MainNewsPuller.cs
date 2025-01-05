@@ -1,5 +1,6 @@
 ﻿using System;
 using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 
@@ -14,14 +15,14 @@ namespace FinanceMaker.Pullers.NewsPullers
             m_NewsPuller = newsPuller;
         }
 
-        public async Task<IEnumerable<string>> PullNews(NewsPullerParameters newsParams, CancellationToken cancellationToken)
+        public async Task<IEnumerable<NewsResult>> PullNews(NewsPullerParameters newsParams, CancellationToken cancellationToken)
         {
             var pullersTasks = m_NewsPuller.Select(puller => puller.PullNews(newsParams, cancellationToken))
                                            .ToArray();
 
             var newsResult = await Task.WhenAll(pullersTasks);
             var news = newsResult.SelectMany(tickerNews => tickerNews)
-                                  .ToArray();
+                                 .ToArray();
 
             return news;
         }
