@@ -49,19 +49,19 @@ namespace FinanceMaker.Publisher.Traders
         public async Task Trade(CancellationToken cancellationToken)
         {
 
-            while(!cancellationToken.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 await GetIdeas(cancellationToken);
-                
+
                 if (!m_IdeasToActive.TryDequeue(out var idea))
                 {
                     await Task.Delay(10_000);
-                    
+
                     continue;
                 }
 
                 var currentPosition = await m_Broker.GetClientPosition(cancellationToken);
-                
+
                 if (currentPosition.OpenedPositions.GetNonEnumeratedCount() >= MAX_OPENED_TRADES)
                 {
                     await Task.Delay(10_000);
@@ -69,6 +69,10 @@ namespace FinanceMaker.Publisher.Traders
                     continue;
                 }
 
+                if (idea.Quantity == 0)
+                {
+                    idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount()) / idea.Entry);
+                }
                 var trade = await m_Broker.Trade(idea, cancellationToken);
 
                 m_OpenedTrades.Add(trade);
@@ -77,13 +81,13 @@ namespace FinanceMaker.Publisher.Traders
 
         public async Task GetIdeas(CancellationToken cancellationToken)
         {
-           var relevantIdeas = await GetNewIdeas(cancellationToken);
+            var relevantIdeas = await GetNewIdeas(cancellationToken);
             var openedIdeas = m_OpenedTrades.Select(_ => _.Idea)
                                             .OfType<EntryExitOutputIdea>();
             relevantIdeas.AddRange(openedIdeas);
             var relevantnaceAndProfitIdeas = new List<(int, EntryExitOutputIdea)>();
-            
-            foreach(var idea in relevantIdeas)
+
+            foreach (var idea in relevantIdeas)
             {
                 if (openedIdeas.Any(_ => _.Ticker == idea.Ticker)) continue;
                 var currentPrice = await m_PricesPuller.GetTickerPrices(PricesPullerParameters.GetTodayParams(idea.Ticker),
@@ -98,16 +102,17 @@ namespace FinanceMaker.Publisher.Traders
                 relevantnaceAndProfitIdeas.Add((relevant + (int)idea.ProfitPressent, idea));
             }
 
-            var ideasToPublish = relevantnaceAndProfitIdeas.OrderByDescending(_ => _.Item1).Take(MAX_OPENED_TRADES).Select(_ =>_.Item2).ToArray();
-            var tradesToCancel = relevantIdeas.Except(ideasToPublish).Where(_ => m_OpenedTrades.Any(a => a.Idea == _)).Select(_ => m_OpenedTrades.First(_ => _.Idea == _)).ToArray();
+            var ideasToPublish = relevantnaceAndProfitIdeas.OrderByDescending(_ => _.Item1).Take(MAX_OPENED_TRADES).Select(_ => _.Item2).ToArray();
+            var tradesToCancel = relevantIdeas.Except(ideasToPublish).Where(_ => m_OpenedTrades.Any(a => a.Idea == _)).Select(_ => m_OpenedTrades.FirstOrDefault(_ => _.Idea == _)).ToArray();
 
-            foreach(var tradeCa in tradesToCancel)
+            foreach (var tradeCa in tradesToCancel)
             {
+                if (tradeCa is null) continue;
                 await m_Broker.CancelTrade(tradeCa, cancellationToken);
                 m_OpenedTrades.Remove(tradeCa);
             }
 
-            foreach(var idea in ideasToPublish)
+            foreach (var idea in ideasToPublish)
             {
                 m_IdeasToActive.Enqueue(idea);
             }
