@@ -69,6 +69,14 @@ namespace FinanceMaker.Publisher.Traders
                     continue;
                 }
 
+                // No need to trade a stock we've already traded
+                // TODO: Do it both before the caculations
+                // Close and trade if it finds better (not so important)
+                if (currentPosition.OpenedPositions.Contains(idea.Ticker)
+                    || currentPosition.Orders.Contains(idea.Ticker))
+                {
+                    continue;
+                }
                 if (idea.Quantity == 0)
                 {
                     idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount()) / idea.Entry);
