@@ -55,7 +55,7 @@ namespace FinanceMaker.Publisher.Traders
                 
                 if (!m_IdeasToActive.TryDequeue(out var idea))
                 {
-                    await Task.Delay(10_000);
+                    //await Task.Delay(10_000);
                     
                     continue;
                 }
@@ -64,7 +64,7 @@ namespace FinanceMaker.Publisher.Traders
                 
                 if (currentPosition.OpenedPositions.GetNonEnumeratedCount() >= MAX_OPENED_TRADES)
                 {
-                    await Task.Delay(10_000);
+                    //await Task.Delay(10_000);
 
                     continue;
                 }
