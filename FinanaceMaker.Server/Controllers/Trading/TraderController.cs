@@ -50,9 +50,9 @@ namespace FinanaceMaker.Server.Controllers.Trading
             return o;
         }
         [HttpGet, Route(nameof(ActiveateTrader))]
-        public IActionResult ActiveateTrader(CancellationToken cancellation)
+        public async Task<IActionResult> ActiveateTrader(CancellationToken cancellation)
         {
-            var trader = m_Trader.Trade(cancellation);
+            await m_Trader.Trade(cancellation);
 
             return Ok();
         }
