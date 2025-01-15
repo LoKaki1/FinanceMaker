@@ -55,7 +55,6 @@ namespace FinanceMaker.Publisher.Traders
 
                 if (!m_IdeasToActive.TryDequeue(out var idea))
                 {
-                    await Task.Delay(10_000);
 
                     continue;
                 }
@@ -64,7 +63,6 @@ namespace FinanceMaker.Publisher.Traders
 
                 if (currentPosition.OpenedPositions.GetNonEnumeratedCount() >= MAX_OPENED_TRADES)
                 {
-                    await Task.Delay(10_000);
 
                     continue;
                 }
@@ -79,7 +77,7 @@ namespace FinanceMaker.Publisher.Traders
                 }
                 if (idea.Quantity == 0)
                 {
-                    idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount()) / idea.Entry);
+                    idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount() + currentPosition.Orders.GetNonEnumeratedCount()) / idea.Entry);
                 }
                 var trade = await m_Broker.Trade(idea, cancellationToken);
 

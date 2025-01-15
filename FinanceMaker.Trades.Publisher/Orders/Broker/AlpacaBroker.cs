@@ -46,7 +46,7 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
         await trade.Cancel(cancellationToken);
 
         await m_Client.CancelOrderAsync(trade.TradeId, cancellationToken);
-        
+
         if (trade.Idea is EntryExitOutputIdea tradeIdea)
         {
             var order = tradeIdea.ConvertToAlpacaCancelTrade();
@@ -60,12 +60,12 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
         var accountData = await m_Client.GetAccountAsync(cancellationToken);
         var accountPosition = await m_Client.ListPositionsAsync(cancellationToken);
         var accountOpenedOrders = await m_Client.ListOrdersAsync(new ListOrdersRequest(), cancellationToken);
-        float buyingPower = accountData.BuyingPower is null ? 0f : (float)accountData.BuyingPower.Value;
+        float buyingPower = accountData.DayTradingBuyingPower is null ? 0f : (float)accountData.DayTradingBuyingPower.Value;
         var poposition = new Position()
         {
             BuyingPower = buyingPower,
             OpenedPositions = accountPosition.Select(_ => _.Symbol).ToArray(),
-            Orders = accountOpenedOrders.Where(_ 
+            Orders = accountOpenedOrders.Where(_
             => _.OrderStatus.HasFlag(OrderStatus.New)
             || _.OrderStatus.HasFlag(OrderStatus.PartialFill)
             || _.OrderStatus.HasFlag(OrderStatus.PartiallyFilled)
