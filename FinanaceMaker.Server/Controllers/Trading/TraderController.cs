@@ -17,6 +17,8 @@ namespace FinanaceMaker.Server.Controllers.Trading
         private readonly OverNightBreakout m_Idea;
         private readonly IBroker m_Broker;
         private readonly ITrader m_Trader;
+        private Task m_Runner;
+
         public TraderController(OverNightBreakout ideal, IBroker broker, ITrader trader)
         {
             m_Idea = ideal;
@@ -52,7 +54,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
         [HttpGet, Route(nameof(ActiveateTrader))]
         public async Task<IActionResult> ActiveateTrader(CancellationToken cancellation)
         {
-            await m_Trader.Trade(cancellation);
+            m_Runner =  m_Trader.Trade(cancellation);
 
             return Ok();
         }
