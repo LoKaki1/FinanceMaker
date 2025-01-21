@@ -24,6 +24,7 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 services.AddHttpClient();
 // Can't use the extension (the service collection becomes read only after the build)
+services.AddSingleton<MarketStatus>();
 services.AddSingleton<FinvizTickersPuller>();
 services.AddSingleton(sp => new IParamtizedTickersPuller[]
 {
@@ -90,7 +91,7 @@ builder.Services.AddCors(options =>
                                 .AllowAnyHeader();
                       });
 });
-builder.Services.ConfigureHttpJsonOptions(options => 
+builder.Services.ConfigureHttpJsonOptions(options =>
 options.SerializerOptions.PropertyNameCaseInsensitive = false);
 
 builder.Services.AddControllers()

@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
     <PackageReference Include="QuantConnect.Lean.Engine" Version="2.5.16440" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.61" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
   </ItemGroup>
 </Project>

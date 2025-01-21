@@ -17,7 +17,10 @@ public record PricesPullerParameters
         EndTime = endTime;
         Period = period;
     }
-    public PricesPullerParameters() { }
+    public PricesPullerParameters()
+    {
+        Ticker = string.Empty;
+    }
 
     public static PricesPullerParameters GetTodayParams(string ticker)
     {

@@ -40,7 +40,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
             timer.Elapsed += async (sender, e) =>
             {
                 var now = DateTime.Now;
-                if (now.TimeOfDay >= TimeSpan.FromHours(16)+ TimeSpan.FromMinutes(30) && now.TimeOfDay.Hours <= 23)
+                if (now.TimeOfDay >= TimeSpan.FromHours(16) + TimeSpan.FromMinutes(30) && now.TimeOfDay.Hours <= 23)
                 {
                     await ShouldMoveToAnotherClass(cancellationToken);
 
@@ -54,7 +54,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
         [HttpGet, Route(nameof(ActiveateTrader))]
         public async Task<IActionResult> ActiveateTrader(CancellationToken cancellation)
         {
-            m_Runner =  m_Trader.Trade(cancellation);
+            await m_Trader.Trade(cancellation);
 
             return Ok();
         }
@@ -80,7 +80,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
             var openedPositoins = position.OpenedPositions;
             var moneyForEachTrade = position.BuyingPower / result.Count;
             var actualResult = result;
-            
+
             foreach (var idea in actualResult)
             {
                 if (idea is EntryExitOutputIdea entryExitOutputIdea)

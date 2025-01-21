@@ -14,8 +14,7 @@ public static class AlpacaExtensions
                                            idea.Quantity,
                                            orderSide,
                                            OrderType.Limit,
-                                           
-                                           TimeInForce.Day)
+                                           TimeInForce.Gtc)
         {
             LimitPrice = (decimal)Math.Round(idea.Entry, 2),
             TakeProfitLimitPrice = (decimal)Math.Round(idea.Exit, 2),
@@ -35,7 +34,7 @@ public static class AlpacaExtensions
                                            orderSide,
                                            OrderType.Market,
                                            TimeInForce.Day);
-      
+
 
         return request;
     }

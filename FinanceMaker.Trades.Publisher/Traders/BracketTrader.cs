@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 
 using System.Threading;
 using FinanceMaker.Common;
@@ -11,6 +11,7 @@ using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
+using QuantConnect;
 
 namespace FinanceMaker.Publisher.Traders
 {
@@ -29,10 +30,11 @@ namespace FinanceMaker.Publisher.Traders
         private readonly List<TechnicalIdeaInput> m_IdeasParams;
         private readonly List<ITrade> m_OpenedTrades;
         private readonly IPricesPuller m_PricesPuller;
-
+        private readonly MarketStatus m_IsMarketOpen;
         public BracketTrader(IBroker broker,
                              IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea> ideasPuller,
-                             IPricesPuller puller)
+                             IPricesPuller puller,
+                             MarketStatus isMarketOpen)
         {
             m_IdeasToActive = [];
             m_Broker = broker;
@@ -44,6 +46,7 @@ namespace FinanceMaker.Publisher.Traders
             ];
             m_PricesPuller = puller;
             m_OpenedTrades = [];
+            m_IsMarketOpen = isMarketOpen;
         }
 
         public async Task Trade(CancellationToken cancellationToken)
@@ -51,37 +54,43 @@ namespace FinanceMaker.Publisher.Traders
 
             while (!cancellationToken.IsCancellationRequested)
             {
+                var isMarketOpen = await m_IsMarketOpen.IsMarketOpenAsync(cancellationToken);
+                if (!isMarketOpen)
+                {
+                    await Task.Delay(1000 * 60);
+                    continue;
+                }
+
                 await GetIdeas(cancellationToken);
+                var copy = m_IdeasToActive.ToArray();
 
-                if (!m_IdeasToActive.TryDequeue(out var idea))
+                foreach (var idea in copy)
                 {
+                    m_IdeasToActive.TryDequeue(out var _);
+                    var currentPosition = await m_Broker.GetClientPosition(cancellationToken);
 
-                    continue;
+                    if (currentPosition.OpenedPositions.GetNonEnumeratedCount() >= MAX_OPENED_TRADES)
+                    {
+
+                        continue;
+                    }
+
+                    // No need to trade a stock we've already traded
+                    // TODO: Do it both before the caculations
+                    // Close and trade if it finds better (not so important)
+                    if (currentPosition.OpenedPositions.Contains(idea.Ticker)
+                        || currentPosition.Orders.Contains(idea.Ticker))
+                    {
+                        continue;
+                    }
+                    if (idea.Quantity == 0)
+                    {
+                        idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount() + currentPosition.Orders.GetNonEnumeratedCount()) / idea.Entry);
+                    }
+                    var trade = await m_Broker.Trade(idea, cancellationToken);
+
+                    m_OpenedTrades.Add(trade);
                 }
-
-                var currentPosition = await m_Broker.GetClientPosition(cancellationToken);
-
-                if (currentPosition.OpenedPositions.GetNonEnumeratedCount() >= MAX_OPENED_TRADES)
-                {
-
-                    continue;
-                }
-
-                // No need to trade a stock we've already traded
-                // TODO: Do it both before the caculations
-                // Close and trade if it finds better (not so important)
-                if (currentPosition.OpenedPositions.Contains(idea.Ticker)
-                    || currentPosition.Orders.Contains(idea.Ticker))
-                {
-                    continue;
-                }
-                if (idea.Quantity == 0)
-                {
-                    idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount() + currentPosition.Orders.GetNonEnumeratedCount()) / idea.Entry);
-                }
-                var trade = await m_Broker.Trade(idea, cancellationToken);
-
-                m_OpenedTrades.Add(trade);
             }
         }
 
