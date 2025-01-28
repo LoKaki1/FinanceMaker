@@ -46,7 +46,7 @@ public class WorkerTrader : ITrader
         {
             return;
         }
-
+        await GetIdeas(cancellationToken);
         var copy = m_IdeasToActive.ToArray();
 
         foreach (var idea in copy)
