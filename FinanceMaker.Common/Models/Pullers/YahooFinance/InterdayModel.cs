@@ -14,7 +14,8 @@
 
     public class YahooResponse
     {
-        public long[] timestamp { get; set; }
+        public long[] timestamp
+        { get; set; }
         public Indicators indicators { get; set; }
     }
 

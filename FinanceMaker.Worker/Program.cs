@@ -31,11 +31,12 @@ var app = Host.CreateDefaultBuilder(args)
                 // Can't use the extension (the service collection becomes read only after the build)
                 services.AddSingleton<MarketStatus>();
                 services.AddSingleton<FinvizTickersPuller>();
+                services.AddSingleton<TradingViewTickersPuller>();
                 services.AddSingleton(sp => new IParamtizedTickersPuller[]
                 {
                     sp.GetService<FinvizTickersPuller>()
                 });
-                services.AddSingleton(sp => Array.Empty<ITickerPuller>());
+                services.AddSingleton(sp => new ITickerPuller[] { sp.GetService<TradingViewTickersPuller>() });
                 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
                 services.AddSingleton<MainTickersPuller>();
 

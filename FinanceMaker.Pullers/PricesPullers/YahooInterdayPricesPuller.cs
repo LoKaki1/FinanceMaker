@@ -89,9 +89,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         if (!response.IsSuccessStatusCode)
         {
-            var failedContent = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            throw new InvalidDataException(failedContent);
+            throw new InvalidDataException($"Yahoo api returned {response.StatusCode} for those params:\n{pricesPullerParameters}");
         }
 
         var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>(cancellationToken);

@@ -4,7 +4,7 @@ using FinanceMaker.Pullers.TickerPullers.Interfaces;
 namespace FinanceMaker.Pullers.TickerPullers
 {
     public sealed class MainTickersPuller : IParamtizedTickersPuller, ITickerPuller, IRelatedTickersPuller
-	{
+    {
         private readonly IParamtizedTickersPuller[] m_ParametizedTickersPullers;
         private readonly ITickerPuller[] m_TickerPullers;
         private readonly IRelatedTickersPuller[] m_RelatedTickersPullers;
@@ -47,7 +47,9 @@ namespace FinanceMaker.Pullers.TickerPullers
         {
 
             var relatedTickersTasks = m_ParametizedTickersPullers.Select(puller => puller.ScanTickers(scannerParams, cancellationToken))
-                                                             .ToArray();
+                                                             .ToList();
+            var p = m_TickerPullers.Select(_ => _.ScanTickers(cancellationToken));
+            relatedTickersTasks.AddRange(p);
             var relatedTickers = await Task.WhenAll(relatedTickersTasks);
             var relatedTickersFlat = relatedTickers.SelectMany(ticker => ticker)
                                                     .ToArray();
