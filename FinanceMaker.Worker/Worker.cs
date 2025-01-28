@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -17,7 +17,7 @@ public class Worker : BackgroundService
     {
         m_Logger = logger;
         m_Trader = workerTrader;
-        m_CrontabSchedule = CrontabSchedule.Parse("0 * * * *");
+        m_CrontabSchedule = CrontabSchedule.Parse("59 1 * * *");
 
     }
 
@@ -27,7 +27,8 @@ public class Worker : BackgroundService
         {
             var now = DateTime.Now;
             DateTime nextExecutionTime = m_CrontabSchedule.GetNextOccurrence(now);
-            await Task.Delay((nextExecutionTime - now).Milliseconds, stoppingToken);
+            await Task.Delay(60 * 60 * 1000);
+            
             await m_Trader.Trade(stoppingToken);
         }
     }
