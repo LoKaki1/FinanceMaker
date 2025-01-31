@@ -10,6 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 using HtmlAgilityPack;
+using System.Net.WebSockets;
+using System.Text;
+using System.Text.Json;
 
 Console.WriteLine("Hello, World!");
 
@@ -49,161 +52,101 @@ Console.WriteLine("Hello, World!");
 //       |          V
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 //
-
-//var builder = Host.CreateApplicationBuilder();
-//var services = builder.Services;
-//services.AddHttpClient();
-//services.AddSingleton<FinvizTickersPuller>();
-//services.AddSingleton(sp => new IParamtizedTickersPuller[]
-//{
-//    sp.GetService<FinvizTickersPuller>()
-//});
-//services.AddSingleton(sp => Array.Empty<ITickerPuller>());
-//services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
-//services.AddSingleton<MainTickersPuller>();
-
-//services.AddSingleton<YahooPricesPuller>();
-//services.AddSingleton(sp => new IPricesPuller[]
-//{
-//    sp.GetService<YahooPricesPuller>()
-//});
-//services.AddSingleton<MainPricesPuller>();
-//services.AddSingleton<GoogleNewsPuller>();
-//services.AddSingleton(sp => new INewsPuller[]
-//{
-//    sp.GetService<GoogleNewsPuller>()
-//});
-//services.AddSingleton<MainNewsPuller>();
-
-//var app = builder.Build();
-//var tickersPuller = app.Services.GetService<MainTickersPuller>();
-//var pricesPuller = app.Services.GetService<MainPricesPuller>();
-//var newsPuller = app.Services.GetService<MainNewsPuller>();
-
-//if (tickersPuller is null ||
-//    pricesPuller is null ||
-//    newsPuller is null) return;
-
-//var result = (await tickersPuller.ScanTickers(new TickersPullerParameters()
-//{
-//    MinAvarageVolume = 100_000,
-//    MaxAvarageVolume = 1_000_000,
-//    MaxPrice = 20,
-//    MinPrice = 3,
-//    PresentageOfChange = 20
-//}, CancellationToken.None)).ToList();
-
-//result.Add("NIO");
-//var data = new List<(string ticker, TickerChart chart, TickerNews news)>();
-
-//foreach (var ticker in result)
-//{
-//    var prices = await pricesPuller.GetTickerPrices(ticker,
-//                                                    FinanceMaker.Common.Models.Pullers.Enums.Period.Daily,
-//                                                    DateTime.Now.AddYears(-7),
-//                                                    DateTime.Now,
-//                                                    CancellationToken.None);
-//    var chart = await newsPuller.PullNews(ticker, CancellationToken.None);
-
-//    data.Add((ticker, prices, chart));
-//}
-
-//var gon = new List<(string s, IEnumerable<double> a)>();
-//foreach(var tickerData in data)
-//{
-//    var supportAndResitance = SupportAndResistanceLevels.GetSupportResistanceLevels(tickerData.chart);
-//    gon.Add((tickerData.ticker, supportAndResitance));
-//}
-
-//Chart chart1 = new Chart("NIO");
-//for (int i = 0; i < gon.Count; i++)
-//{
-//    var series = new CandlestickSeries(data[i].ticker, i);
-
-//    foreach(var point in data[i].chart.Prices)
-//    {
-//        series.AddPoint(point.Candlestick);
-//    }
-
-
-//    chart1.AddSeries(series);
-//}
-
-// var plotModel = new PlotModel { Title = "Test" };
-// var dateAxis = new DateTimeAxis { Position = AxisPosition.Bottom, StringFormat = "YY/MM/dd", IntervalType = DateTimeIntervalType.Days, MajorGridlineStyle = LineStyle.Solid, MinorGridlineStyle = LineStyle.Dot };
-// var valueAxis = new LinearAxis
-// {
-//     Position = AxisPosition.Left,
-//     Title = "Price",
-//     MajorGridlineStyle = LineStyle.Solid,
-//     MinorGridlineStyle = LineStyle.Dot
-// };
-// plotModel.Axes.Add(dateAxis);
-// plotModel.Axes.Add(valueAxis);
-
-// var candleStickSeries = new CandlestickSeriesOxy
-// {
-//     Color = OxyColors.Black,
-//     IncreasingColor = OxyColors.DarkGreen,
-//     DecreasingColor = OxyColors.DarkRed,
-//     DataFieldHigh = "High",
-//     DataFieldX = "Date",
-//     DataFieldOpen = "Open",
-//     DataFieldClose = "Close",
-//     DataFieldLow = "Low"
-// };
-
-// var dg = data.Last().chart.Prices.Select(_ => new HighLowItem
-// {
-//     High = (double)_.High,
-//     Low = (double)_.Low,
-//     Close = (double)_.Close,
-//     Open = (double)_.Open,
-//     X = _.Time.ToOADate()
-// });
-// candleStickSeries.Items.AddRange(dg);
-// plotModel.Series.Add(candleStickSeries);
-// var plotView = new PlotView()
-// {
-//     Model = plotModel
-// };
-//var finvizUrl = "https://finviz.com/screener.ashx?v=111&f=news_date_today&ft=4&ah_change_10to100";
-//var httpClient = new HttpClient();
-//httpClient.AddBrowserUserAgent();
-
-//var finvizResult = await httpClient.GetAsync(finvizUrl);
-//if (!finvizResult.IsSuccessStatusCode)
-//{
-//    throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
-//}
-
-//var finvizHtml = await finvizResult.Content.ReadAsStringAsync();
-//var node = new HtmlDocument();
-//node.Load($"<tbody{finvizHtml.Split("<tbody>").Last().Split("</tbody>").First()}</tbody>");
-
-//var technicalFinviz = node.DocumentNode.SelectNodes("//*[contains(@id,\"ta_\"]")
-//                                       .Select(_ => _.Attributes["id"].Value.Split("ta_")
-//                                                                            .Last())
-//                                       .ToArray();
-
-var finvizeUrl = "https://finviz.com/news.ashx?v=3";
-var httpClient = new HttpClient();
-httpClient.AddBrowserUserAgent();
-var finvizResult = await httpClient.GetAsync(finvizeUrl);
-if (!finvizResult.IsSuccessStatusCode)
+static async Task<string> GetAuthTokenAsync()
 {
-    throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
+    var client = new HttpClient();
+    string signInUrl = "https://www.tradingview.com/accounts/signin/";
+    var formData = new MultipartFormDataContent
+        {
+            { new StringContent("shahartheking22"), "username" },
+            { new StringContent("sm_B2w#Ec-G2LBVx"), "password" },
+            { new StringContent("on"), "remember" }
+        };
+
+    client.DefaultRequestHeaders.Referrer = new Uri("https://www.tradingview.com");
+
+    HttpResponseMessage response = await client.PostAsync(signInUrl, formData);
+
+    var a = await response.Content.ReadAsStringAsync();
+    response.EnsureSuccessStatusCode();
+
+    string responseBody = await response.Content.ReadAsStringAsync();
+    using JsonDocument doc = JsonDocument.Parse(responseBody);
+    return doc.RootElement.GetProperty("user").GetProperty("auth_token").GetString();
 }
-var finvizHtml = await finvizResult.Content.ReadAsStringAsync();
-var node = new HtmlDocument();
+var token = await GetAuthTokenAsync();
+var client = new ClientWebSocket();
+client.Options.SetRequestHeader("origin", "https://www.tradingview.com");
+await client.ConnectAsync(new Uri("wss://data.tradingview.com/socket.io/websocket?from=chart%2Ff3h7BAE7%2F&date=2025_01_28-14_33&type=chart"), CancellationToken.None);
+var p = @"{
+    ""m"": ""create_study"",
+    ""p"": [
+        ""cs_iVW7fUjZwvxx"",
+        ""st10"",
+        ""st1"",
+        ""sds_1"",
+        ""Script@tv-scripting-101!"",
+        {
+            ""text"": ""bmI9Ks46_IitsHcSiEDOvDJSMF0jUqg==_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"",
+            ""pineId"": ""PUB;0ded7d1e366849b381499bbb2b2ce9a4"",
+            ""pineVersion"": ""1.0"",
+            ""pineFeatures"": {
+                ""v"": ""{\""indicator\"":1,\""plot\"":1,\""str\"":1,\""ta\"":1,\""math\"":1,\""box\"":1,\""label\"":1,\""user_methods\"":1,\""builtin_methods\"":1}"",
+                ""f"": true,
+                ""t"": ""text""
+            },
+            ""in_0"": { ""v"": 15, ""f"": true, ""t"": ""integer"" },
+            ""in_1"": { ""v"": true, ""f"": true, ""t"": ""bool"" },
+            ""in_2"": { ""v"": 4283683888, ""f"": true, ""t"": ""color"" },
+            ""in_3"": { ""v"": 4294001472, ""f"": true, ""t"": ""color"" }
+        }
+    ]
+}";
+ArraySegment<byte> message = new ArraySegment<byte>(Encoding.UTF8.GetBytes(p));
+var buffer = new ArraySegment<byte>(new byte[1024 * 20000]);
+string json = @"{
+  ""m"": ""create_study"",
+  ""p"": [
+    ""cs_iVW7fUjZwvxx"",
+    ""st9"",
+    ""st1"",
+    ""sds_1"",
+    ""Script@tv-scripting-101!"",
+    {
+      ""text"": ""bmI9Ks46_IitsHcSiEDOvDJSMF0jUqg==_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"",
+      ""pineId"": ""PUB;0ded7d1e366849b381499bbb2b2ce9a4"",
+      ""pineVersion"": ""1.0"",
+      ""pineFeatures"": {
+        ""v"": ""{\""indicator\"":1,\""plot\"":1,\""str\"":1,\""ta\"":1,\""math\"":1,\""box\"":1,\""label\"":1,\""user_methods\"":1,\""builtin_methods\"":1}"",
+        ""f"": true,
+        ""t"": ""text""
+      }
+    }
+  ]
+}";
+var buffer2 = new ArraySegment<byte>(new byte[1024 * 20000]);
+var message2 = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+await client.SendAsync(message2, WebSocketMessageType.Text, true, CancellationToken.None);
+await client.SendAsync(message, WebSocketMessageType.Text, true, CancellationToken.None);
 
-node.LoadHtml(finvizHtml);
-var nodes = node.DocumentNode.SelectNodes("//tr[@class=\"styled-row is-hoverable is-bordered is-rounded is-border-top is-hover-borders has-color-text news_table-row\"]");
-var news = nodes.Select(_ => new string[]
-{
-                _.SelectInnerSingleNode("//a[@class=\"nn-tab-link\"]").Attributes["href"].Value,
-                _.SelectInnerSingleNode("//span[@class=\"select-none font-semibold\"]").InnerText,
-                _.SelectInnerSingleNode("//a[@class=\"nn-tab-link\"]").InnerText
-}).ToArray();
+await client.ReceiveAsync(buffer, CancellationToken.None);
+await client.ReceiveAsync(buffer2, CancellationToken.None);
+var result1 = Encoding.UTF8.GetString(buffer.Array);
+var result2 = Encoding.UTF8.GetString(buffer2.Array);
+File.WriteAllText("result1.txt", result1);
+File.WriteAllText("result2.txt", result2);
 
-Console.ReadLine();
+// await client.ReceiveAsync(buffer, CancellationToken.None);
+// var result = Encoding.UTF8.GetString(buffer.Array);
+// File.WriteAllText("result.txt", result);
+
+
+// string json = "{ \"m\": \"quote_fast_symbols\", \"p\": [ \"qs_O7U5E6BE46a7\", \"=\\\"{\\\\\\\"adjustment\\\\\\\":\\\\\\\"splits\\\\\\\",\\\\\\\"currency-id\\\\\\\":\\\\\\\"USD\\\\\\\",\\\\\\\"session\\\\\\\":\\\\\\\"extended\\\\\\\",\\\\\\\"symbol\\\\\\\":\\\\\\\"BATS:NVDA\\\\\\\"}\\\"\", \"NASDAQ:NVDA\" ] }";
+// ArraySegment<byte> message2 = new ArraySegment<byte>(Encoding.UTF8.GetBytes(json));
+// await client.SendAsync(message2, WebSocketMessageType.Text, true, CancellationToken.None);
+// var buffer2 = new ArraySegment<byte>(new byte[1024 * 200]);
+// await client.ReceiveAsync(buffer2, CancellationToken.None);
+// var result2 = Encoding.UTF8.GetString(buffer2);
+// File.WriteAllText("result2.txt", result2);
+
+Console.WriteLine(result1);
