@@ -27,6 +27,10 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
     }
     protected override async Task<ITrade> TradeInternal(EntryExitOutputIdea idea, CancellationToken cancellationToken)
     {
+        if (idea.Quantity < 1)
+        {
+            throw new Exception("Bro what's worng with you and math? you can't buy less than 1 stock");
+        }
         var request = idea.ConvertToAlpacaRequest();
 
         var order = await m_Client.PostOrderAsync(request, cancellationToken);
@@ -60,7 +64,7 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
         var accountData = await m_Client.GetAccountAsync(cancellationToken);
         var accountPosition = await m_Client.ListPositionsAsync(cancellationToken);
         var accountOpenedOrders = await m_Client.ListOrdersAsync(new ListOrdersRequest(), cancellationToken);
-        float buyingPower = accountData.DayTradingBuyingPower is null ? 0f : (float)accountData.DayTradingBuyingPower.Value;
+        float buyingPower = accountData.BuyingPower is null ? 0f : (float)accountData.BuyingPower.Value;
         var poposition = new Position()
         {
             BuyingPower = buyingPower,

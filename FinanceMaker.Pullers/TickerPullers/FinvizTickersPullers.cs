@@ -7,10 +7,10 @@ using QuantConnect;
 
 namespace FinanceMaker.Pullers.TickerPullers
 {
-    public sealed class FinvizTickersPuller : IParamtizedTickersPuller
+    public class FinvizTickersPuller : IParamtizedTickersPuller
     {
         private readonly IHttpClientFactory m_RequestService;
-        private readonly string m_FinvizUrl;
+        protected string m_FinvizUrl;
         private readonly string m_FinvizStartSperator;
         private readonly string m_FinvizEndSeperator;
 
@@ -22,12 +22,33 @@ namespace FinanceMaker.Pullers.TickerPullers
             m_FinvizEndSeperator = "TE -->";
         }
 
-        public async Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
+        public async virtual Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
+        {
+
+            var url = string.Join("", m_FinvizUrl, GenerateParams(scannerParams));
+            var httpClient = m_RequestService.CreateClient();
+            httpClient.AddBrowserUserAgent();
+            var finvizResult = await httpClient.GetAsync(url, cancellationToken);
+
+            if (!finvizResult.IsSuccessStatusCode)
+            {
+                throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
+            }
+
+            var finvizHtml = await finvizResult.Content.ReadAsStringAsync(cancellationToken);
+            var onlyTickersData = finvizHtml.Split(m_FinvizStartSperator)[1]
+                                            .Split(m_FinvizEndSeperator)[0]
+                                            .Split("\n")
+                                            .Select(tickerData => tickerData.Split("|")[0])
+                                            .Where(ticker => !string.IsNullOrEmpty(ticker))
+                                            .ToArray();
+
+            return onlyTickersData;
+        }
+        protected async Task<string[]> GetTickers(string url, CancellationToken cancellationToken)
         {
             var httpClient = m_RequestService.CreateClient();
             httpClient.AddBrowserUserAgent();
-
-            var url = string.Join("", m_FinvizUrl, GenerateParams(scannerParams));
             var finvizResult = await httpClient.GetAsync(url, cancellationToken);
 
             if (!finvizResult.IsSuccessStatusCode)

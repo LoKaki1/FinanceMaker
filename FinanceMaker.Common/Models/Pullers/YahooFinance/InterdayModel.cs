@@ -14,9 +14,15 @@
 
     public class YahooResponse
     {
-        public long[] timestamp
-        { get; set; }
+        public static YahooResponse Enpty => new YahooResponse();
+        public long[] timestamp { get; set; }
         public Indicators indicators { get; set; }
+
+        public bool IsEmpty()
+        {
+            return timestamp.Length == 0 && indicators is null;
+        }
+
     }
 
     public class Meta
