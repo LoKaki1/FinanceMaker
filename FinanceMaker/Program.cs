@@ -53,7 +53,7 @@ Console.WriteLine("Hello, World!");
 //   //Physical DLL location
 //   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
 Config.Set("algorithm-type-name", "AlgorithmBaseForTestingOnly");
-Config.Set("data-folder", "../../../../Lean/Data");
+Config.Set("data-folder", "../../../../FinanceMaker/Data");
 Config.Set("algorithm-language", "CSharp");
 Config.Set("algorithm-location", "FinanceMaker.dll");
 
