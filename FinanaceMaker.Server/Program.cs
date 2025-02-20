@@ -80,7 +80,7 @@ services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<INewsPuller, MainNewsPuller>();
 services.AddSingleton<KeywordsDetectorAnalysed>();
 services.AddSingleton<INewsAnalyzer[]>(sp => [
-    sp.GetService<KeywordsDetectorAnalysed>()
+    sp.GetService<KeywordsDetectorAnalysed>()!
 ]);
 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
 services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
