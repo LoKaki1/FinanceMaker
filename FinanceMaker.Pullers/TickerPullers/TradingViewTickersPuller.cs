@@ -2,12 +2,13 @@ using System;
 using System.Net.Http.Json;
 using System.Text;
 using FinanceMaker.Common.Extensions;
+using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.TradingView;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
 
 namespace FinanceMaker.Pullers.TickerPullers;
 
-public class TradingViewTickersPuller : ITickerPuller
+public class TradingViewTickersPuller : IParamtizedTickersPuller
 {
     private readonly IHttpClientFactory m_RequestService;
     private readonly string m_TradingViewUrl;
@@ -111,7 +112,7 @@ public class TradingViewTickersPuller : ITickerPuller
     {
         var client = m_RequestService.CreateClient();
         client.AddBrowserUserAgent();
-        var result = await client.SendAsync(m_RequestContent);
+        var result = await client.PostAsync(m_TradingViewUrl, new StringContent(m_RequestBody, Encoding.UTF8, "application/json"), cancellationToken);
 
         if (!result.IsSuccessStatusCode)
         {
@@ -126,5 +127,10 @@ public class TradingViewTickersPuller : ITickerPuller
         }
 
         return [.. content.Data.Select(data => data!.TickerName.Split(":")[1])];
+    }
+
+    public Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
+    {
+        return ScanTickers(cancellationToken);
     }
 }

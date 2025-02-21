@@ -12,7 +12,7 @@ public record PricesPullerParameters
 
     public PricesPullerParameters(string ticker, DateTime startTime, DateTime endTime, Period period)
     {
-        Ticker = ticker;
+        Ticker = ticker.Replace(".", "-");
         StartTime = startTime;
         EndTime = endTime;
         Period = period;

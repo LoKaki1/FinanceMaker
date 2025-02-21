@@ -26,11 +26,17 @@ services.AddHttpClient();
 // Can't use the extension (the service collection becomes read only after the build)
 services.AddSingleton<MarketStatus>();
 services.AddSingleton<FinvizTickersPuller>();
+services.AddSingleton<TradingViewTickersPuller>();
+services.AddSingleton<NivTickersPuller>();
 services.AddSingleton(sp => new IParamtizedTickersPuller[]
 {
-    sp.GetService<FinvizTickersPuller>()
+    sp.GetService<FinvizTickersPuller>()!,
+    sp.GetService<NivTickersPuller>()!,
+    sp.GetService<TradingViewTickersPuller>()!,
 });
-services.AddSingleton(sp => Array.Empty<ITickerPuller>());
+services.AddSingleton(sp => new ITickerPuller[]
+{
+});
 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
 services.AddSingleton<MainTickersPuller>();
 
@@ -40,7 +46,7 @@ services.AddSingleton<YahooInterdayPricesPuller>();
 services.AddSingleton(sp => new IPricesPuller[]
 {
     // sp.GetService<YahooPricesPuller>(),
-    sp.GetService<YahooInterdayPricesPuller>(),
+    sp.GetService<YahooInterdayPricesPuller>()!,
 
 });
 services.AddSingleton<IPricesPuller, MainPricesPuller>();
@@ -48,9 +54,9 @@ services.AddSingleton<GoogleNewsPuller>();
 services.AddSingleton<YahooFinanceNewsPuller>();
 services.AddSingleton(sp => new INewsPuller[]
 {
-    sp.GetService<GoogleNewsPuller>(),
-    sp.GetService<YahooFinanceNewsPuller>(),
-    sp.GetService<FinvizNewPuller>(),
+    sp.GetService<GoogleNewsPuller>()!,
+    sp.GetService<YahooFinanceNewsPuller>()!,
+    sp.GetService<FinvizNewPuller>()!,
 
 });
 
@@ -66,7 +72,7 @@ services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
         var runner2 = sp.GetService<BreakOutDetectionRunner>();
 
 
-        return [runner1, runner2, runner3];
+        return [runner1!, runner2!, runner3!];
     }
 );
 
@@ -74,7 +80,7 @@ services.AddSingleton<RangeAlgorithmsRunner>();
 services.AddSingleton<INewsPuller, MainNewsPuller>();
 services.AddSingleton<KeywordsDetectorAnalysed>();
 services.AddSingleton<INewsAnalyzer[]>(sp => [
-    sp.GetService<KeywordsDetectorAnalysed>()
+    sp.GetService<KeywordsDetectorAnalysed>()!
 ]);
 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
 services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();

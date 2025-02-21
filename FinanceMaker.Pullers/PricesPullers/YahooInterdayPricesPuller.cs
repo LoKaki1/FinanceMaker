@@ -38,12 +38,10 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         var yahooResponse = await PullDataFromYahoo(pricesPullerParameters, yahooPeriod, cancellationToken);
 
-        var candles = CreateCandlesFromYahoo(yahooResponse);
+        if (yahooResponse.IsEmpty()) return [];
 
-        if (cancellationToken.IsCancellationRequested)
-        {
-            throw new OperationCanceledException();
-        }
+        var candles = CreateCandlesFromYahoo(yahooResponse);
+        cancellationToken.ThrowIfCancellationRequested();
 
         return candles;
     }
@@ -70,8 +68,18 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
             candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
         }
+        var haCandles = candles;
+        haCandles = candles.Select((candle, index) =>
+        {
+            var haClose = (candle.Open + candle.Close + candle.High + candle.Low) / 4;
+            var haOpen = index == 0 ? (candle.Open + candle.Close) / 2 : (haCandles[index - 1].Open + haCandles[index - 1].Close) / 2;
+            var haHigh = Math.Max(candle.High, Math.Max(haOpen, haClose));
+            var haLow = Math.Min(candle.Low, Math.Min(haOpen, haClose));
 
-        return candles;
+            return new FinanceCandleStick(candle.Time, haOpen, haClose, haHigh, haLow, candle.Volume);
+        }).ToArray();
+
+        return haCandles;
     }
 
     private async Task<YahooResponse> PullDataFromYahoo(PricesPullerParameters pricesPullerParameters,
@@ -83,13 +91,15 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
         var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime).ToUnixTimeSeconds();
         var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime).ToUnixTimeSeconds();
 
+
         var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);
 
         var response = await client.GetAsync(url, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new InvalidDataException($"Yahoo api returned {response.StatusCode} for those params:\n{pricesPullerParameters}");
+            return YahooResponse.Enpty;
+
         }
 
         var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>(cancellationToken);
@@ -99,7 +109,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         if (result is null || indicators is null || result.timestamp is null)
         {
-            throw new ArgumentException($"Yahoo api returned null for those params:\n{pricesPullerParameters}");
+            return YahooResponse.Enpty;
         }
 
         return result;

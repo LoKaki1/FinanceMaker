@@ -12,23 +12,14 @@ public abstract class BrokerrBase<T> : IBroker
     where T : GeneralOutputIdea
 {
     public abstract TraderType Type { get; }
-    public async Task<ITrade> Trade(GeneralOutputIdea idea, CancellationToken cancellationToken)
+    public Task<ITrade> Trade(GeneralOutputIdea idea, CancellationToken cancellationToken)
     {
-
         if (idea is not T realIdea)
         {
             throw new ArgumentException($"Trader got {idea.GetType()} but need {typeof(T)}");
         }
 
-        try
-        {
-            return await TradeInternal(realIdea, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            idea.Description += $"\n{ex.Message}";
-            return new Trade(idea, Guid.NewGuid(), true);
-        }
+        return TradeInternal(realIdea, cancellationToken);
     }
 
     protected abstract Task<ITrade> TradeInternal(T idea, CancellationToken cancellationToken);

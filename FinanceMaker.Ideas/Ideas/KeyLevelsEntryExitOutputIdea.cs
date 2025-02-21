@@ -95,8 +95,8 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
 
         Func<float, bool> findKeyLevelDel
                 = (double)current.Close <= entryPrice ?
-                    _ => _ != entryPrice && _ - entryPrice * 0.97 <= 0 :
-                     _ => _ != entryPrice && _ - entryPrice * 1.03 > 0;
+                    _ => _ != entryPrice && _ - entryPrice * 0.93 <= 0 :
+                     _ => _ != entryPrice && _ - entryPrice * 1.07 > 0;
         Func<IEnumerable<float>, float> mostRelevant = _ =>
         {
             if (_.GetNonEnumeratedCount() == 0)
@@ -110,7 +110,7 @@ public class KeyLevelsEntryExitOutputIdea<TInput, TOutput> :
         };
         exitPrice = mostRelevant.Invoke(keyLevelsCandles.KeyLevels.Where(findKeyLevelDel));
 
-        stopLoss = current.Close <= entryPrice ? (float)(entryPrice * 1.03) : (float)(entryPrice * 0.97);
+        stopLoss = current.Close <= entryPrice ? (float)(entryPrice * 1.07) : (float)(entryPrice * 0.93);
 
         // No good levels were found to trade 
         if (exitPrice == 0 || stopLoss == 0)

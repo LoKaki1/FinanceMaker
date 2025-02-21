@@ -34,9 +34,9 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<TradingViewTickersPuller>();
                 services.AddSingleton(sp => new IParamtizedTickersPuller[]
                 {
-                    sp.GetService<FinvizTickersPuller>()
+                    sp.GetService<FinvizTickersPuller>(),
+                    sp.GetService<TradingViewTickersPuller>()
                 });
-                services.AddSingleton(sp => new ITickerPuller[] { sp.GetService<TradingViewTickersPuller>() });
                 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
                 services.AddSingleton<MainTickersPuller>();
 
