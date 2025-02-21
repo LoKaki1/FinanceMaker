@@ -17,7 +17,6 @@ namespace FinanaceMaker.Server.Controllers.Trading
         private readonly OverNightBreakout m_Idea;
         private readonly IBroker m_Broker;
         private readonly ITrader m_Trader;
-        private Task m_Runner;
 
         public TraderController(OverNightBreakout ideal, IBroker broker, ITrader trader)
         {

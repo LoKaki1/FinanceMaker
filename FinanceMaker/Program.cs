@@ -52,7 +52,7 @@ Console.WriteLine("Hello, World!");
 
 //   //Physical DLL location
 //   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
-Config.Set("algorithm-type-name", "AlgorithmBaseForTestingOnly");
+Config.Set("algorithm-type-name", "TradeNIO");
 Config.Set("data-folder", "../../../../FinanceMaker/Data");
 Config.Set("algorithm-language", "CSharp");
 Config.Set("algorithm-location", "FinanceMaker.dll");
@@ -79,7 +79,7 @@ OS.Initialize();
 var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
 engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
 Console.WriteLine(engine.AlgorithmHandlers.Results);
-
+var p = 'a';
 // Now everything works using the library instead of the cloned code
 // What we need to do now is first oranize all this shit 
 // then understand how we take all the out from this
