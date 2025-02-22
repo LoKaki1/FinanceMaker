@@ -87,7 +87,7 @@ namespace FinanceMaker.Publisher.Traders
                     {
                         idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount() + currentPosition.Orders.GetNonEnumeratedCount()) / idea.Entry);
                     }
-                    var trade = await m_Broker.Trade(idea, cancellationToken);
+                    var trade = await m_Broker.BrokerTrade(idea, cancellationToken);
 
                     m_OpenedTrades.Add(trade);
                 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
@@ -64,7 +64,7 @@ public class WorkerTrader : ITrader
             // TODO: Do it both before the caculations
             // Close and trade if it finds better (not so important)
             if (currentPosition.OpenedPositions.Contains(idea.Ticker)
-                || currentPosition.Orders.Contains(idea.Ticker))
+                || currentPosition.Orders.Contains(idea.Ticker) || m_OpenedTrades.Any(_ => _.Idea.Ticker == idea.Ticker))
             {
                 continue;
             }
@@ -72,7 +72,7 @@ public class WorkerTrader : ITrader
             {
                 idea.Quantity = (int)(currentPosition.BuyingPower / (MAX_OPENED_TRADES + currentPosition.OpenedPositions.GetNonEnumeratedCount() + currentPosition.Orders.GetNonEnumeratedCount()) / idea.Entry);
             }
-            var trade = await m_Broker.Trade(idea, cancellationToken);
+            var trade = await m_Broker.BrokerTrade(idea, cancellationToken);
 
             m_OpenedTrades.Add(trade);
         }

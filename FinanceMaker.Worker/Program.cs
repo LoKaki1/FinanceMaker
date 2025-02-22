@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using FinanceMaker.Algorithms;
@@ -38,6 +38,7 @@ var app = Host.CreateDefaultBuilder(args)
                     sp.GetService<TradingViewTickersPuller>()
                 });
                 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
+                services.AddSingleton(sp => Array.Empty<ITickerPuller>());
                 services.AddSingleton<MainTickersPuller>();
 
                 services.AddSingleton<YahooPricesPuller>();

@@ -27,9 +27,9 @@ public class Worker : BackgroundService
         {
             var now = DateTime.Now;
             DateTime nextExecutionTime = m_CrontabSchedule.GetNextOccurrence(now);
-            await Task.Delay(60 * 60 * 1000);
-            
             await m_Trader.Trade(stoppingToken);
+            await Task.Delay(60 * 5 * 1000);
+            
         }
     }
 }

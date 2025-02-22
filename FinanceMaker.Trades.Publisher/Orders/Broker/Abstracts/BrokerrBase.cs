@@ -12,7 +12,7 @@ public abstract class BrokerrBase<T> : IBroker
     where T : GeneralOutputIdea
 {
     public abstract TraderType Type { get; }
-    public Task<ITrade> Trade(GeneralOutputIdea idea, CancellationToken cancellationToken)
+    public Task<ITrade> BrokerTrade(GeneralOutputIdea idea, CancellationToken cancellationToken)
     {
         if (idea is not T realIdea)
         {

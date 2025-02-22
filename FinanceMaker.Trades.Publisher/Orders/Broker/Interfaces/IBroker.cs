@@ -22,7 +22,7 @@ public interface IBroker
     /// <param name="idea">The idea which the trader will follow</param>
     /// <param name="cancellationToken">Cancel the initialize</param>
     /// <returns>Trade which related to this trade</returns>
-    Task<ITrade> Trade(GeneralOutputIdea idea, CancellationToken cancellationToken);
+    Task<ITrade> BrokerTrade(GeneralOutputIdea idea, CancellationToken cancellationToken);
     Task<Position> GetClientPosition(CancellationToken cancellationToken);
     Task CancelTrade(ITrade trade, CancellationToken cancellationToken);
 }

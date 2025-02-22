@@ -32,16 +32,23 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
             throw new Exception("Bro what's worng with you and math? you can't buy less than 1 stock");
         }
         var request = idea.ConvertToAlpacaRequest();
-
-        var order = await m_Client.PostOrderAsync(request, cancellationToken);
-        var trade = new Trade(idea, order.OrderId, true);
-
-        if (cancellationToken.IsCancellationRequested)
+        try
         {
-            await CancelTrade(trade, CancellationToken.None);
+            var order = await m_Client.PostOrderAsync(request, cancellationToken);
+            var trade = new Trade(idea, order.OrderId, true);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                await CancelTrade(trade, CancellationToken.None);
+            }
+
+            return trade;
         }
 
-        return trade;
+        catch (Exception ex)
+        {
+            return Trade.Empty;
+        }
 
     }
 

@@ -86,7 +86,7 @@ namespace FinanaceMaker.Server.Controllers.Trading
                 {
                     entryExitOutputIdea.Quantity = (int)(moneyForEachTrade / entryExitOutputIdea.Entry);
                 }
-                var trade = await m_Broker.Trade(idea, cancellationToken);
+                var trade = await m_Broker.BrokerTrade(idea, cancellationToken);
 
                 tradesResult.Add(trade);
             }
