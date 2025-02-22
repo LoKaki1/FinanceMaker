@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Algorithm.Framework.Portfolio;
@@ -50,9 +50,6 @@ public class AlgorithmBaseForTestingOnly : QCAlgorithm
         UniverseSettings.Resolution = Resolution.Daily;
         // Add universe to trade on the most and least weighted stocks among SPY constituents.
         AddUniverse(Universe.ETF(spy, universeFilterFunc: Selection));
-        var nio = AddEquity("NIO", Resolution.Daily, Market.USA, fillForward: true, leverage: 2);
-        nio.SetLeverage(2); //
-        SetCash(1000000);
     }
 
     private IEnumerable<Symbol> Selection(IEnumerable<ETFConstituentUniverse> constituents)
