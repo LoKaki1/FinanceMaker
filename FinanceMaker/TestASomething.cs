@@ -42,9 +42,9 @@ namespace FinanceMaker
         public override void Initialize()
         {
             SetCash(100000);
-            _symbols.Add("SPY");
+            _symbols.Add("NIO");
             SetStartDate(1998, 1, 1);
-            SetEndDate(2014, 6, 1);
+            SetEndDate(2024, 6, 1);
 
             //Present Social Media Stocks:
             // symbols.Add("FB");symbols.Add("LNKD");symbols.Add("GRPN");symbols.Add("TWTR");
