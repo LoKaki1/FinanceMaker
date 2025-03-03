@@ -1,12 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 //using FinanceMaker.Algorithms.QuantConnectAlgorithms;
+using System.Globalization;
 using FinanceMaker;
+using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Pullers.Enums;
+using FinanceMaker.Pullers;
+using FinanceMaker.Pullers.PricesPullers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using QuantConnect;
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Util;
+
+using Period = FinanceMaker.Common.Models.Pullers.Enums.Period;
 
 Console.WriteLine("Hello, World!");
 
@@ -53,10 +63,12 @@ Console.WriteLine("Hello, World!");
 
 //   //Physical DLL location
 //   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
-Config.Set("algorithm-type-name", nameof(BubbleAlgorithm));
+Config.Set("algorithm-type-name", nameof(TestRealShit));
 Config.Set("data-folder", "../../../../FinanceMaker/Data");
 Config.Set("algorithm-language", "CSharp");
 Config.Set("algorithm-location", "FinanceMaker.dll");
+
+
 
 
 //Name thread for the profiler:
@@ -79,8 +91,49 @@ OS.Initialize();
 
 var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
 engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
-Console.WriteLine(engine.AlgorithmHandlers.Results);
-var p = 'a';
+
+var path = await SaveCandlestickDataToCsv("AAPL", Period.Daily, DateTime.Now.Subtract(TimeSpan.FromDays(100)), DateTime.Now);
+Console.WriteLine($"Data saved to {path}");
+static async Task<string> SaveCandlestickDataToCsv(
+    string ticker,
+    FinanceMaker.Common.Models.Pullers.Enums.Period period,
+    DateTime startTime,
+    DateTime endTime)
+{
+    // Ensure the directory exists
+    var dataDirectory = Config.Get("data-folder") + "/Custom";
+
+
+    Directory.CreateDirectory(dataDirectory);
+    var services = new ServiceCollection();
+    services.AddHttpClient(); // Registers IHttpClientFactory
+    services.AddSingleton<YahooInterdayPricesPuller>();
+    using var serviceProvider = services.BuildServiceProvider();
+    var finanaceMaker = serviceProvider.GetRequiredService<YahooInterdayPricesPuller>();
+    // Define the file path
+    var filePath = Path.Combine(dataDirectory, $"{ticker}.csv");
+
+    // Create and write to the CSV file
+    var candlesticks = await finanaceMaker.GetTickerPrices(new PricesPullerParameters(ticker, startTime, endTime, period), CancellationToken.None);
+    using var writer = new StreamWriter(filePath, false);
+
+    foreach (var candle in candlesticks)
+    {
+        var line = string.Format(
+            CultureInfo.InvariantCulture,
+            "{0:yyyyMMdd HH:mm:ss},{1},{2},{3},{4},{5}",
+            candle.Time,
+            candle.Open,
+            candle.High,
+            candle.Low,
+            candle.Close,
+            candle.Volume
+        );
+        writer.WriteLine(line);
+    }
+
+    return filePath;
+}
 // Now everything works using the library instead of the cloned code
 // What we need to do now is first oranize all this shit 
 // then understand how we take all the out from this
