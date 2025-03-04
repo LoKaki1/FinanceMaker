@@ -10,6 +10,7 @@ using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Data;
 using QuantConnect.Indicators;
+using QuantConnect.Orders.Fees;
 
 namespace FinanceMaker
 {
@@ -34,6 +35,7 @@ namespace FinanceMaker
         public override void Initialize()
         {
             SetCash(3000);
+            SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(1.0m))); // $1 per trade
             var startDate = new DateTime(2023, 1, 1);
             var endDate = DateTime.Now;
 
