@@ -17,6 +17,11 @@ namespace FinanceMaker;
 public class CustomCandleData : BaseData
 {
     // Properties for Open, High, Low, Close, Volume
+    public static DateTime StartDate
+    {
+        get; set;
+    }
+    public static DateTime EndDate { get; set; }
     public FinanceCandleStick CandleStick { get; set; }
     public static async Task<string> SaveCandlestickDataToCsv(
     string ticker,
@@ -26,9 +31,9 @@ public class CustomCandleData : BaseData
     {
         // Ensure the directory exists
         var dataDirectory = Config.Get("data-folder") + "/Custom";
-        var filePath = Path.Combine(dataDirectory, $"{ticker}.csv");
+        var filePath = Path.Combine(dataDirectory,
+                                    $"{ticker}_{period}_{startTime.Ticks}_{endTime.Ticks}.csv");
         if (File.Exists(filePath)) return filePath;
-
 
         Directory.CreateDirectory(dataDirectory);
         var services = new ServiceCollection();
@@ -62,7 +67,10 @@ public class CustomCandleData : BaseData
     public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
     {
         // Define the path to your custom data file
-        var filePath = SaveCandlestickDataToCsv(config.Symbol.Value, Common.Models.Pullers.Enums.Period.Daily, DateTime.Now.Subtract(TimeSpan.FromDays(100)), DateTime.Now).Result;
+        var filePath = SaveCandlestickDataToCsv(config.Symbol.Value,
+                                                Common.Models.Pullers.Enums.Period.Daily,
+                                                StartDate,
+                                                EndDate).Result;
         return new SubscriptionDataSource(filePath, SubscriptionTransportMedium.LocalFile);
     }
 
@@ -75,7 +83,7 @@ public class CustomCandleData : BaseData
             Time = this.Time,
             EndTime = this.EndTime,
             Value = this.Value,
-            CandleStick = this.CandleStick
+            CandleStick = this.CandleStick.Clone()
         };
     }
 

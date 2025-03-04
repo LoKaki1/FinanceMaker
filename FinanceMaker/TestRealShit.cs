@@ -33,9 +33,13 @@ namespace FinanceMaker
         private readonly Dictionary<string, MovingAverageConvergenceDivergence> _macdDic = new Dictionary<string, MovingAverageConvergenceDivergence>();
         public override void Initialize()
         {
-            SetCash(100000);
-            SetStartDate(2025, 1, 1);
-            SetEndDate(2025, 3, 3);
+            SetCash(3000);
+            var startDate = new DateTime(2023, 1, 1);
+            var endDate = DateTime.Now;
+
+            SetStartDate(startDate);
+            SetEndDate(endDate);
+
 
             //Present Social Media Stocks:
             // symbols.Add("FB");symbols.Add("LNKD");symbols.Add("GRPN");symbols.Add("TWTR");
@@ -58,6 +62,9 @@ namespace FinanceMaker
             // SetEndDate(2000, 1, 1);
 
             //CAPE data
+            CustomCandleData.StartDate = startDate;
+            CustomCandleData.EndDate = endDate;
+
             var aaa = AddData<CustomCandleData>("NIO", Resolution.Daily).Symbol;
             // AddData<CustomCandleData>("NIO");
             // var history = History<CustomCandleData>(Symbol("NIO"), TimeSpan.FromDays(10));
@@ -82,21 +89,21 @@ namespace FinanceMaker
         }
         public void OnData(CustomCandleData data)
         {
-            _currCape = 12m;
-            _c[_counter] = _currCape;
-            _counter++;
-            if (_counter == 4)
+            foreach (var value in DepenedencyInjectionCode)
             {
-                _counter = 0;
-                _c.CopyTo(_cCopy, 0);
-                Array.Sort(_cCopy);
-                if (_cCopy[0] == _currCape)
+                if (Math.Abs((float)data.Value - value) / value <= 0.01f)
                 {
-                    _newLow = true;
-                }
-                else
-                {
-                    _newLow = false;
+                    var symbol = data.Symbol.Value;
+                    var holdings = Securities[symbol].Holdings.Quantity;
+
+                    if (holdings == 0)
+                    {
+                        Buy(data.Symbol);
+                    }
+                    else
+                    {
+                        Sell(data.Symbol);
+                    }
                 }
             }
         }
@@ -106,10 +113,7 @@ namespace FinanceMaker
         public override void OnData(Slice slice)
         {
 
-            if (DepenedencyInjectionCode.Contains((float)Securities["NIO"].Price))
-            {
 
-            }
 
         }
 
@@ -117,12 +121,11 @@ namespace FinanceMaker
         /// <summary>
         /// Buy this symbol
         /// </summary>
-        public void Buy(string symbol)
+        public void Buy(Symbol symbol)
         {
-            var s = Securities[symbol].Holdings;
             //if (_macdDic[symbol] > 0m)
             //{
-            SetHoldings(symbol, 1);
+            var aa = SetHoldings(symbol, 0.9);
 
             //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
             //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);

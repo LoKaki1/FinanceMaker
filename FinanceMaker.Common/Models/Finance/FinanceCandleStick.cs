@@ -1,7 +1,7 @@
-﻿using CloneExtensions;
+﻿using System.Text.Json.Serialization;
+using CloneExtensions;
 using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
-using System.Text.Json.Serialization;
 
 namespace FinanceMaker.Common.Models.Finance
 {
@@ -68,6 +68,11 @@ namespace FinanceMaker.Common.Models.Finance
         public FinanceCandleStick(Candlestick candlestick)
         {
             Candlestick = candlestick;
+        }
+
+        public FinanceCandleStick Clone()
+        {
+            return new FinanceCandleStick(this);
         }
     }
 }

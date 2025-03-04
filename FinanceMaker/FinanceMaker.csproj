@@ -22,7 +22,4 @@
     <ProjectReference Include="..\FinanceMaker.Ideas\FinanceMaker.Ideas.csproj" />
     <ProjectReference Include="..\FinanceMaker.Pullers\FinanceMaker.Pullers.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data/Custom/" />
-  </ItemGroup>
 </Project>
