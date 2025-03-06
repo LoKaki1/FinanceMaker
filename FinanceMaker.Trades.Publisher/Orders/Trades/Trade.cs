@@ -1,5 +1,4 @@
-﻿using System;
-using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
+﻿using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
 
 namespace FinanceMaker.Publisher.Orders.Trades;

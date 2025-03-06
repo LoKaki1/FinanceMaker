@@ -1,12 +1,12 @@
 ﻿using System.Text.Json.Serialization;
 using CloneExtensions;
-using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
 
 namespace FinanceMaker.Common.Models.Finance
 {
     public class FinanceCandleStick
     {
+        public static FinanceCandleStick Empty => new FinanceCandleStick(default, 0f, 0f, 0f, 0f, 0);
         #region Boring Data
 
         public DateTime Time => Candlestick?.Time ?? DateTime.MaxValue;

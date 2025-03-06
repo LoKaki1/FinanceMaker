@@ -1,5 +1,4 @@
-﻿using System;
-namespace FinanceMaker.Common.Models.Finance.Enums
+﻿namespace FinanceMaker.Common.Models.Finance.Enums
 {
 	public enum TrendTypes
 	{

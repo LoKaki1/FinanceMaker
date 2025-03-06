@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using NCrontab;
-using Microsoft.Extensions.Logging;
-using FinanceMaker.Publisher.Traders;
 using FinanceMaker.Publisher.Traders.Interfaces;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using NCrontab;
 
 public class Worker : BackgroundService
 {
@@ -29,7 +28,7 @@ public class Worker : BackgroundService
             DateTime nextExecutionTime = m_CrontabSchedule.GetNextOccurrence(now);
             await m_Trader.Trade(stoppingToken);
             await Task.Delay(60 * 5 * 1000);
-            
+
         }
     }
 }

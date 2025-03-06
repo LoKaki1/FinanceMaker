@@ -1,7 +1,3 @@
-using System;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 public class MarketStatus

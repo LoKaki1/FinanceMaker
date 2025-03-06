@@ -1,5 +1,4 @@
-﻿using System;
-using FinanceMaker.Common.Models.Ideas.Enums;
+﻿using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Ideas.Ideas.Interfaces;
@@ -18,7 +17,7 @@ public abstract class IdeaBase<TInput, TOutput> : IIdea where TInput : GeneralIn
             throw new ArgumentException($"input is not type of - {typeof(TInput)}.");
         }
 
-        var idea  = await CreateIdea(actualInput, cancellationToken);
+        var idea = await CreateIdea(actualInput, cancellationToken);
 
         return idea;
     }

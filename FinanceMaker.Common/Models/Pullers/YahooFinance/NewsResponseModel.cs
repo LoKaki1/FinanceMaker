@@ -1,9 +1,8 @@
-﻿using System;
-namespace FinanceMaker.Common.Models.Pullers.YahooFinance
+﻿namespace FinanceMaker.Common.Models.Pullers.YahooFinance
 {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-	public class NewsResponseModel
-	{
+    public class NewsResponseModel
+    {
         public Data data { get; set; }
         public string status { get; set; }
     }

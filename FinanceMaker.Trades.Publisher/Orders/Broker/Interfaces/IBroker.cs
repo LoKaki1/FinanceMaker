@@ -1,5 +1,4 @@
-﻿using System;
-using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
+﻿using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Trades.Enums;
 using FinanceMaker.Common.Models.Trades.Trader;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;

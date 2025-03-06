@@ -1,6 +1,5 @@
 ﻿using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.News.NewsResult;
-using System.Collections.Generic;
 
 namespace FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
 

@@ -1,6 +1,5 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 
-using System.Collections.Generic;
 using FinanceMaker.Algorithms.News.Analyziers.Abstracts;
 using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Algorithms.Analyzers.Enums;

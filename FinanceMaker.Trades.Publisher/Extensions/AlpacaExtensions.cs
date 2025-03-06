@@ -1,5 +1,4 @@
-﻿using System;
-using Alpaca.Markets;
+﻿using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 

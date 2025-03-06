@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Pullers;

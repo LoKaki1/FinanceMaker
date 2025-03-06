@@ -1,22 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 //using FinanceMaker.Algorithms.QuantConnectAlgorithms;
-using System.Globalization;
-using FinanceMaker;
-using FinanceMaker.Common;
-using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Pullers.Enums;
-using FinanceMaker.Pullers;
-using FinanceMaker.Pullers.PricesPullers;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using QuantConnect;
-using QuantConnect.Configuration;
-using QuantConnect.Lean.Engine;
-using QuantConnect.Util;
-
-using Period = FinanceMaker.Common.Models.Pullers.Enums.Period;
+using FinanceMaker.BackTester;
+using FinanceMaker.BackTester.QCAlggorithms;
 
 Console.WriteLine("Hello, World!");
 
@@ -63,79 +49,32 @@ Console.WriteLine("Hello, World!");
 
 //   //Physical DLL location
 //   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
-Config.Set("algorithm-type-name", nameof(TestRealShit));
-Config.Set("data-folder", "../../../../FinanceMaker/Data");
-Config.Set("algorithm-language", "CSharp");
-Config.Set("algorithm-location", "FinanceMaker.dll");
+// Config.Set("algorithm-type-name", nameof(RangeAlgoritm));
+// Config.Set("data-folder", "../../../../FinanceMaker/Data");
+// Config.Set("algorithm-language", "CSharp");
+// Config.Set("algorithm-location", "FinanceMaker.BackTester.dll");
 
 
 
 
-//Name thread for the profiler:
-Thread.CurrentThread.Name = "Algorithm Analysis Thread";
+// //Name thread for the profiler:
+// Thread.CurrentThread.Name = "Algorithm Analysis Thread";
 
-Initializer.Start();
-var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
+// Initializer.Start();
+// var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
 
-//-> Pull job from QuantConnect job queue, or, pull local build:
-var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
+// //-> Pull job from QuantConnect job queue, or, pull local build:
+// var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
 
-var leanEngineAlgorithmHandlers = Initializer.GetAlgorithmHandlers();
+// var leanEngineAlgorithmHandlers = Initializer.GetAlgorithmHandlers();
 
-// Create the algorithm manager and start our engine
-var algorithmManager = new AlgorithmManager(QuantConnect.Globals.LiveMode, job);
+// // Create the algorithm manager and start our engine
+// var algorithmManager = new AlgorithmManager(QuantConnect.Globals.LiveMode, job);
 
-leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
+// leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
 
-OS.Initialize();
+// OS.Initialize();
 
-var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
-engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
-
-var path = await SaveCandlestickDataToCsv("AAPL", Period.Daily, DateTime.Now.Subtract(TimeSpan.FromDays(100)), DateTime.Now);
-Console.WriteLine($"Data saved to {path}");
-static async Task<string> SaveCandlestickDataToCsv(
-    string ticker,
-    FinanceMaker.Common.Models.Pullers.Enums.Period period,
-    DateTime startTime,
-    DateTime endTime)
-{
-    // Ensure the directory exists
-    var dataDirectory = Config.Get("data-folder") + "/Custom";
-
-
-    Directory.CreateDirectory(dataDirectory);
-    var services = new ServiceCollection();
-    services.AddHttpClient(); // Registers IHttpClientFactory
-    services.AddSingleton<YahooInterdayPricesPuller>();
-    using var serviceProvider = services.BuildServiceProvider();
-    var finanaceMaker = serviceProvider.GetRequiredService<YahooInterdayPricesPuller>();
-    // Define the file path
-    var filePath = Path.Combine(dataDirectory, $"{ticker}.csv");
-
-    // Create and write to the CSV file
-    var candlesticks = await finanaceMaker.GetTickerPrices(new PricesPullerParameters(ticker, startTime, endTime, period), CancellationToken.None);
-    using var writer = new StreamWriter(filePath, false);
-
-    foreach (var candle in candlesticks)
-    {
-        var line = string.Format(
-            CultureInfo.InvariantCulture,
-            "{0:yyyyMMdd HH:mm:ss},{1},{2},{3},{4},{5}",
-            candle.Time,
-            candle.Open,
-            candle.High,
-            candle.Low,
-            candle.Close,
-            candle.Volume
-        );
-        writer.WriteLine(line);
-    }
-
-    return filePath;
-}
-// Now everything works using the library instead of the cloned code
-// What we need to do now is first oranize all this shit 
-// then understand how we take all the out from this
-// but before don't forget to add the data folder (They need it)
-// 
+// var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
+// engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
+BackTester.Runner(typeof(RangeAlgoritm));

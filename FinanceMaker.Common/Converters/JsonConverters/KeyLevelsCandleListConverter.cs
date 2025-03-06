@@ -1,11 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 
-using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FinanceMaker.Common.Models.Finance;
-using QuantConnect.Api;
 
 namespace FinanceMaker.Common.Converters.JsonConverters
 {
@@ -18,7 +15,7 @@ namespace FinanceMaker.Common.Converters.JsonConverters
         {
             throw new NotImplementedException();
         }
-            
+
         public override void Write(
             Utf8JsonWriter writer,
             KeyLevelCandleSticks keyLevelCandles,

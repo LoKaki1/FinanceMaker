@@ -1,0 +1,65 @@
+using System.Globalization;
+using FinanceMaker.Common.Models.Finance;
+using QuantConnect;
+using QuantConnect.Data;
+
+namespace FinanceMaker.BackTester.QCHelpers;
+
+public class FinanceData : BaseData
+{
+    public static DateTime StartDate
+    {
+        get; set;
+    }
+    public static DateTime EndDate { get; set; }
+    public FinanceCandleStick CandleStick { get; set; } = FinanceCandleStick.Empty;
+    // Override GetSource to specify the source of your data
+    public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
+    {
+        // Define the path to your custom data file
+        var filePath = Helper.SaveCandlestickDataToCsv(config.Symbol.Value,
+                                                Common.Models.Pullers.Enums.Period.Daily,
+                                                StartDate,
+                                                EndDate).Result;
+        return new SubscriptionDataSource(filePath, SubscriptionTransportMedium.LocalFile);
+    }
+
+    // Override Reader to parse data into your CustomCandleData object
+    public override BaseData Clone()
+    {
+        return new FinanceData
+        {
+            Symbol = Symbol,
+            Time = Time,
+            EndTime = EndTime,
+            Value = Value,
+            CandleStick = CandleStick.Clone()
+        };
+    }
+
+    public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
+
+    {
+        // Parse the CSV line
+        var data = line.Split(',');
+        var candleTime = DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture);
+        return new FinanceData
+        {
+            Symbol = config.Symbol,
+            EndTime = candleTime.AddDays(1),
+            Time = candleTime,
+
+            Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
+            CandleStick = new FinanceCandleStick
+
+                (
+                    DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture),
+                    Convert.ToSingle(data[1], CultureInfo.InvariantCulture),
+                    Convert.ToSingle(data[2], CultureInfo.InvariantCulture),
+                    Convert.ToSingle(data[3], CultureInfo.InvariantCulture),
+                    Convert.ToSingle(data[4], CultureInfo.InvariantCulture),
+                    Convert.ToInt32(data[5], CultureInfo.InvariantCulture)
+                )
+        };
+    }
+}

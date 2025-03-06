@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json.Serialization;
 
 namespace FinanceMaker.Common.Models.Pullers.TradingView;

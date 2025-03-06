@@ -5,7 +5,6 @@ using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FinanaceMaker.Server.Controllers.Trading

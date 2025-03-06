@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;

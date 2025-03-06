@@ -1,17 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 
-using System.Threading;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
-using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Ideas.Ideas.Abstracts;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces;
-using QuantConnect;
 
 namespace FinanceMaker.Publisher.Traders
 {

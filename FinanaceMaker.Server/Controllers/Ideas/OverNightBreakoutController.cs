@@ -2,9 +2,7 @@
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Ideas.Ideas;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using QuantConnect.Interfaces;
 
 namespace FinanaceMaker.Server.Controllers.Ideas
 {

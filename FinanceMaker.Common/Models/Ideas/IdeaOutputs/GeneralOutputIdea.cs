@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace FinanceMaker.Common.Models.Ideas.IdeaOutputs;
+﻿namespace FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 
 public class GeneralOutputIdea
 {

@@ -1,7 +1,5 @@
-﻿using Accord;
-using FinanceMaker.Algorithms;
+﻿using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
-using FinanceMaker.Common.Models.Algorithms.Analyzers.Input;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Pullers.TickerPullers;

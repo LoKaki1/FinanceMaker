@@ -1,8 +1,6 @@
-﻿using System;
-using FinanceMaker.Common.Extensions;
+﻿using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.News.NewsResult;
-using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 using HtmlAgilityPack;
 
@@ -27,7 +25,7 @@ namespace FinanceMaker.Pullers.NewsPullers
             var googleResponse = await client.GetAsync(url, cancellationToken);
             var htmlContent = await googleResponse.Content.ReadAsStringAsync(cancellationToken);
             var htmlDocument = new HtmlDocument();
-       
+
             htmlDocument.LoadHtml(htmlContent);
             var nodes = htmlDocument.DocumentNode.SelectNodes("//a[@class='WlydOe']");
             var hrefs = nodes.Select(node => node.GetAttributeValue("href", string.Empty))

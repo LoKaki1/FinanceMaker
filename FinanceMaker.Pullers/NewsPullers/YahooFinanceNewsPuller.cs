@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using FinanceMaker.Common.Extensions;
+﻿using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Common.Models.Pullers.YahooFinance;

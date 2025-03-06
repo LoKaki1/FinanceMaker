@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Common.Models.Pullers;
 
 namespace FinanceMaker.Pullers.TickerPullers;

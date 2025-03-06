@@ -1,5 +1,4 @@
-﻿using System;
-using FinanceMaker.Common.Models.Algorithms.Analyzers;
+﻿using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Ideas.Enums;
 
 namespace FinanceMaker.Common.Models.Ideas.IdeaOutputs;
@@ -18,8 +17,8 @@ public class EntryExitOutputIdea : GeneralOutputIdea
     public float Stoploss { get; set; }
     public int Quantity { get; set; }
     public IdeaTradeType Trade => Exit > Entry ? IdeaTradeType.Long : IdeaTradeType.Short;
-    public float ProfitPressent => Trade == IdeaTradeType.Long ? 
-                                    100 * (Exit / Entry): 100 * (Entry/ Exit);
+    public float ProfitPressent => Trade == IdeaTradeType.Long ?
+                                    100 * (Exit / Entry) : 100 * (Entry / Exit);
     public NewsAnalyzed[] Analyzed { get; set; }
     public EntryExitOutputIdea(string description,
                                string ticker,

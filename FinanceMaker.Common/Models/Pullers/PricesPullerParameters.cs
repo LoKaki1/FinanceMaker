@@ -1,5 +1,4 @@
-﻿using FinanceMaker.Common.Models.Pullers;
-using FinanceMaker.Common.Models.Pullers.Enums;
+﻿using FinanceMaker.Common.Models.Pullers.Enums;
 
 namespace FinanceMaker.Common;
 

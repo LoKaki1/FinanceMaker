@@ -1,13 +1,11 @@
-﻿using System;
-using FinanceMaker.Common.Models.Pullers;
+﻿using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.News.NewsResult;
-using FinanceMaker.Common.Models.Tickers;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 
 namespace FinanceMaker.Pullers.NewsPullers
 {
     public sealed class MainNewsPuller : INewsPuller
-	{
+    {
         private readonly INewsPuller[] m_NewsPuller;
 
         public MainNewsPuller(INewsPuller[] newsPuller)

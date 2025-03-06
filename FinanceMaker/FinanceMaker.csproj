@@ -21,5 +21,6 @@
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
     <ProjectReference Include="..\FinanceMaker.Ideas\FinanceMaker.Ideas.csproj" />
     <ProjectReference Include="..\FinanceMaker.Pullers\FinanceMaker.Pullers.csproj" />
+    <ProjectReference Include="..\FinanceMaker.BackTester\FinanceMaker.BackTester.csproj" />
   </ItemGroup>
 </Project>

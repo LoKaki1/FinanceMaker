@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Common.Models.Finance;
 
 namespace FinanceMaker.Common.Extensions;

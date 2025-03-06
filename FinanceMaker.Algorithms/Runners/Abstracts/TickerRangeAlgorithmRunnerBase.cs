@@ -1,7 +1,5 @@
-﻿using System.Reflection;
-using FinanceMaker.Common;
+﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 
 namespace FinanceMaker.Algorithms;

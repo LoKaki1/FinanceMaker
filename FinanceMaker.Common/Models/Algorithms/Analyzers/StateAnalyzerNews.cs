@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Common.Models.Algorithms.Analyzers.Enums;
 
 namespace FinanceMaker.Common.Models.Algorithms.Analyzers;

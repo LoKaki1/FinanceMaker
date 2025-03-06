@@ -1,11 +1,10 @@
-﻿using System;
-using FinanceMaker.Common.Resolvers.Interfaces;
+﻿using FinanceMaker.Common.Resolvers.Interfaces;
 
 namespace FinanceMaker.Common.Resolvers.Abstracts
 {
-	public abstract class ResolverBase<TInterface, TArgs> where TInterface: IResolveable<TArgs>
-	{
-		protected readonly IEnumerable<TInterface> m_LogicsToResolve;
+    public abstract class ResolverBase<TInterface, TArgs> where TInterface : IResolveable<TArgs>
+    {
+        protected readonly IEnumerable<TInterface> m_LogicsToResolve;
 
         public ResolverBase(IEnumerable<TInterface> logicsToResolve)
         {

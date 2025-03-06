@@ -1,9 +1,7 @@
 ﻿
 using FinanceMaker.Common.Extensions;
-using FinanceMaker.Common.Models;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
-using QuantConnect;
 
 namespace FinanceMaker.Pullers.TickerPullers
 {

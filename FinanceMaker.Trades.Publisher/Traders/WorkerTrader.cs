@@ -1,5 +1,4 @@
-﻿using System;
-using FinanceMaker.Common;
+﻿using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;

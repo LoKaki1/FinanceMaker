@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FinanceMaker.Common.Models.Pullers;
+﻿using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Pullers.NewsPullers;
 using Microsoft.AspNetCore.Mvc;
