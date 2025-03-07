@@ -45,7 +45,7 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
             return trade;
         }
 
-        catch (Exception ex)
+        catch (Exception)
         {
             return Trade.Empty;
         }
