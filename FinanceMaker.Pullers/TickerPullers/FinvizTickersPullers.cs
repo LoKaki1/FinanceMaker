@@ -1,16 +1,14 @@
 ﻿
 using FinanceMaker.Common.Extensions;
-using FinanceMaker.Common.Models;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
-using QuantConnect;
 
 namespace FinanceMaker.Pullers.TickerPullers
 {
-	public sealed class FinvizTickersPuller: IParamtizedTickersPuller
-	{
+    public class FinvizTickersPuller : IParamtizedTickersPuller
+    {
         private readonly IHttpClientFactory m_RequestService;
-        private readonly string m_FinvizUrl;
+        protected string m_FinvizUrl;
         private readonly string m_FinvizStartSperator;
         private readonly string m_FinvizEndSeperator;
 
@@ -22,12 +20,33 @@ namespace FinanceMaker.Pullers.TickerPullers
             m_FinvizEndSeperator = "TE -->";
         }
 
-        public async Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
+        public async virtual Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
+        {
+
+            var url = string.Join("", m_FinvizUrl, GenerateParams(scannerParams));
+            var httpClient = m_RequestService.CreateClient();
+            httpClient.AddBrowserUserAgent();
+            var finvizResult = await httpClient.GetAsync(url, cancellationToken);
+
+            if (!finvizResult.IsSuccessStatusCode)
+            {
+                throw new NotSupportedException($"Something went wrong with finviz {finvizResult.RequestMessage}");
+            }
+
+            var finvizHtml = await finvizResult.Content.ReadAsStringAsync(cancellationToken);
+            var onlyTickersData = finvizHtml.Split(m_FinvizStartSperator)[1]
+                                            .Split(m_FinvizEndSeperator)[0]
+                                            .Split("\n")
+                                            .Select(tickerData => tickerData.Split("|")[0])
+                                            .Where(ticker => !string.IsNullOrEmpty(ticker))
+                                            .ToArray();
+
+            return onlyTickersData;
+        }
+        protected async Task<string[]> GetTickers(string url, CancellationToken cancellationToken)
         {
             var httpClient = m_RequestService.CreateClient();
             httpClient.AddBrowserUserAgent();
-
-            var url = string.Join("", m_FinvizUrl, GenerateParams(scannerParams));
             var finvizResult = await httpClient.GetAsync(url, cancellationToken);
 
             if (!finvizResult.IsSuccessStatusCode)
@@ -55,9 +74,14 @@ namespace FinanceMaker.Pullers.TickerPullers
             var minAverageVolume = scannerParams.MinAvarageVolume;
             var minPresentOfChange = scannerParams.MinPresentageOfChange;
             var maxPresentageOfChange = scannerParams.MaxPresentageOfChange;
+            var minVolume = scannerParams.MinVolume;
+            var maxVolume = scannerParams.MaxVolume;
             //&f = sh_avgvol_100to1000,sh_price_u10,ta_change_u20,targetprice_a30 &
-            var finvizParams = $"&f=sh_avgvol_{minAverageVolume / 1000}to{maxAverageVolume / 1000}," +
-                $"sh_price_{minPrice}to{maxPrice},ta_change_{minPresentOfChange}to{maxPresentageOfChange}&ft=4";
+            var finvizParams
+            = $"&f=sh_avgvol_{minAverageVolume / 1000}to{maxAverageVolume / 1000}," +
+                $"sh_price_{minPrice}to{maxPrice},ta_change_{minPresentOfChange}to{maxPresentageOfChange}," +
+                $"sh_curvol_o{minVolume / 1000}to{maxVolume / 1000}"
+                + "&ft=4";
 
             return finvizParams;
         }

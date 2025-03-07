@@ -11,7 +11,7 @@ public class RangeAlgorithmsRunner : ResolverBase<IAlgorithmRunner<RangeAlgorith
     }
 
     public async Task<IEnumerable<TOutput>> Run<TOutput>(RangeAlgorithmInput rangeAlgorithmInput,
-                                                         CancellationToken cancellationToken) 
+                                                         CancellationToken cancellationToken)
         where TOutput : FinanceCandleStick
     {
         var algoRunner = Resolve(rangeAlgorithmInput);

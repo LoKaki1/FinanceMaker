@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Common.Models.Finance;
 
 namespace FinanceMaker.Common.Extensions;
@@ -23,15 +22,14 @@ public static class CandleSticksExtensions
     /// The closest levels 
     /// </returns>
     ///  <summary>
-    public static (IEnumerable<double> closestKeyLevels, double precentage) 
-    GetClosestToLastKeyLevels (this IEnumerable<KeyLevelCandleStick> keyLevelCandleSticks,
+    public static (IEnumerable<double> closestKeyLevels, double precentage)
+    GetClosestToLastKeyLevels(this KeyLevelCandleSticks keyLevelCandleSticks,
                                int maxPresentage = 100,
                                int numberOfKeyLevels = 1)
     {
         // The precents of the closing keylevels
         var precentage = 1;
-        var keyLevels = keyLevelCandleSticks.Select(x => x.KeyLevel)
-                                            .ToArray();
+        var keyLevels = keyLevelCandleSticks.KeyLevels;
         var lastCandleStick = keyLevelCandleSticks.Last();
 
         for (var i = 0; i < keyLevels.Length && i < maxPresentage; i++)
@@ -48,7 +46,7 @@ public static class CandleSticksExtensions
                 return (data, precentage);
             }
 
-            precentage++;                             
+            precentage++;
         }
 
         return ([], precentage);

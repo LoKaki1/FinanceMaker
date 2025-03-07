@@ -2,10 +2,10 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <BuildWithMSBuildOnMono>false</BuildWithMSBuildOnMono>
+    <!-- <BuildWithMSBuildOnMono>false</BuildWithMSBuildOnMono> -->
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -16,10 +16,11 @@
     <PackageReference Include="ServiceExtensions.Hosting" Version="1.0.2" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../FinanceMaker.Trades.Publisher/FinanceMaker.Publisher.csproj" />
     <ProjectReference Include="..\FinanceMaker.Algorithms\FinanceMaker.Algorithms.csproj" />
     <ProjectReference Include="..\FinanceMaker.Common\FinanceMaker.Common.csproj" />
     <ProjectReference Include="..\FinanceMaker.Ideas\FinanceMaker.Ideas.csproj" />
     <ProjectReference Include="..\FinanceMaker.Pullers\FinanceMaker.Pullers.csproj" />
-    <ProjectReference Include="..\FinanceMaker.Trades.Publisher\FinanceMaker.Trades.Publisher.csproj" />
+    <ProjectReference Include="..\FinanceMaker.BackTester\FinanceMaker.BackTester.csproj" />
   </ItemGroup>
 </Project>

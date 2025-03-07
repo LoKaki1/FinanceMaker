@@ -16,11 +16,12 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
     public YahooInterdayPricesPuller(IHttpClientFactory requestsService)
     {
         m_RequestsService = requestsService;
-        m_RelevantPeriods = new Dictionary<Period, string> 
+        m_RelevantPeriods = new Dictionary<Period, string>
         {
             { Period.OneMinute, "1m" },
             { Period.ThreeMinutes, "3m" },
-            { Period.OneHour, "1h"}
+            { Period.OneHour, "1h"},
+            { Period.Daily, "1d"}
         };
         m_FinanceUrl = "https://query1.finance.yahoo.com/v8/finance/chart/{0}?period1={1}&period2={2}&interval={3}&includePrePost=true&lang=en-US&region=US";
     }
@@ -29,27 +30,25 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
                                                                        CancellationToken cancellationToken)
     {
         var period = pricesPullerParameters.Period;
-        
+
         if (!m_RelevantPeriods.TryGetValue(period, out string? yahooPeriod))
         {
             throw new NotImplementedException($"Yahoo interday api doesn't support {Enum.GetName(period)} as a period");
         }
 
         var yahooResponse = await PullDataFromYahoo(pricesPullerParameters, yahooPeriod, cancellationToken);
-        
-        var candles = CreateCandlesFromYahoo(yahooResponse);
 
-        if (cancellationToken.IsCancellationRequested)
-        {
-            throw new OperationCanceledException();
-        }
+        if (yahooResponse.IsEmpty()) return [];
+
+        var candles = CreateCandlesFromYahoo(yahooResponse);
+        cancellationToken.ThrowIfCancellationRequested();
 
         return candles;
     }
 
     public bool IsRelevant(PricesPullerParameters args)
     {
-        return m_RelevantPeriods.ContainsKey(args.Period) && args.EndTime - args.StartTime < TimeSpan.FromDays(7);
+        return m_RelevantPeriods.ContainsKey(args.Period);
     }
 
     private FinanceCandleStick[] CreateCandlesFromYahoo(YahooResponse yahooResponse)
@@ -69,8 +68,18 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
             candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
         }
+        var haCandles = candles;
+        haCandles = candles.Select((candle, index) =>
+        {
+            var haClose = (candle.Open + candle.Close + candle.High + candle.Low) / 4;
+            var haOpen = index == 0 ? (candle.Open + candle.Close) / 2 : (haCandles[index - 1].Open + haCandles[index - 1].Close) / 2;
+            var haHigh = Math.Max(candle.High, Math.Max(haOpen, haClose));
+            var haLow = Math.Min(candle.Low, Math.Min(haOpen, haClose));
 
-        return candles;
+            return new FinanceCandleStick(candle.Time, haOpen, haClose, haHigh, haLow, candle.Volume);
+        }).ToArray();
+
+        return haCandles;
     }
 
     private async Task<YahooResponse> PullDataFromYahoo(PricesPullerParameters pricesPullerParameters,
@@ -82,15 +91,15 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
         var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime).ToUnixTimeSeconds();
         var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime).ToUnixTimeSeconds();
 
+
         var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);
 
         var response = await client.GetAsync(url, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
-            var failedContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            return YahooResponse.Enpty;
 
-            throw new InvalidDataException(failedContent);
         }
 
         var yahooResponse = await response.Content.ReadAsAsync<InterdayModel>(cancellationToken);
@@ -100,7 +109,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
         if (result is null || indicators is null || result.timestamp is null)
         {
-            throw new ArgumentException($"Yahoo api returned null for those params:\n{pricesPullerParameters}");
+            return YahooResponse.Enpty;
         }
 
         return result;

@@ -6,7 +6,7 @@ using FinanceMaker.Pullers.PricesPullers.Interfaces;
 namespace FinanceMaker.Pullers.PricesPullers
 {
     public sealed class MainPricesPuller : ResolverBase<IPricesPuller, PricesPullerParameters>, IPricesPuller
-	{
+    {
 
         public MainPricesPuller(IPricesPuller[] pricesPuller) : base(pricesPuller)
         { }
@@ -16,8 +16,9 @@ namespace FinanceMaker.Pullers.PricesPullers
         {
             var resolvedPuller = Resolve(pricesPullerParameters);
 
-            return resolvedPuller.GetTickerPrices(pricesPullerParameters, 
+            return resolvedPuller.GetTickerPrices(pricesPullerParameters,
                                                   cancellationToken);
+
         }
 
         public bool IsRelevant(PricesPullerParameters args)

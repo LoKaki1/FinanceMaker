@@ -1,26 +1,31 @@
-using System;
 using FinanceMaker.Common.Models.Finance.Enums;
-using QuantConnect;
 
 namespace FinanceMaker.Common.Models.Finance;
 
 public class EMACandleStick : FinanceCandleStick
 {
-    public decimal EMA { get; set; }
-    public TrendTypes TrendTypes { get; set; }
-    
-    public EMACandleStick(DateTime dateTime, float open, float close, float high, float low, float volume) : base(dateTime, open, close, high, low, volume)
-    {
-        EMA = 0;
-    }
-    public EMACandleStick(DateTime dateTime, float open, float close, float high, float low, float volume, float eMA) : base(dateTime, open, close, high, low, volume)
+    public float EMA { get; set; }
 
+    #region Amazing Data
+
+    public TrendTypes EMASignal { get; set; }
+    public TrendTypes BreakThrough { get; set; }
+    public Pivot Pivot { get; set; }
+
+    #endregion
+
+    public EMACandleStick(DateTime dateTime, float open, float close, float high, float low, int volume)
+    : this(new FinanceCandleStick(dateTime, open, close, high, low, volume), 0)
     {
-        EMA = (decimal) eMA;
     }
+
+
 
     public EMACandleStick(FinanceCandleStick candlestick, float ema) : base(candlestick)
     {
-        EMA = (decimal) ema;
+        EMA = ema;
+        EMASignal = TrendTypes.NoChange;
+        BreakThrough = TrendTypes.NoChange;
+        Pivot = Pivot.Unchanged;
     }
 }

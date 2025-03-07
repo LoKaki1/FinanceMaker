@@ -1,7 +1,6 @@
-﻿using System;
-using System.Text.Json;
-using FinanceMaker.Common.Extensions;
+﻿using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Common.Models.Pullers.News.NewsResult;
 using FinanceMaker.Common.Models.Pullers.YahooFinance;
 using FinanceMaker.Pullers.NewsPullers.Interfaces;
 
@@ -18,7 +17,7 @@ namespace FinanceMaker.Pullers.NewsPullers
             m_MainTickerPage = "https://finance.yahoo.com/xhr/ncp?location=US&queryRef=qsp&serviceKey=ncp_fin&symbols={0}&lang=en-US&region=US";
         }
 
-        public async Task<IEnumerable<string>> PullNews(NewsPullerParameters newsParams, CancellationToken cancellationToken)
+        public async Task<IEnumerable<NewsResult>> PullNews(NewsPullerParameters newsParams, CancellationToken cancellationToken)
         {
             var client = m_RequestService.CreateClient()
                                          .AddBrowserUserAgent();
@@ -46,7 +45,7 @@ namespace FinanceMaker.Pullers.NewsPullers
                 return [];
             }
 
-            var news = newsStream.Select(_ => _.content.canonicalUrl.url)
+            var news = newsStream.Select(_ => new NewsResult(_.content.canonicalUrl.url))
                                  .ToArray();
 
             return news;

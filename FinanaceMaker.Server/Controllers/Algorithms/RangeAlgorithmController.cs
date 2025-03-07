@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using FinanceMaker.Algorithms;
-using FinanceMaker.Algorithms.Chart;
+﻿using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Pullers.Enums;
-using FinanceMaker.Common.Models.Tickers;
-using FinanceMaker.Pullers.PricesPullers;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860

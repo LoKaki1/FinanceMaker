@@ -18,4 +18,13 @@ public static class ServiceExtensions
         return serviceAdded;
     }
 
+    // public static TService AddAndGetService<TService>(
+    //     this IServiceCollection serviceCollection) 
+    //     where TService : class
+    // {
+    //     serviceCollection.AddSingleton<TService>();
+
+    //     var servicesAdded = serviceCollection.Create
+    // }
+
 }

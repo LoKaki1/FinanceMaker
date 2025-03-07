@@ -11,11 +11,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Common", "Fina
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Algorithms", "FinanceMaker.Algorithms\FinanceMaker.Algorithms.csproj", "{0FE1D6B8-EADE-4751-947E-C79162FD3B0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Trades.Publisher", "FinanceMaker.Trades.Publisher\FinanceMaker.Trades.Publisher.csproj", "{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Publisher", "FinanceMaker.Trades.Publisher\FinanceMaker.Publisher.csproj", "{EAE1414B-524F-4167-A8A8-2BDBBED5AAA0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Ideas", "FinanceMaker.Ideas\FinanceMaker.Ideas.csproj", "{82DCED21-8081-4C2E-A25E-3109011B5066}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanaceMaker.Server", "FinanaceMaker.Server\FinanaceMaker.Server.csproj", "{8DB8BC0D-59E8-4F08-921E-BE0699D3DE9A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.Worker", "FinanceMaker.Worker\FinanceMaker.Worker.csproj", "{7076B8DB-554F-48A9-AE1F-33FC343A1C2A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceMaker.BackTester", "FinanceMaker.BackTester\FinanceMaker.BackTester.csproj", "{3BC607EB-69FD-4574-A473-3767A19CA3B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{8DB8BC0D-59E8-4F08-921E-BE0699D3DE9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DB8BC0D-59E8-4F08-921E-BE0699D3DE9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DB8BC0D-59E8-4F08-921E-BE0699D3DE9A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7076B8DB-554F-48A9-AE1F-33FC343A1C2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7076B8DB-554F-48A9-AE1F-33FC343A1C2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7076B8DB-554F-48A9-AE1F-33FC343A1C2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7076B8DB-554F-48A9-AE1F-33FC343A1C2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BC607EB-69FD-4574-A473-3767A19CA3B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BC607EB-69FD-4574-A473-3767A19CA3B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BC607EB-69FD-4574-A473-3767A19CA3B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BC607EB-69FD-4574-A473-3767A19CA3B8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

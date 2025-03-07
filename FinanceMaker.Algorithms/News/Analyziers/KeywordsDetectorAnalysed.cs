@@ -1,6 +1,5 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 
-using System.Collections.Generic;
 using FinanceMaker.Algorithms.News.Analyziers.Abstracts;
 using FinanceMaker.Common.Models.Algorithms.Analyzers;
 using FinanceMaker.Common.Models.Algorithms.Analyzers.Enums;
@@ -95,7 +94,7 @@ namespace FinanceMaker.Algorithms.News.Analyziers
             // To do that we will need to learn how get the request that a web site does and to do it 
             // Or use selenium 🤮🤮🤮🤮  
 
-            var urls = input.Urls;
+            var urls = input.NewsResult.Select(_ => _.Url).ToArray();
             var analysed = new List<StateAnalyzerNew>();
 
             foreach (var url in urls)

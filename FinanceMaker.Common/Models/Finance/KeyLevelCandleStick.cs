@@ -1,28 +1,21 @@
-using System;
-using QuantConnect;
+﻿// using System;
+// using FinanceMaker.Common.Models.Finance.Enums;
+// using QuantConnect;
+
+using System.Text.Json.Serialization;
+using FinanceMaker.Common.Converters.JsonConverters;
 
 namespace FinanceMaker.Common.Models.Finance;
-
-public class KeyLevelCandleStick : FinanceCandleStick
+[JsonConverter(typeof(KeyLevelCandleSticksConverter))]
+public class KeyLevelCandleSticks : List<EMACandleStick>
 {
-    public decimal KeyLevel { get; set; }
-    public KeyLevelCandleStick(FinanceCandleStick candleStick, decimal keyLevel) : base(candleStick)
-    {
-        KeyLevel = keyLevel;
-    }
+    public float[] KeyLevels { get; set; }
 
-    public KeyLevelCandleStick(Candlestick candlestick, decimal keyLevel) : base(candlestick)
+    public KeyLevelCandleSticks(IEnumerable<EMACandleStick> eMACandleSticks,
+                                IEnumerable<float> keyLevels)
+        : base(eMACandleSticks)
     {
-        KeyLevel = keyLevel;
-    }
-
-    public KeyLevelCandleStick(DateTime dateTime, float open, float close, float high, float low, float volume, decimal keyLevel) : base(dateTime, open, close, high, low, volume)
-    {
-        KeyLevel = keyLevel;
-    }
-
-    public KeyLevelCandleStick(DateTime dateTime, decimal open, decimal close, decimal high, decimal low, decimal volume, decimal keyLevel) : base(dateTime, open, close, high, low, volume)
-    {
-        KeyLevel = keyLevel;
+        KeyLevels = keyLevels.ToArray();
     }
 }
+

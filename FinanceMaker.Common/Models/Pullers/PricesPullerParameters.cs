@@ -11,10 +11,18 @@ public record PricesPullerParameters
 
     public PricesPullerParameters(string ticker, DateTime startTime, DateTime endTime, Period period)
     {
-        Ticker = ticker;
+        Ticker = ticker.Replace(".", "-");
         StartTime = startTime;
         EndTime = endTime;
         Period = period;
     }
+    public PricesPullerParameters()
+    {
+        Ticker = string.Empty;
+    }
 
+    public static PricesPullerParameters GetTodayParams(string ticker)
+    {
+        return new(ticker, DateTime.Now.Subtract(TimeSpan.FromDays(1)), DateTime.Now, Period.OneMinute);
+    }
 }

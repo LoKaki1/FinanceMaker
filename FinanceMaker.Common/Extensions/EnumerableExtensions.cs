@@ -1,5 +1,4 @@
-﻿using System;
-namespace FinanceMaker.Common.Extensions
+﻿namespace FinanceMaker.Common.Extensions
 {
 	public static class EnumerableExtensions
 	{
@@ -8,7 +7,7 @@ namespace FinanceMaker.Common.Extensions
 			return enumerable.TryGetNonEnumeratedCount(out int count) ? count : enumerable.Count();
 		}
 
-		public static bool NullOrEmpty<T> (this IEnumerable<T> enumerable)
+		public static bool NullOrEmpty<T>(this IEnumerable<T> enumerable)
 		{
 			return enumerable is null || !enumerable.Any();
 		}
