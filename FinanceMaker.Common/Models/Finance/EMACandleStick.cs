@@ -4,6 +4,7 @@ namespace FinanceMaker.Common.Models.Finance;
 
 public class EMACandleStick : FinanceCandleStick
 {
+    public new static EMACandleStick Empty => new EMACandleStick(FinanceCandleStick.Empty, 0);
     public float EMA { get; set; }
 
     #region Amazing Data
@@ -19,13 +20,21 @@ public class EMACandleStick : FinanceCandleStick
     {
     }
 
-
-
     public EMACandleStick(FinanceCandleStick candlestick, float ema) : base(candlestick)
     {
         EMA = ema;
         EMASignal = TrendTypes.NoChange;
         BreakThrough = TrendTypes.NoChange;
         Pivot = Pivot.Unchanged;
+    }
+
+    public override EMACandleStick Clone()
+    {
+        return new EMACandleStick(base.Clone(), EMA)
+        {
+            EMASignal = EMASignal,
+            BreakThrough = BreakThrough,
+            Pivot = Pivot
+        };
     }
 }

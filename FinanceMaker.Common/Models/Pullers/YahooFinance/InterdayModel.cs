@@ -20,7 +20,8 @@
 
         public bool IsEmpty()
         {
-            return timestamp.Length == 0 && indicators is null;
+            return timestamp is null || timestamp.Length == 0 ||
+                   indicators is null || indicators.quote is null || indicators.quote.Length == 0;
         }
 
     }
