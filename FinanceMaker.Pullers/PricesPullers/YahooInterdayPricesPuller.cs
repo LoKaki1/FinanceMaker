@@ -64,7 +64,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
             var close = indicators.close[i] ?? indicators.close[i - 1] ?? 0;
             var low = indicators.low[i] ?? indicators.low[i - 1] ?? 0;
             var high = indicators.high[i] ?? indicators.high[i - 1] ?? 0;
-            var volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
+            long volume = indicators.volume[i] ?? indicators.volume[i - 1] ?? 0;
 
             candles[i] = new FinanceCandleStick(candleDate, open, close, high, low, volume);
         }

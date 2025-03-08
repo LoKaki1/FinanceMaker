@@ -19,11 +19,11 @@ public class RangeAlgoritm : QCAlgorithm
     public override void Initialize()
     {
         var startDate = new DateTime(2021, 1, 1);
-        var endDate = DateTime.Now;
-        SetCash(10_000);
+        var endDate = new DateTime(2025, 1, 1);
+        SetCash(3_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
-        SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(0.5m))); // $1 per trade
+        SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(1m))); // $1 per trade
         FinanceData.StartDate = startDate;
         FinanceData.EndDate = endDate;
 
@@ -42,7 +42,7 @@ public class RangeAlgoritm : QCAlgorithm
         //     var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //     tickers.AddRange(ideas.Result);
         // }
-        tickers = ["NIO"];
+        tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -53,7 +53,11 @@ public class RangeAlgoritm : QCAlgorithm
             var tickerKeyLevelsLoader = Task.Run(async () =>
             {
                 var actualTicker = ticker;
-                var range = await rangeAlgorithm!.Run<FinanceCandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(actualTicker, startDate, endDate, FinanceMaker.Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), CancellationToken.None);
+                var range = await rangeAlgorithm!.Run<FinanceCandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(
+                    actualTicker,
+                    startDate,
+                    endDate.AddYears(-1), // I removed some years which make the algorithm to be more realistic
+                    Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), CancellationToken.None);
                 if (range is not KeyLevelCandleSticks candleSticks) return;
                 m_TickerToKeyLevels[actualTicker] = candleSticks.KeyLevels;
             });
@@ -88,6 +92,8 @@ public class RangeAlgoritm : QCAlgorithm
                 if (holdingsq == 0 && Pivot.Low == data.CandleStick.Pivot)
                 {
                     Buy(data.Symbol);
+
+                    return;
                 }
             }
         }
@@ -114,7 +120,7 @@ public class RangeAlgoritm : QCAlgorithm
         //{
 
 
-        SetHoldings(symbol, 0.9);
+        SetHoldings(symbol, 0.99);
 
         //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
         //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);

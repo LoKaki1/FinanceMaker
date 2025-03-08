@@ -6,7 +6,7 @@ namespace FinanceMaker.Common.Models.Finance
 {
     public class FinanceCandleStick
     {
-        public static FinanceCandleStick Empty => new FinanceCandleStick(default, 0f, 0f, 0f, 0f, 0);
+        public static FinanceCandleStick Empty => new FinanceCandleStick(default, 0f, 0f, 0f, 0f, 0L);
         #region Boring Data
 
         public DateTime Time => Candlestick?.Time ?? DateTime.MaxValue;
@@ -14,7 +14,7 @@ namespace FinanceMaker.Common.Models.Finance
         public float Close => (float?)(Candlestick?.Close) ?? 0f;
         public float High => (float?)Candlestick?.High ?? 0;
         public float Low => (float?)Candlestick?.Low ?? 0;
-        public int Volume { get; set; }
+        public long Volume { get; set; }
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace FinanceMaker.Common.Models.Finance
             float close,
             float high,
             float low,
-            int volume)
+            long volume)
         {
             Candlestick = new Candlestick(
                 dateTime,
@@ -53,7 +53,7 @@ namespace FinanceMaker.Common.Models.Finance
             decimal close,
             decimal high,
             decimal low,
-            int volume)
+            long volume)
         {
             Candlestick = new Candlestick(dateTime, open, high, low, close);
             Volume = volume;

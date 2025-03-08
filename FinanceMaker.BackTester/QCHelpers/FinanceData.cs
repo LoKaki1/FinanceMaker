@@ -59,7 +59,7 @@ public class FinanceData : BaseData
                     Convert.ToSingle(data[2], CultureInfo.InvariantCulture),
                     Convert.ToSingle(data[3], CultureInfo.InvariantCulture),
                     Convert.ToSingle(data[4], CultureInfo.InvariantCulture),
-                    Convert.ToInt32(data[5], CultureInfo.InvariantCulture)
+                    Convert.ToInt64(data[5], CultureInfo.InvariantCulture)
 
                 ), Convert.ToSingle(data[6], CultureInfo.InvariantCulture))
             {
@@ -68,10 +68,7 @@ public class FinanceData : BaseData
                 Pivot = (Pivot)Convert.ToInt32(data[9], CultureInfo.InvariantCulture)
             }
         };
-        if (aaa.CandleStick.Pivot == Pivot.Low)
-        {
-            return aaa;
-        }
+
         return aaa;
     }
 }
