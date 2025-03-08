@@ -11,6 +11,11 @@ public class NivTickersPuller : FinvizTickersPuller
 
     public override async Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
     {
+        // Stop trying removin' the await, it's not gonna work
+        // The c# can't convert Task<IEnumerable<string>> to Task<string[]>
+        // But I think this docummentation will recover your memory 
+        // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/ 
+        // (It's just from the copilot and it looks cool don't really click on it)
         return await GetTickers(m_FinvizUrl, cancellationToken);
     }
 }

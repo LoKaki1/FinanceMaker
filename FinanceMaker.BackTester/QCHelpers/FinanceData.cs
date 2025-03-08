@@ -1,5 +1,6 @@
 using System.Globalization;
 using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
 using QuantConnect.Data;
 
@@ -12,12 +13,12 @@ public class FinanceData : BaseData
         get; set;
     }
     public static DateTime EndDate { get; set; }
-    public FinanceCandleStick CandleStick { get; set; } = FinanceCandleStick.Empty;
+    public EMACandleStick CandleStick { get; set; } = EMACandleStick.Empty;
     // Override GetSource to specify the source of your data
     public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
     {
         // Define the path to your custom data file
-        var filePath = Helper.SaveCandlestickDataToCsv(config.Symbol.Value,
+        var filePath = Helper.SaveEMACandlestickDataToCsv(config.Symbol.Value,
                                                 Common.Models.Pullers.Enums.Period.Daily,
                                                 StartDate,
                                                 EndDate).Result;
@@ -50,8 +51,8 @@ public class FinanceData : BaseData
             Time = candleTime,
 
             Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
-            CandleStick = new FinanceCandleStick
-
+            CandleStick = new EMACandleStick
+                (new FinanceCandleStick
                 (
                     DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture),
                     Convert.ToSingle(data[1], CultureInfo.InvariantCulture),
@@ -59,7 +60,12 @@ public class FinanceData : BaseData
                     Convert.ToSingle(data[3], CultureInfo.InvariantCulture),
                     Convert.ToSingle(data[4], CultureInfo.InvariantCulture),
                     Convert.ToInt32(data[5], CultureInfo.InvariantCulture)
-                )
+
+                ), Convert.ToSingle(data[6], CultureInfo.InvariantCulture))
+            {
+                BreakThrough = (TrendTypes)Convert.ToInt32(data[7], CultureInfo.InvariantCulture),
+                Pivot = (Pivot)Convert.ToInt32(data[8], CultureInfo.InvariantCulture)
+            }
         };
     }
 }

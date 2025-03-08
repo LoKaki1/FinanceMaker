@@ -70,7 +70,7 @@ namespace FinanceMaker.Common.Models.Finance
             Candlestick = candlestick;
         }
 
-        public FinanceCandleStick Clone()
+        public virtual FinanceCandleStick Clone()
         {
             return new FinanceCandleStick(this);
         }

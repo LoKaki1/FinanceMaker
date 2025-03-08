@@ -93,10 +93,17 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
 
 
         var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);
+        HttpResponseMessage? response;
+        try
+        {
+            response = await client.GetAsync(url, cancellationToken);
+        }
+        catch
+        {
+            return YahooResponse.Enpty;
+        }
 
-        var response = await client.GetAsync(url, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        if (response is null || !response.IsSuccessStatusCode)
         {
             return YahooResponse.Enpty;
 
