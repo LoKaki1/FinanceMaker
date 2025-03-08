@@ -18,7 +18,7 @@ public class FinanceData : BaseData
     public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
     {
         // Define the path to your custom data file
-        var filePath = Helper.SaveEMACandlestickDataToCsv(config.Symbol.Value,
+        var filePath = Helper.SaveCandlestickDataToCsv(config.Symbol.Value,
                                                 Common.Models.Pullers.Enums.Period.Daily,
                                                 StartDate,
                                                 EndDate).Result;
@@ -44,7 +44,7 @@ public class FinanceData : BaseData
         // Parse the CSV line
         var data = line.Split(',');
         var candleTime = DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture);
-        return new FinanceData
+        var aaa = new FinanceData
         {
             Symbol = config.Symbol,
             EndTime = candleTime.AddDays(1),
@@ -63,9 +63,15 @@ public class FinanceData : BaseData
 
                 ), Convert.ToSingle(data[6], CultureInfo.InvariantCulture))
             {
-                BreakThrough = (TrendTypes)Convert.ToInt32(data[7], CultureInfo.InvariantCulture),
-                Pivot = (Pivot)Convert.ToInt32(data[8], CultureInfo.InvariantCulture)
+                EMASignal = (TrendTypes)Convert.ToInt32(data[7], CultureInfo.InvariantCulture),
+                BreakThrough = (TrendTypes)Convert.ToInt32(data[8], CultureInfo.InvariantCulture),
+                Pivot = (Pivot)Convert.ToInt32(data[9], CultureInfo.InvariantCulture)
             }
         };
+        if (aaa.CandleStick.Pivot == Pivot.Low)
+        {
+            return aaa;
+        }
+        return aaa;
     }
 }

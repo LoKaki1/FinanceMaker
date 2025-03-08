@@ -2,6 +2,7 @@ using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Pullers.TickerPullers;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,12 +37,12 @@ public class RangeAlgoritm : QCAlgorithm
 
         List<string> tickers = [];
 
-        foreach (var technicalIdeaInput in technicalIdeaInputs)
-        {
-            var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
-            tickers.AddRange(ideas.Result);
-        }
-
+        // foreach (var technicalIdeaInput in technicalIdeaInputs)
+        // {
+        //     var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
+        //     tickers.AddRange(ideas.Result);
+        // }
+        tickers = ["NIO"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -79,19 +80,26 @@ public class RangeAlgoritm : QCAlgorithm
 
         foreach (var value in keyLevels)
         {
-            if (Math.Abs((float)data.Value - value) / value <= 0.01f)
+            if (Math.Abs((float)data.Value - value) / value <= 0.005f)
             {
                 var symbol = data.Symbol.Value;
-                var holdings = Securities[symbol].Holdings.Quantity;
+                var holdingsq = Securities[symbol].Holdings.Quantity;
 
-                if (holdings == 0)
+                if (holdingsq == 0 && Pivot.Low == data.CandleStick.Pivot)
                 {
                     Buy(data.Symbol);
                 }
-                else
-                {
-                    Sell(data.Symbol);
-                }
+            }
+        }
+        var holdings = Securities[data.Symbol].Holdings;
+        var avgPrice = holdings.AveragePrice;
+        var currentPrice = data.Price;
+
+        if (holdings.Quantity > 0)
+        {
+            if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
+            {
+                Sell(data.Symbol);
             }
         }
     }
@@ -106,7 +114,7 @@ public class RangeAlgoritm : QCAlgorithm
         //{
 
 
-        SetHoldings(symbol, 0.02);
+        SetHoldings(symbol, 0.9);
 
         //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
         //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);

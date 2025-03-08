@@ -1,5 +1,8 @@
 using System.Globalization;
+using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Pullers;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,27 +26,29 @@ public static class Helper
 
         Directory.CreateDirectory(dataDirectory);
         // Replace this code with static container
-        var services = new ServiceCollection();
-        services.AddHttpClient(); // Registers IHttpClientFactory
-        services.AddSingleton<YahooInterdayPricesPuller>();
-        using var serviceProvider = services.BuildServiceProvider();
-        var finanaceMaker = serviceProvider.GetRequiredService<YahooInterdayPricesPuller>();
+        var serviceProvider = StaticContainer.ServiceProvider;
+        var finanaceMaker = serviceProvider.GetRequiredService<RangeAlgorithmsRunner>();
         // Define the file path
         // Create and write to the CSV file
-        var candlesticks = await finanaceMaker.GetTickerPrices(new PricesPullerParameters(ticker, startTime, endTime, period), CancellationToken.None);
+        var candlesticks = await finanaceMaker.Run<EMACandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(ticker, startTime, endTime, period), Algorithm.KeyLevels), CancellationToken.None);
+        var candlesAA = candlesticks.Where(_ => _.Pivot != Pivot.Unchanged).ToArray();
         using var writer = new StreamWriter(filePath, false);
 
         foreach (var candle in candlesticks)
         {
+
             var line = string.Format(
-                CultureInfo.InvariantCulture,
-                "{0:yyyyMMdd HH:mm:ss},{1},{2},{3},{4},{5}",
+                "{0:yyyyMMdd HH:mm:ss},{1},{2},{3},{4},{5},{6},{7},{8},{9}",
                 candle.Time,
                 candle.Open,
                 candle.High,
                 candle.Low,
                 candle.Close,
-                candle.Volume
+                candle.Volume,
+                candle.EMA,
+                (int)candle.EMASignal,
+                (int)candle.BreakThrough,
+                (int)candle.Pivot
             );
             writer.WriteLine(line);
         }
