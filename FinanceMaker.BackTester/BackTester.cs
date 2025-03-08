@@ -74,4 +74,12 @@ public class BackTester
         var customDataDirectory = Path.Combine(dataFolder, "Custom");
         Directory.Delete(customDataDirectory, true);
     }
+
+    // All that left is to connect the algorithm to the worker, so do it in the bus,
+    // We want to use the keylevel algorithm to get the key levels for the stock
+    // Then buy the stock if its pivot low, that's it
+    // simple as that, and the result might be amzing, so far it did like 873% on the back testing
+    // therefore we must check it on real life trading.
+    // We don't need to connect the backtester to the worker, we just need to implement this logic, in the worker
+    // I don't know ennglish that well its just using the Copilot
 }
