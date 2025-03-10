@@ -12,8 +12,8 @@ namespace FinanceMaker.Publisher.Orders.Trader;
 public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
 {
     // I really need to create both secrets and configs 
-    const string API_KEY = "PKP989DX2F2S8IUOPN16";
-    const string API_SECRET = "l8ytR3oH7fJY9TRTGnMUhl84dfe66wyfCJTHZlaB";
+    const string API_KEY = "PK7HX7UK07WONNYWPOVC";
+    const string API_SECRET = "T6tlOwMZnIhrFnZc13rXmAbWAfEbQOCSg0r3cBT3";
     const string ENDPOIONT_URL = "https://paper-api.alpaca.markets/v2";
 
     private readonly IAlpacaTradingClient m_Client;
@@ -72,7 +72,7 @@ public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
         var accountPosition = await m_Client.ListPositionsAsync(cancellationToken);
         var accountOpenedOrders = await m_Client.ListOrdersAsync(new ListOrdersRequest(), cancellationToken);
         float buyingPower = accountData.BuyingPower is null ? 0f : (float)accountData.BuyingPower.Value;
-        decimal? p = accountOpenedOrders.Where(_ => _.OrderStatus != OrderStatus.New).Select(_ => _.LimitPrice).Sum();
+        decimal? p = accountOpenedOrders.Where(_ => _.OrderStatus != OrderStatus.New).Select(_ => _.LimitPrice * _.Quantity).Sum();
         p ??= 0;
 
         var poposition = new Position()

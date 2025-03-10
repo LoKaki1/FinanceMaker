@@ -43,6 +43,9 @@ public class QCTrader : ITrader
     public async Task Trade(CancellationToken cancellationToken)
     {
         var currentPosion = await m_Broker.GetClientPosition(cancellationToken);
+        
+        if (currentPosion.BuyingPower < 1_000) return;
+        
         var tickersToTrade = await GetRelevantTickers(cancellationToken);
         tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
                                        .ToArray();
@@ -88,19 +91,19 @@ public class QCTrader : ITrader
 
             if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) return;
 
-            var currentCandle = candleSticks.Last();
-            var currentPrice = currentCandle.Close;
-
-            var isInRange = candleSticks.KeyLevels.Any(keyLevel =>
-                currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
-            if (!isInRange) return;
-
             var interdayCandles =await  m_RangeAlgorithmsRunner.Run<EMACandleStick>(new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
                                                                                     cancellationToken);
 
             if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
 
             var hasPivotLowInRange = interdayCandleSticks.TakeLast(12).Any(candle => candle.Pivot == Pivot.Low);
+
+            var currentCandle = interdayCandleSticks.Last();
+            var currentPrice = currentCandle.Close;
+
+            var isInRange = candleSticks.KeyLevels.Any(keyLevel =>
+                currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
+            if (!isInRange) return;
 
             if (hasPivotLowInRange || currentCandle.Pivot == Pivot.Low)
             {
