@@ -31,8 +31,8 @@ public class WorkerTrader : ITrader
 
         m_IdeasParams = [
             TechnicalIdeaInput.BestBuyers,
-                TechnicalIdeaInput.BestSellers,
-            ];
+            TechnicalIdeaInput.BestSellers,
+        ];
         m_PricesPuller = puller;
         m_OpenedTrades = [];
         m_IsMarketOpen = isMarketOpen;
