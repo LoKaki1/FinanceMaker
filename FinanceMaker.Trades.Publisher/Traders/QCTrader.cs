@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
@@ -51,8 +52,21 @@ public class QCTrader : ITrader
                                        .ToArray();
 
         var moneyForEachTrade = currentPosion.BuyingPower / tickersToTrade.GetNonEnumeratedCount();
+        var minumumMoneyPairTrade = 1000;
+        if (moneyForEachTrade < minumumMoneyPairTrade)
+        {
+            var mathIsCool = (int)currentPosion.BuyingPower / minumumMoneyPairTrade;
+            if (mathIsCool > 1)
+            {
+                tickersToTrade = tickersToTrade.OrderBy(_ => _.price).Take(mathIsCool).ToArray();
+                moneyForEachTrade = minumumMoneyPairTrade;
 
-        foreach(var tickerPrice in tickersToTrade)
+            }
+
+            else return;
+        }
+
+        foreach (var tickerPrice in tickersToTrade)
         {
             var entryPrice = tickerPrice.price;
             var quntity = (int)(moneyForEachTrade / entryPrice);
@@ -80,19 +94,20 @@ public class QCTrader : ITrader
                          .ToArray();
         // Now we've got the stocks, we should analyze them
         var relevantTickers = new ConcurrentBag<(string ticker, float price)>();
-        await Parallel.ForEachAsync(tickers, async (ticker, _) =>
+        await Parallel.ForEachAsync(tickers, cancellationToken, async (ticker, taskToken) =>
         {
             var range = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(new PricesPullerParameters(
                     ticker,
                     DateTime.Now.AddYears(-5),
                     DateTime.Now,
-                    Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), cancellationToken);
+                    Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), taskToken);
 
             if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) return;
 
-            var interdayCandles =await  m_RangeAlgorithmsRunner.Run<EMACandleStick>(new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
-                                                                                    cancellationToken);
+            var interdayCandles = await  m_RangeAlgorithmsRunner.Run<EMACandleStick>(
+                new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
+                                                                                    taskToken);
 
             if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
 
