@@ -86,7 +86,7 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
                 services.AddSingleton<OverNightBreakout>();
                 services.AddSingleton<IBroker, AlpacaBroker>();
-                services.AddSingleton<ITrader, WorkerTrader>();
+                services.AddSingleton<ITrader, QCTrader>();
                 services.AddHostedService<Worker>();
 
 

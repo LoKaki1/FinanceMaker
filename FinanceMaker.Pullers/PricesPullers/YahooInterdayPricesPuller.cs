@@ -88,8 +88,8 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
     {
         var client = m_RequestsService.CreateClient();
         client.AddBrowserUserAgent();
-        var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime).ToUnixTimeSeconds();
-        var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime).ToUnixTimeSeconds();
+        var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime.ToUniversalTime()).ToUnixTimeSeconds();
+        var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime.ToUniversalTime()).ToUnixTimeSeconds();
 
 
         var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);

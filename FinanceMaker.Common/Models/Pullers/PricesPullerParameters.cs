@@ -23,6 +23,8 @@ public record PricesPullerParameters
 
     public static PricesPullerParameters GetTodayParams(string ticker)
     {
-        return new(ticker, DateTime.Now.Subtract(TimeSpan.FromDays(1)), DateTime.Now, Period.OneMinute);
+        var today = DateTime.Now.AddHours(2);
+
+        return new(ticker, today.Subtract(TimeSpan.FromDays(3)), today, Period.OneMinute);
     }
 }

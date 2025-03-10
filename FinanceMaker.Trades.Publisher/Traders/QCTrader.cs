@@ -1,11 +1,18 @@
-using System;
+﻿using System;
+using System.Collections.Concurrent;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
+using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Finance.Enums;
+using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
+using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders.Interfaces;
 using FinanceMaker.Pullers.PricesPullers;
+using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Pullers.TickerPullers;
+using QuantConnect.Indicators;
 
 namespace FinanceMaker.Publisher.Traders;
 
@@ -19,15 +26,47 @@ public class QCTrader : ITrader
 {
     private readonly MainTickersPuller m_TickersPullers;
     private readonly RangeAlgorithmsRunner m_RangeAlgorithmsRunner;
+    private readonly IPricesPuller m_PricesPuller;
+    private readonly IBroker m_Broker;
 
     public QCTrader(MainTickersPuller pricesPuller,
-                    RangeAlgorithmsRunner rangeAlgorithmsRunner)
+                    RangeAlgorithmsRunner rangeAlgorithmsRunner,
+                    IPricesPuller mainPricesPuller,
+                    IBroker broker)
     {
         m_TickersPullers = pricesPuller;
         m_RangeAlgorithmsRunner = rangeAlgorithmsRunner;
+        m_Broker = broker;
+        m_PricesPuller = mainPricesPuller;
     }
 
     public async Task Trade(CancellationToken cancellationToken)
+    {
+        var currentPosion = await m_Broker.GetClientPosition(cancellationToken);
+        var tickersToTrade = await GetRelevantTickers(cancellationToken);
+        tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
+                                       .ToArray();
+
+        var moneyForEachTrade = currentPosion.BuyingPower / tickersToTrade.GetNonEnumeratedCount();
+
+        foreach(var tickerPrice in tickersToTrade)
+        {
+            var entryPrice = tickerPrice.price;
+            var quntity = (int)(moneyForEachTrade / entryPrice);
+            var ticker = tickerPrice.ticker;
+
+            if (quntity == 0) continue;
+
+            var stopLoss = entryPrice * 0.97f;
+            var takeProfit = entryPrice * 1.03f;
+            var description = $"Entry price: {entryPrice}, Stop loss: {stopLoss}, Take profit: {takeProfit}";
+            var order = new EntryExitOutputIdea(description, ticker, entryPrice, takeProfit, stopLoss, quntity);
+
+            var trade = await m_Broker.BrokerTrade(order, cancellationToken);
+        }
+    }
+
+    private async Task<IEnumerable<(string ticker, float price)>> GetRelevantTickers(CancellationToken cancellationToken)
     {
         var longTickers = TickersPullerParameters.BestBuyer;
         // For now only long tickers, I will implement the function of short but I don't want to
@@ -36,18 +75,41 @@ public class QCTrader : ITrader
         var tickers = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
         tickers = tickers.Distinct()
                          .ToArray();
-
         // Now we've got the stocks, we should analyze them
-        foreach (var ticker in tickers)
+        var relevantTickers = new ConcurrentBag<(string ticker, float price)>();
+        await Parallel.ForEachAsync(tickers, async (ticker, _) =>
         {
             var range = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(new PricesPullerParameters(
                     ticker,
-                    DateTime.Now.AddYears(-1),
+                    DateTime.Now.AddYears(-5),
                     DateTime.Now,
                     Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), cancellationToken);
-        }
 
+            if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) return;
 
+            var currentCandle = candleSticks.Last();
+            var currentPrice = currentCandle.Close;
+
+            var isInRange = candleSticks.KeyLevels.Any(keyLevel =>
+                currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
+            if (!isInRange) return;
+
+            var interdayCandles =await  m_RangeAlgorithmsRunner.Run<EMACandleStick>(new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
+                                                                                    cancellationToken);
+
+            if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
+
+            var hasPivotLowInRange = interdayCandleSticks.TakeLast(12).Any(candle => candle.Pivot == Pivot.Low);
+
+            if (hasPivotLowInRange || currentCandle.Pivot == Pivot.Low)
+            {
+                // Current price is within +-0.7% of any key level and has a Pivot.Low in the last 5 candles
+
+                relevantTickers.Add((ticker, currentPrice));
+            }
+        });
+
+        return relevantTickers.ToArray();
     }
 }

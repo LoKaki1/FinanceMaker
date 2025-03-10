@@ -19,6 +19,7 @@ public static class AlpacaExtensions
             TakeProfitLimitPrice = (decimal)Math.Round(idea.Exit, 2),
             OrderClass = OrderClass.Bracket,
             StopLossStopPrice = (decimal)Math.Round(idea.Stoploss, 2),
+            //ExtendedHours = true // Don't do it for now it throws exception
         };
 
         return request;
