@@ -29,7 +29,8 @@ public class QCTrader : ITrader
     private readonly RangeAlgorithmsRunner m_RangeAlgorithmsRunner;
     private readonly IPricesPuller m_PricesPuller;
     private readonly IBroker m_Broker;
-
+    private const int NUMBER_OF_OPEN_TRADES = 10;
+    private const int STARTED_MONEY = 50_000;
     public QCTrader(MainTickersPuller pricesPuller,
                     RangeAlgorithmsRunner rangeAlgorithmsRunner,
                     IPricesPuller mainPricesPuller,
@@ -45,26 +46,29 @@ public class QCTrader : ITrader
     {
         var currentPosion = await m_Broker.GetClientPosition(cancellationToken);
         
-        if (currentPosion.BuyingPower < 1_000) return;
+        if (currentPosion.BuyingPower < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
         
         var tickersToTrade = await GetRelevantTickers(cancellationToken);
         tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
+                                       .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
 
-        var moneyForEachTrade = currentPosion.BuyingPower / tickersToTrade.GetNonEnumeratedCount();
-        var minumumMoneyPairTrade = 1000;
-        if (moneyForEachTrade < minumumMoneyPairTrade)
-        {
-            var mathIsCool = (int)currentPosion.BuyingPower / minumumMoneyPairTrade;
-            if (mathIsCool > 1)
-            {
-                tickersToTrade = tickersToTrade.OrderBy(_ => _.price).Take(mathIsCool).ToArray();
-                moneyForEachTrade = minumumMoneyPairTrade;
+        var moneyForEachTrade = currentPosion.BuyingPower / NUMBER_OF_OPEN_TRADES;
 
-            }
+        if (moneyForEachTrade < (STARTED_MONEY / NUMBER_OF_OPEN_TRADES) / 2) return;
+        //var minumumMoneyPairTrade = 1000;
+        //if (moneyForEachTrade < minumumMoneyPairTrade)
+        //{
+        //    var mathIsCool = (int)currentPosion.BuyingPower / minumumMoneyPairTrade;
+        //    if (mathIsCool > 1)
+        //    {
+        //        tickersToTrade = tickersToTrade.OrderBy(_ => _.price).Take(mathIsCool).ToArray();
+        //        moneyForEachTrade = minumumMoneyPairTrade;
 
-            else return;
-        }
+        //    }
+
+        //    else return;
+        //}
 
         foreach (var tickerPrice in tickersToTrade)
         {

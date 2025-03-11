@@ -32,10 +32,15 @@ public class Worker : BackgroundService
             #endif
             if (isMarketOpen)
             {
-                await m_Trader.Trade(stoppingToken);
+                try
+                {
+                    await m_Trader.Trade(stoppingToken);
+
+                }
+                catch { }
             }
 
-            await Task.Delay(1 * 5 * 1000);
+            await Task.Delay(60 * 1000);
 
         }
     }
