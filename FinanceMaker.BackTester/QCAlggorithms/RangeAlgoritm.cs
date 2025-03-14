@@ -18,9 +18,9 @@ public class RangeAlgoritm : QCAlgorithm
 
     public override void Initialize()
     {
-        var startDate = new DateTime(2023, 1, 1);
+        var startDate = new DateTime(2022, 1, 1);
         var startDateForAlgo = new DateTime(2021, 1, 1);
-        var endDate = new DateTime(2025, 1, 1);
+        var endDate = DateTime.Now;
         var endDateForAlgo = new DateTime(2023, 1, 1);
         SetCash(3_000);
         SetStartDate(startDate);
@@ -37,14 +37,14 @@ public class RangeAlgoritm : QCAlgorithm
             TechnicalIdeaInput.BestSellers,
         ];
 
-        List<string> tickers = [];
+        List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
 
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
         //{
         //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //    tickers.AddRange(ideas.Result);
         //}
-        tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
+        //tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -70,7 +70,7 @@ public class RangeAlgoritm : QCAlgorithm
         Task.WhenAll(tickersKeyLevelsLoader).Wait();
 
         var actualTickers = m_TickerToKeyLevels.OrderByDescending(_ => _.Value?.Length ?? 0)
-                                               //.Take(10)
+                                               .Take(16)
                                                .Select(_ => _.Key)
                                                .ToArray();
         foreach (var ticker in actualTickers)
@@ -122,7 +122,7 @@ public class RangeAlgoritm : QCAlgorithm
         //{
 
 
-        SetHoldings(symbol, 0.99);
+        SetHoldings(symbol, 0.9);
 
         //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
         //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);

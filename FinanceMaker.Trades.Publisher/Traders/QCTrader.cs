@@ -81,16 +81,16 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        var tickers1 = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
-        var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
+        var tickers = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
+        //var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
         //tickers = tickers.Concat(moreTicker)
         //                 .Distinct()
         //                 .ToArray();
-        string[] tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT", "NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD",
-"GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT",
-"COIN", "MARA", "LCID", "SOFI", "HOOD", "AI", "UPST", "AFRM", "DNA", "PATH",
-"RBLX", "SNAP", "PTON", "TWLO", "CRWD", "ZM", "DKNG", "CHWY", "TTD", "RUN",
-"ENPH", "MSTR", "CVNA", "DASH", "PINS", "NET", "SHOP", "SQ", "PYPL"];
+//        string[] tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT", "NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD",
+//"GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT",
+//"COIN", "MARA", "LCID", "SOFI", "HOOD", "AI", "UPST", "AFRM", "DNA", "PATH",
+//"RBLX", "SNAP", "PTON", "TWLO", "CRWD", "ZM", "DKNG", "CHWY", "TTD", "RUN",
+//"ENPH", "MSTR", "CVNA", "DASH", "PINS", "NET", "SHOP", "SQ", "PYPL"];
         tickers = tickers.Distinct().ToArray();
         // Now we've got the stocks, we should analyze them
         var relevantTickers = new ConcurrentBag<(string ticker, float price)>();

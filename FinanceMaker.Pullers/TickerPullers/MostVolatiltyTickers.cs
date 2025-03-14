@@ -23,15 +23,14 @@ namespace FinanceMaker.Pullers.TickerPullers
             var content = await result.Content.ReadAsStringAsync(cancellationToken);
             var doc = new HtmlDocument();
             doc.LoadHtml(content);
-            var tickers = doc.DocumentNode.SelectNodes("//tr[@class=\"row-RdUXZpkv listRow\"]//a");
+            var tickers = doc.DocumentNode.SelectNodes("//tr[@class=\"row-RdUXZpkv listRow\"]").Select(_ => _.Attributes["data-rowkey"].Value.Split(':')[1]).ToArray();
 
             if (tickers is null)
             {
                 return [];
             }
 
-            return tickers.Select(_ => _.InnerText).Where((_, a) => a % 2 == 0)
-                .ToArray();
+            return tickers;
         }
     }
 }

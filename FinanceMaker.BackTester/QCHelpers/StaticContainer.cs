@@ -1,4 +1,4 @@
-using FinanceMaker.Algorithms;
+﻿using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.Common;
@@ -34,11 +34,12 @@ public static class StaticContainer
         services.AddSingleton<FinvizTickersPuller>();
         services.AddSingleton<TradingViewTickersPuller>();
         services.AddSingleton<NivTickersPuller>();
+        services.AddSingleton<MostVolatiltyTickers>();
         services.AddSingleton(sp => new IParamtizedTickersPuller[]
         {
-            sp.GetService<FinvizTickersPuller>()!,
-            sp.GetService<NivTickersPuller>()!,
-            sp.GetService<TradingViewTickersPuller>()!,
+            //sp.GetService<FinvizTickersPuller>()!,
+            //sp.GetService<NivTickersPuller>()!,
+            sp.GetService<MostVolatiltyTickers>()!,
         });
         services.AddSingleton(sp => new ITickerPuller[]
         {
