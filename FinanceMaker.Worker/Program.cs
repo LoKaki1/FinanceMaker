@@ -31,10 +31,10 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<MarketStatus>();
                 services.AddSingleton<FinvizTickersPuller>();
                 services.AddSingleton<TradingViewTickersPuller>();
+                services.AddSingleton<MostVolatiltyTickers>();
                 services.AddSingleton(sp => new IParamtizedTickersPuller[]
                 {
-                    sp.GetService<FinvizTickersPuller>(),
-                    sp.GetService<TradingViewTickersPuller>()
+                    sp.GetService<MostVolatiltyTickers>()
                 });
                 services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
                 services.AddSingleton(sp => Array.Empty<ITickerPuller>());

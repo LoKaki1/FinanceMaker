@@ -53,22 +53,9 @@ public class QCTrader : ITrader
                                        .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
 
-        var moneyForEachTrade = currentPosion.BuyingPower / NUMBER_OF_OPEN_TRADES;
+        var moneyForEachTrade = currentPosion.BuyingPower * 0.5f;
 
-        if (moneyForEachTrade < (STARTED_MONEY / NUMBER_OF_OPEN_TRADES) / 2) return;
-        //var minumumMoneyPairTrade = 1000;
-        //if (moneyForEachTrade < minumumMoneyPairTrade)
-        //{
-        //    var mathIsCool = (int)currentPosion.BuyingPower / minumumMoneyPairTrade;
-        //    if (mathIsCool > 1)
-        //    {
-        //        tickersToTrade = tickersToTrade.OrderBy(_ => _.price).Take(mathIsCool).ToArray();
-        //        moneyForEachTrade = minumumMoneyPairTrade;
-
-        //    }
-
-        //    else return;
-        //}
+        if (moneyForEachTrade < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
 
         foreach (var tickerPrice in tickersToTrade)
         {
@@ -78,7 +65,7 @@ public class QCTrader : ITrader
 
             if (quntity == 0) continue;
 
-            var stopLoss = entryPrice * 0.97f;
+            var stopLoss = entryPrice * 0.98f;
             var takeProfit = entryPrice * 1.03f;
             var description = $"Entry price: {entryPrice}, Stop loss: {stopLoss}, Take profit: {takeProfit}";
             var order = new EntryExitOutputIdea(description, ticker, entryPrice, takeProfit, stopLoss, quntity);
@@ -90,12 +77,21 @@ public class QCTrader : ITrader
     private async Task<IEnumerable<(string ticker, float price)>> GetRelevantTickers(CancellationToken cancellationToken)
     {
         var longTickers = TickersPullerParameters.BestBuyer;
+        var shortTickers = TickersPullerParameters.BestBuyer;
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        var tickers = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
-        tickers = tickers.Distinct()
-                         .ToArray();
+        var tickers1 = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
+        var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
+        //tickers = tickers.Concat(moreTicker)
+        //                 .Distinct()
+        //                 .ToArray();
+        string[] tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT", "NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD",
+"GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT",
+"COIN", "MARA", "LCID", "SOFI", "HOOD", "AI", "UPST", "AFRM", "DNA", "PATH",
+"RBLX", "SNAP", "PTON", "TWLO", "CRWD", "ZM", "DKNG", "CHWY", "TTD", "RUN",
+"ENPH", "MSTR", "CVNA", "DASH", "PINS", "NET", "SHOP", "SQ", "PYPL"];
+        tickers = tickers.Distinct().ToArray();
         // Now we've got the stocks, we should analyze them
         var relevantTickers = new ConcurrentBag<(string ticker, float price)>();
         await Parallel.ForEachAsync(tickers, cancellationToken, async (ticker, taskToken) =>
@@ -115,7 +111,7 @@ public class QCTrader : ITrader
 
             if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
 
-            var hasPivotLowInRange = interdayCandleSticks.TakeLast(12).Any(candle => candle.Pivot == Pivot.Low);
+            var hasPivotLowInRange = interdayCandleSticks.TakeLast(3).Any(candle => candle.Pivot == Pivot.Low);
 
             var currentCandle = interdayCandleSticks.Last();
             var currentPrice = currentCandle.Close;
@@ -124,7 +120,7 @@ public class QCTrader : ITrader
                 currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
             if (!isInRange) return;
 
-            if (hasPivotLowInRange || currentCandle.Pivot == Pivot.Low)
+            if (hasPivotLowInRange)
             {
                 // Current price is within +-0.7% of any key level and has a Pivot.Low in the last 5 candles
 
