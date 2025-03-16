@@ -18,10 +18,10 @@ public class RangeAlgoritm : QCAlgorithm
 
     public override void Initialize()
     {
-        var startDate = new DateTime(2022, 1, 1);
+        var startDate = DateTime.Now.AddDays(-7);
         var startDateForAlgo = new DateTime(2021, 1, 1);
         var endDate = DateTime.Now;
-        var endDateForAlgo = new DateTime(2023, 1, 1);
+        var endDateForAlgo = endDate;
         SetCash(3_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
@@ -38,13 +38,13 @@ public class RangeAlgoritm : QCAlgorithm
         ];
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
-
+        tickers = tickers.Take(16).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
         //{
         //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //    tickers.AddRange(ideas.Result);
         //}
-        //tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
+        // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -57,8 +57,8 @@ public class RangeAlgoritm : QCAlgorithm
                 var actualTicker = ticker;
                 var range = await rangeAlgorithm!.Run<FinanceCandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(
                     actualTicker,
-                    startDate,
-                    endDate.AddYears(-1), // I removed some years which make the algorithm to be more realistic
+                    startDateForAlgo,
+                    endDateForAlgo, // I removed some years which make the algorithm to be more realistic
                     Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), CancellationToken.None);
                 if (range is not KeyLevelCandleSticks candleSticks) return;
                 m_TickerToKeyLevels[actualTicker] = candleSticks.KeyLevels;
@@ -70,13 +70,13 @@ public class RangeAlgoritm : QCAlgorithm
         Task.WhenAll(tickersKeyLevelsLoader).Wait();
 
         var actualTickers = m_TickerToKeyLevels.OrderByDescending(_ => _.Value?.Length ?? 0)
-                                               .Take(16)
+                                               //    .Take(16)
                                                .Select(_ => _.Key)
                                                .ToArray();
         foreach (var ticker in actualTickers)
         {
-            AddEquity(ticker, Resolution.Daily);
-            AddData<FinanceData>(ticker, Resolution.Daily);
+            AddEquity(ticker, Resolution.Minute);
+            AddData<FinanceData>(ticker, Resolution.Minute);
         }
     }
 

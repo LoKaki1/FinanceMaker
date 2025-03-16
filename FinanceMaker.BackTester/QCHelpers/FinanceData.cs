@@ -3,7 +3,7 @@ using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
 using QuantConnect;
 using QuantConnect.Data;
-
+using Period = FinanceMaker.Common.Models.Pullers.Enums.Period;
 namespace FinanceMaker.BackTester.QCHelpers;
 
 public class FinanceData : BaseData
@@ -14,12 +14,23 @@ public class FinanceData : BaseData
     }
     public static DateTime EndDate { get; set; }
     public EMACandleStick CandleStick { get; set; } = EMACandleStick.Empty;
+    public Period ConvertResolutionToPeriod(Resolution resolution)
+    {
+        return resolution switch
+        {
+            Resolution.Minute => Period.OneMinute,
+            Resolution.Hour => Period.OneHour,
+            Resolution.Daily => Period.Daily,
+            _ => throw new ArgumentOutOfRangeException(nameof(resolution), resolution, null)
+        };
+    }
     // Override GetSource to specify the source of your data
+
     public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
     {
         // Define the path to your custom data file
         var filePath = Helper.SaveCandlestickDataToCsv(config.Symbol.Value,
-                                                Common.Models.Pullers.Enums.Period.Daily,
+                                ConvertResolutionToPeriod(config.Resolution),
                                                 StartDate,
                                                 EndDate).Result;
         return new SubscriptionDataSource(filePath, SubscriptionTransportMedium.LocalFile);
