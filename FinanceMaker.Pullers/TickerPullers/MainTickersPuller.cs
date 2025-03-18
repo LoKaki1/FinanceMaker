@@ -52,7 +52,10 @@ namespace FinanceMaker.Pullers.TickerPullers
             relatedTickersTasks.AddRange(p);
             var relatedTickers = await Task.WhenAll(relatedTickersTasks);
             var relatedTickersFlat = relatedTickers.SelectMany(ticker => ticker)
-                                                    .ToArray();
+                                                   .Where(ticker => !string.IsNullOrWhiteSpace(ticker)
+                                                                    && !string.IsNullOrEmpty(ticker)
+                                                                    && ticker.Length >= 1)
+                                                   .ToArray();
 
             return relatedTickersFlat;
         }

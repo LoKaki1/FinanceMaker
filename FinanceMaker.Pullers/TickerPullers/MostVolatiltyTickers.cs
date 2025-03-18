@@ -30,7 +30,7 @@ namespace FinanceMaker.Pullers.TickerPullers
                 return [];
             }
 
-            return tickers;
+            return tickers.Where(_ => !string.IsNullOrWhiteSpace(_));
         }
     }
 }

@@ -8,6 +8,7 @@ using FinanceMaker.Pullers.TickerPullers;
 using Microsoft.Extensions.DependencyInjection;
 using QuantConnect;
 using QuantConnect.Algorithm;
+using QuantConnect.Data;
 using QuantConnect.Orders.Fees;
 
 namespace FinanceMaker.BackTester.QCAlggorithms;
@@ -18,7 +19,7 @@ public class RangeAlgoritm : QCAlgorithm
 
     public override void Initialize()
     {
-        var startDate = DateTime.Now.AddDays(-7);
+        var startDate = DateTime.Now.AddDays(-2);
         var startDateForAlgo = new DateTime(2021, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate;
@@ -38,20 +39,18 @@ public class RangeAlgoritm : QCAlgorithm
         ];
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
-        tickers = tickers.Take(16).ToList();
+        tickers = tickers.ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
         //{
         //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //    tickers.AddRange(ideas.Result);
         //}
-        // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
+        tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
         foreach (var ticker in tickers)
         {
-
-
             var tickerKeyLevelsLoader = Task.Run(async () =>
             {
                 var actualTicker = ticker;
@@ -75,6 +74,7 @@ public class RangeAlgoritm : QCAlgorithm
                                                .ToArray();
         foreach (var ticker in actualTickers)
         {
+            if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
             AddEquity(ticker, Resolution.Minute);
             AddData<FinanceData>(ticker, Resolution.Minute);
         }
@@ -122,7 +122,7 @@ public class RangeAlgoritm : QCAlgorithm
         //{
 
 
-        SetHoldings(symbol, 0.9);
+        SetHoldings(symbol, 0.5);
 
         //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
         //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);
