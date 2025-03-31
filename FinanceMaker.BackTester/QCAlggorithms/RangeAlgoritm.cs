@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Data;
+using QuantConnect.Indicators;
 using QuantConnect.Orders.Fees;
 
 namespace FinanceMaker.BackTester.QCAlggorithms;
@@ -16,11 +17,12 @@ namespace FinanceMaker.BackTester.QCAlggorithms;
 public class RangeAlgoritm : QCAlgorithm
 {
     private Dictionary<string, float[]> m_TickerToKeyLevels = new();
+    private Dictionary<string, RelativeStrengthIndex> m_RsiIndicators = new();
 
     public override void Initialize()
     {
-        var startDate = DateTime.Now.AddDays(-2);
-        var startDateForAlgo = new DateTime(2021, 1, 1);
+        var startDate = DateTime.Now.AddDays(-3);
+        var startDateForAlgo = new DateTime(2019, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate;
         SetCash(3_000);
@@ -39,13 +41,13 @@ public class RangeAlgoritm : QCAlgorithm
         ];
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
-        tickers = tickers.ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
         //{
         //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //    tickers.AddRange(ideas.Result);
         //}
-        tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
+        // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
+        // tickers = ["NIO"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -69,21 +71,39 @@ public class RangeAlgoritm : QCAlgorithm
         Task.WhenAll(tickersKeyLevelsLoader).Wait();
 
         var actualTickers = m_TickerToKeyLevels.OrderByDescending(_ => _.Value?.Length ?? 0)
-                                               //    .Take(16)
+                                                .Take(16)
                                                .Select(_ => _.Key)
                                                .ToArray();
         foreach (var ticker in actualTickers)
         {
             if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
-            AddEquity(ticker, Resolution.Minute);
+            var symbol = AddEquity(ticker, Resolution.Minute);
             AddData<FinanceData>(ticker, Resolution.Minute);
-        }
-    }
+            m_RsiIndicators[ticker] = RSI(symbol.Symbol, 14, MovingAverageType.Wilders, Resolution.Minute);
 
+        }
+
+    }
     public void OnData(FinanceData data)
     {
-        if (!m_TickerToKeyLevels.TryGetValue(data.Symbol.Value, out var keyLevels)) return;
+        var ticker = data.Symbol.Value;
+        if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
+        if (m_RsiIndicators[ticker].IsReady)
+        {
+            decimal rsiValue = m_RsiIndicators[ticker].Current.Value;
+            bool hasPosition = Portfolio[ticker].Invested;
 
+            if (rsiValue < 30 && !hasPosition)
+            {
+                SetHoldings(ticker, 1.0); return;
+            }
+            else if (rsiValue > 70 && hasPosition)
+            {
+                Liquidate(ticker); return;
+
+            }
+
+        }
         foreach (var value in keyLevels)
         {
             if (Math.Abs((float)data.Value - value) / value <= 0.005f)

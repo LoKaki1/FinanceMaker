@@ -55,10 +55,17 @@ public class FinanceData : BaseData
         // Parse the CSV line
         var data = line.Split(',');
         var candleTime = DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture);
+        var candleEndDate = config.Resolution switch
+        {
+            Resolution.Minute => candleTime.AddMinutes(1),
+            Resolution.Hour => candleTime.AddHours(1),
+            Resolution.Daily => candleTime.AddDays(1),
+            _ => throw new ArgumentOutOfRangeException(nameof(config.Resolution), config.Resolution, null)
+        };
         var aaa = new FinanceData
         {
             Symbol = config.Symbol,
-            EndTime = candleTime.AddDays(1),
+            EndTime = candleEndDate,
             Time = candleTime,
 
             Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
