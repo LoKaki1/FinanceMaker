@@ -6,7 +6,7 @@ public class NivTickersPuller : FinvizTickersPuller
 {
     public NivTickersPuller(IHttpClientFactory requestService) : base(requestService)
     {
-        m_FinvizUrl = "https://finviz.com/screener.ashx?v=111&s=ta_topgainers&f=sh_curvol_o1000,sh_price_o3,sh_relvol_o1&ta=0";
+        m_FinvizUrl = "https://finviz.com/screener.ashx?v=111&f=sh_curvol_o5000%2Csh_float_u50%2Csh_relvol_o3%2Csh_short_o10%2Cta_change_u1&ft=4";
     }
 
     public override async Task<IEnumerable<string>> ScanTickers(TickersPullerParameters scannerParams, CancellationToken cancellationToken)
