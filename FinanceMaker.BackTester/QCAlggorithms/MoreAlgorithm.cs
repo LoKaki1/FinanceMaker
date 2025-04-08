@@ -1,23 +1,26 @@
-﻿using FinanceMaker.Algorithms;
+using System;
+using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Pullers.TickerPullers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.FSharp.Data.UnitSystems.SI.UnitNames;
 using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Data;
+using QuantConnect.Data.Market;
 using QuantConnect.Indicators;
 using QuantConnect.Orders.Fees;
 
 namespace FinanceMaker.BackTester.QCAlggorithms;
 
-public class RangeAlgoritm : QCAlgorithm
+public class MoreAlgorithm : QCAlgorithm
 {
     private Dictionary<string, float[]> m_TickerToKeyLevels = new();
     private Dictionary<string, RelativeStrengthIndex> m_RsiIndicators = new();
+    private Dictionary<string, VolumeWeightedAveragePriceIndicator> m_VwapIndicators = new();
 
     public override void Initialize()
     {
@@ -34,26 +37,12 @@ public class RangeAlgoritm : QCAlgorithm
         FinanceData.EndDate = endDate;
 
         var serviceProvider = StaticContainer.ServiceProvider;
-
         var mainTickersPuller = serviceProvider.GetRequiredService<MainTickersPuller>();
-        TechnicalIdeaInput[] technicalIdeaInputs = [
-            TechnicalIdeaInput.BestBuyers,
-            TechnicalIdeaInput.BestSellers,
-        ];
-
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
-        // var random = new Random();
+        var random = new Random();
         tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
-        //foreach (var technicalIdeaInput in technicalIdeaInputs)
-        //{
-        //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
-        //    tickers.AddRange(ideas.Result);
-        //}
-        // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
-        // tickers = ["RSLS", "APVO", "DGLY", "IBG", "SOBR", "ICCT", "CNTM", "VMAR", "SYRA", "PCSA"];
-        // tickers = ["TSM", "COST", "BBY", "BAC", "AMZN", "INTC", "PLTR", "AMTM", "RKT", "MRX", "SMMT", "CMPX", "GRRR", "SHAK", "HOLO"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -81,50 +70,64 @@ public class RangeAlgoritm : QCAlgorithm
                                                .ToArray();
         foreach (var ticker in actualTickers)
         {
-            if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
-            var symbol = AddEquity(ticker, Resolution.Minute);
-            AddData<FinanceData>(ticker, Resolution.Minute);
-
+            if (string.IsNullOrEmpty(ticker) ||
+                !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) ||
+                 keyLevels.Length == 0) continue;
+            var equity = AddEquity(ticker, Resolution.Minute);
+            AddData<FinanceData>(equity.Symbol, Resolution.Minute);
+            var rsi = RSI(equity.Symbol, 14, MovingAverageType.Simple, Resolution.Minute);
+            RegisterIndicator(equity.Symbol, rsi, Resolution.Minute);
+            WarmUpIndicator(equity.Symbol, rsi, TimeSpan.FromDays(2));
+            m_RsiIndicators[ticker] = rsi;
+            var vwap = new VolumeWeightedAveragePriceIndicator($"{ticker}-VWAP", 14);
+            RegisterIndicator(equity.Symbol, vwap, Resolution.Minute);
+            m_VwapIndicators[ticker] = vwap;
         }
-
     }
+
     public void OnData(FinanceData data)
     {
         var ticker = data.Symbol.Value;
+        var holdings = Securities[data.Symbol].Holdings;
+        var avgPrice = holdings.AveragePrice;
+        var currentPrice = (decimal)data.CandleStick.Close;
 
-        if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
-
-        foreach (var value in keyLevels)
+        if (holdings.Quantity > 0)
         {
-            var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
-            var pivot = data.CandleStick.Pivot;
-
-            if (valueDivision <= 1 && valueDivision >= 0.995)
+            if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
             {
-                {
-                    var symbol = data.Symbol.Value;
-                    var holdingsq = Securities[symbol].Holdings.Quantity;
+                Sell(data.Symbol);
 
-                    if (holdingsq == 0)
-                    {
-                        Buy(data.Symbol);
-
-                        return;
-                    }
-                }
+                return;
             }
+        }
+        m_RsiIndicators[ticker].Update(new IndicatorDataPoint(data.Symbol, data.Time, (decimal)data.CandleStick.Close)); // Example price
+        var financeCandleStick = data.CandleStick;
+        m_VwapIndicators[ticker].Update(new TradeBar(data.Time, data.Symbol, (decimal)financeCandleStick.Open, (decimal)financeCandleStick.High, (decimal)financeCandleStick.Close, (decimal)financeCandleStick.Low, (decimal)financeCandleStick.Volume)); // Example price
+        // 1. Key level test
+        if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) return;
+        var nearestKeyLevel = keyLevels.OrderBy(k => Math.Abs(k - financeCandleStick.Close)).First();
 
-            var holdings = Securities[data.Symbol].Holdings;
-            var avgPrice = holdings.AveragePrice;
-            var currentPrice = (decimal)data.CandleStick.Close;
+        var distance = Math.Abs(financeCandleStick.Close - nearestKeyLevel);
+        if (distance > financeCandleStick.Close * 0.01f) return; // skip if too far from key level
 
-            if (holdings.Quantity > 0)
-            {
-                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
-                {
-                    Sell(data.Symbol);
-                }
-            }
+        // 2. RSI recovery
+        if (!m_RsiIndicators.TryGetValue(ticker, out var rsi)) return;
+        if (!rsi.IsReady || rsi.Current.Value > 40 || rsi.Current.Value < 20) return;
+
+        // 3. VWAP check
+        if (!m_VwapIndicators.TryGetValue(ticker, out var vwap) || !vwap.IsReady) return;
+        if (financeCandleStick.Close < (float)vwap.Current.Value) return; // skip if price is below VWAP 
+
+        // 4. Bullish reversal
+        var previousClose = History<FinanceData>(data.Symbol, 2, Resolution.Minute).FirstOrDefault()?.CandleStick.Close ?? 0;
+        if (financeCandleStick.Close < (float)previousClose) return; // candle is not bullish
+
+        // 5. Entry
+        if (!Portfolio[data.Symbol].Invested)
+        {
+            Buy(data.Symbol); // Buy 10 shares
+            Debug($"Bought {ticker} at {financeCandleStick.Close} (VWAP: {vwap}, RSI: {rsi.Current.Value})");
         }
     }
 
