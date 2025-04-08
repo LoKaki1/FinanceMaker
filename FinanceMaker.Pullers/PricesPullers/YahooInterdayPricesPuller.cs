@@ -1,4 +1,5 @@
-﻿using FinanceMaker.Common;
+﻿using System.Diagnostics;
+using FinanceMaker.Common;
 using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Pullers.Enums;
@@ -35,8 +36,44 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
         {
             throw new NotImplementedException($"Yahoo interday api doesn't support {Enum.GetName(period)} as a period");
         }
+        DateTime startDate = pricesPullerParameters.StartTime;
+        DateTime endDate = pricesPullerParameters.EndTime;
+        var ticker = pricesPullerParameters.Ticker;
 
-        var yahooResponse = await PullDataFromYahoo(pricesPullerParameters, yahooPeriod, cancellationToken);
+        if ((int)period < 8)
+        {
+            IEnumerable<(DateTime Start, DateTime End)> CreateDateRanges(DateTime startDate, DateTime endDate)
+            {
+                var ranges = new List<(DateTime Start, DateTime End)>();
+                DateTime currentStart = startDate;
+
+                while (currentStart < endDate)
+                {
+                    DateTime currentEnd = currentStart.AddDays(7) > endDate ? endDate : currentStart.AddDays(7);
+                    ranges.Add((currentStart, currentEnd));
+                    currentStart = currentEnd;
+                }
+
+                return ranges;
+            }
+
+            var dateRanges = CreateDateRanges(startDate, endDate);
+
+            var tasks = dateRanges.Select(range => PullDataFromYahoo(range.Start, range.End, ticker, yahooPeriod, cancellationToken)).ToArray();
+            var results = await Task.WhenAll(tasks);
+            var allCandles = results.SelectMany(yahooResponse =>
+            {
+                if (yahooResponse.IsEmpty())
+                {
+                    return [];
+                }
+                return CreateCandlesFromYahoo(yahooResponse);
+            }).ToArray();
+
+            return allCandles;
+        }
+
+        var yahooResponse = await PullDataFromYahoo(startDate, endDate, ticker, yahooPeriod, cancellationToken);
 
         if (yahooResponse.IsEmpty()) return [];
 
@@ -82,29 +119,53 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
         return haCandles;
     }
 
-    private async Task<YahooResponse> PullDataFromYahoo(PricesPullerParameters pricesPullerParameters,
+    private async Task<YahooResponse> PullDataFromYahoo(DateTime startDate,
+                                                        DateTime endDate,
+                                                        string ticker,
                                                         string yahooPeriod,
                                                         CancellationToken cancellationToken)
     {
         var client = m_RequestsService.CreateClient();
         client.AddBrowserUserAgent();
-        var startTime = ((DateTimeOffset)pricesPullerParameters.StartTime.ToUniversalTime()).ToUnixTimeSeconds();
-        var endTime = ((DateTimeOffset)pricesPullerParameters.EndTime.ToUniversalTime()).ToUnixTimeSeconds();
+        var startTime = ((DateTimeOffset)startDate.ToUniversalTime()).ToUnixTimeSeconds();
+        var endTime = ((DateTimeOffset)endDate.ToUniversalTime()).ToUnixTimeSeconds();
 
 
-        var url = string.Format(m_FinanceUrl, pricesPullerParameters.Ticker, startTime, endTime, yahooPeriod);
+        var url = string.Format(m_FinanceUrl, ticker, startTime, endTime, yahooPeriod);
         HttpResponseMessage? response;
-        try
+        int maxRetries = 3;
+        int delayMilliseconds = 1000;
+        response = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            response = await client.GetAsync(url, cancellationToken);
-        }
-        catch
-        {
-            return YahooResponse.Enpty;
+            try
+            {
+                response = await client.GetAsync(url, cancellationToken);
+                if (response.IsSuccessStatusCode)
+                {
+                    break;
+                }
+            }
+            catch
+            {
+                if (attempt == maxRetries)
+                {
+                    return YahooResponse.Enpty;
+                }
+            }
+
+            await Task.Delay(delayMilliseconds, cancellationToken);
         }
 
         if (response is null || !response.IsSuccessStatusCode)
         {
+            if (response is not null)
+            {
+                var error = await response.Content.ReadAsStringAsync(cancellationToken);
+
+                Debug.WriteLine($"Error: {error}");
+            }
             return YahooResponse.Enpty;
 
         }

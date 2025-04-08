@@ -67,7 +67,6 @@ public class FinanceData : BaseData
             Symbol = config.Symbol,
             EndTime = candleEndDate,
             Time = candleTime,
-
             Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
             CandleStick = new EMACandleStick
                 (new FinanceCandleStick

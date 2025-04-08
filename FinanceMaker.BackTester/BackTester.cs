@@ -73,7 +73,10 @@ public class BackTester
         var dataFolder = Config.Get("data-folder");
         var customDataDirectory = Path.Combine(dataFolder, "Custom");
         var aaa = engine.AlgorithmHandlers.Results;
-        Directory.Delete(customDataDirectory, true);
+        if (Directory.Exists(customDataDirectory))
+        {
+            Directory.Delete(customDataDirectory, true);
+        }
     }
 
     // All that left is to connect the algorithm to the worker, so do it in the bus,

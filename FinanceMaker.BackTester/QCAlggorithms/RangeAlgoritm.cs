@@ -21,10 +21,11 @@ public class RangeAlgoritm : QCAlgorithm
 
     public override void Initialize()
     {
-        var startDate = DateTime.Now.AddDays(-3);
-        var startDateForAlgo = new DateTime(2019, 1, 1);
+        // Now we can test for last month minutely
+        var startDate = DateTime.Now.AddDays(-29);
+        var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
-        var endDateForAlgo = endDate;
+        var endDateForAlgo = endDate.AddYears(-1).AddMonths(-11);
         SetCash(3_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
@@ -41,13 +42,17 @@ public class RangeAlgoritm : QCAlgorithm
         ];
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
+        var random = new Random();
+        var tickersNumber = 20;
+        tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
         //{
         //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
         //    tickers.AddRange(ideas.Result);
         //}
         // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
-        // tickers = ["NIO"];
+        // tickers = ["RSLS", "APVO", "DGLY", "IBG", "SOBR", "ICCT", "CNTM", "VMAR", "SYRA", "PCSA"];
+        // tickers = ["TSM", "COST", "BBY", "BAC", "AMZN", "INTC", "PLTR", "AMTM", "RKT", "MRX", "SMMT", "CMPX", "GRRR", "SHAK", "HOLO"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -71,7 +76,6 @@ public class RangeAlgoritm : QCAlgorithm
         Task.WhenAll(tickersKeyLevelsLoader).Wait();
 
         var actualTickers = m_TickerToKeyLevels.OrderByDescending(_ => _.Value?.Length ?? 0)
-                                                .Take(16)
                                                .Select(_ => _.Key)
                                                .ToArray();
         foreach (var ticker in actualTickers)
@@ -79,7 +83,6 @@ public class RangeAlgoritm : QCAlgorithm
             if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
             var symbol = AddEquity(ticker, Resolution.Minute);
             AddData<FinanceData>(ticker, Resolution.Minute);
-            m_RsiIndicators[ticker] = RSI(symbol.Symbol, 14, MovingAverageType.Wilders, Resolution.Minute);
 
         }
 
@@ -87,47 +90,39 @@ public class RangeAlgoritm : QCAlgorithm
     public void OnData(FinanceData data)
     {
         var ticker = data.Symbol.Value;
+
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
-        if (m_RsiIndicators[ticker].IsReady)
-        {
-            decimal rsiValue = m_RsiIndicators[ticker].Current.Value;
-            bool hasPosition = Portfolio[ticker].Invested;
 
-            if (rsiValue < 30 && !hasPosition)
-            {
-                SetHoldings(ticker, 1.0); return;
-            }
-            else if (rsiValue > 70 && hasPosition)
-            {
-                Liquidate(ticker); return;
-
-            }
-
-        }
         foreach (var value in keyLevels)
         {
-            if (Math.Abs((float)data.Value - value) / value <= 0.005f)
+            var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
+            var pivot = data.CandleStick.Pivot;
+
+            if (valueDivision <= 1 && valueDivision >= 0.995)
             {
-                var symbol = data.Symbol.Value;
-                var holdingsq = Securities[symbol].Holdings.Quantity;
-
-                if (holdingsq == 0 && Pivot.Low == data.CandleStick.Pivot)
                 {
-                    Buy(data.Symbol);
+                    var symbol = data.Symbol.Value;
+                    var holdingsq = Securities[symbol].Holdings.Quantity;
 
-                    return;
+                    if (holdingsq == 0 && Pivot.Low == pivot)
+                    {
+                        Buy(data.Symbol);
+
+                        return;
+                    }
                 }
             }
-        }
-        var holdings = Securities[data.Symbol].Holdings;
-        var avgPrice = holdings.AveragePrice;
-        var currentPrice = data.Price;
 
-        if (holdings.Quantity > 0)
-        {
-            if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
+            var holdings = Securities[data.Symbol].Holdings;
+            var avgPrice = holdings.AveragePrice;
+            var currentPrice = (decimal)data.CandleStick.Close;
+
+            if (holdings.Quantity > 0)
             {
-                Sell(data.Symbol);
+                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
+                {
+                    Sell(data.Symbol);
+                }
             }
         }
     }
