@@ -15,7 +15,7 @@ namespace FinanceMaker.Pullers.TickerPullers
             m_TradingViewUrl = [
                 "https://www.tradingview.com/markets/stocks-usa/market-movers-most-volatile/?utm_source=chatgpt.com",
                 "https://www.tradingview.com/markets/stocks-usa/market-movers-unusual-volume/",
-                "https://www.tradingview.com/markets/stocks-usa/market-movers-top-gainers/",
+                "https://www.tradingview.com/markets/stocks-usa/market-movers-gainers/",
             ];
 
 
@@ -45,7 +45,7 @@ namespace FinanceMaker.Pullers.TickerPullers
                 return [];
             }
 
-            return actualTickers.Where(_ => !string.IsNullOrWhiteSpace(_));
+            return actualTickers.Where(_ => !string.IsNullOrWhiteSpace(_)).ToArray();
         }
     }
 }

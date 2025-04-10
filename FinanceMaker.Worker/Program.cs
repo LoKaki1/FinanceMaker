@@ -87,9 +87,10 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<OverNightBreakout>();
                 services.AddSingleton<IBroker, AlpacaBroker>();
                 services.AddSingleton<ITrader, QCTrader>();
-                services.AddHostedService<Worker>();
+                services.AddSingleton<Worker>();
 
 
             })
             .Build();
-app.Run();
+var aa = app.Services.GetRequiredService<Worker>();
+await aa.ExecuteAsync(new System.Threading.CancellationToken());

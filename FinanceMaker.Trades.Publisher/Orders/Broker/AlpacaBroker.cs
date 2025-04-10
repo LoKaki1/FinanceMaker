@@ -12,8 +12,8 @@ namespace FinanceMaker.Publisher.Orders.Trader;
 public class AlpacaBroker : BrokerrBase<EntryExitOutputIdea>
 {
     // I really need to create both secrets and configs 
-    const string API_KEY = "PKEQHBWG2C6VKOQYKAMD";
-    const string API_SECRET = "r35c0oG0nAJ9Cj03V6pRTSJvWaaRKjOXIdNSeIdu";
+    const string API_KEY = "PK3PPQF932MQ04IX3W3T";
+    const string API_SECRET = "uoVtCjSAoxTvIgcma2aw9SZwTOnVcTwYleNt96P9";
     const string ENDPOIONT_URL = "https://paper-api.alpaca.markets/v2";
 
     private readonly IAlpacaTradingClient m_Client;

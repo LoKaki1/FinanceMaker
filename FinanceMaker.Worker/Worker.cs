@@ -6,7 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NCrontab;
 
-public class Worker : BackgroundService
+public class Worker 
 {
     private NCrontab.CrontabSchedule m_CrontabSchedule;
     private readonly ILogger<Worker> m_Logger;
@@ -22,7 +22,7 @@ public class Worker : BackgroundService
 
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public  async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
