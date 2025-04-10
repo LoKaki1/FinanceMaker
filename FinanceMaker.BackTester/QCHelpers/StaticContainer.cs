@@ -38,7 +38,7 @@ public static class StaticContainer
         services.AddSingleton(sp => new IParamtizedTickersPuller[]
         {
             //sp.GetService<FinvizTickersPuller>()!,
-            //sp.GetService<NivTickersPuller>()!,
+            sp.GetService<NivTickersPuller>()!,
             sp.GetService<MostVolatiltyTickers>()!,
         });
         services.AddSingleton(sp => new ITickerPuller[]

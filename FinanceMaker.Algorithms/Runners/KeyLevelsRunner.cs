@@ -65,6 +65,20 @@ public sealed class KeyLevelsRunner :
                 distinctedLevels.Add(levels[i]);
             }
         }
+        var beforeRemoveSimilar = distinctedLevels.ToArray();
+        for (int i = 0; i < distinctedLevels.Count; i++)
+        {
+            for (int j = i + 1; j < distinctedLevels.Count; j++)
+            {
+                if (distinctedLevels[j] + distinctedLevels[j] * 3 * epsilon >= distinctedLevels[i] &&
+                    distinctedLevels[i] >= distinctedLevels[j] - distinctedLevels[j] * 3 * epsilon)
+                {
+                    distinctedLevels[i] = (distinctedLevels[i] + distinctedLevels[j]) / 2;
+                    distinctedLevels.RemoveAt(j);
+                    j--; // Adjust index after removal
+                }
+            }
+        }
         var reuslt = new KeyLevelCandleSticks(emaCandles, distinctedLevels);
         return Task.FromResult(reuslt);
         // return Task.FromResult((IEnumerable<EMACandleStick>)emaCandles);

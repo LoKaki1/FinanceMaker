@@ -45,9 +45,9 @@ public class QCTrader : ITrader
     public async Task Trade(CancellationToken cancellationToken)
     {
         var currentPosion = await m_Broker.GetClientPosition(cancellationToken);
-        
+
         if (currentPosion.BuyingPower < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
-        
+
         var tickersToTrade = await GetRelevantTickers(cancellationToken);
         tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
                                        .Take(NUMBER_OF_OPEN_TRADES)
@@ -81,17 +81,17 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        var tickers = await m_TickersPullers.ScanTickers(longTickers, cancellationToken);
+        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"];
         //var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
         //tickers = tickers.Concat(moreTicker)
         //                 .Distinct()
         //                 .ToArray();
-//        string[] tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT", "NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD",
-//"GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT",
-//"COIN", "MARA", "LCID", "SOFI", "HOOD", "AI", "UPST", "AFRM", "DNA", "PATH",
-//"RBLX", "SNAP", "PTON", "TWLO", "CRWD", "ZM", "DKNG", "CHWY", "TTD", "RUN",
-//"ENPH", "MSTR", "CVNA", "DASH", "PINS", "NET", "SHOP", "SQ", "PYPL"];
-        tickers = tickers.Distinct().ToArray();
+        //        string[] tickers = ["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT", "NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD",
+        //"GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT",
+        //"COIN", "MARA", "LCID", "SOFI", "HOOD", "AI", "UPST", "AFRM", "DNA", "PATH",
+        //"RBLX", "SNAP", "PTON", "TWLO", "CRWD", "ZM", "DKNG", "CHWY", "TTD", "RUN",
+        //"ENPH", "MSTR", "CVNA", "DASH", "PINS", "NET", "SHOP", "SQ", "PYPL"];
+        tickers = tickers.Distinct().ToList();
         // Now we've got the stocks, we should analyze them
         var relevantTickers = new ConcurrentBag<(string ticker, float price)>();
         await Parallel.ForEachAsync(tickers, cancellationToken, async (ticker, taskToken) =>
@@ -105,7 +105,7 @@ public class QCTrader : ITrader
 
             if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) return;
 
-            var interdayCandles = await  m_RangeAlgorithmsRunner.Run<EMACandleStick>(
+            var interdayCandles = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
                                                                                     taskToken);
 
