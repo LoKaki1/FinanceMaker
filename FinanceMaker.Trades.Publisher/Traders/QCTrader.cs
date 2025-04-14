@@ -120,7 +120,7 @@ public class QCTrader : ITrader
                 currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
             if (!isInRange) return;
 
-            if (hasPivotLowInRange)
+            //if (hasPivotLowInRange)
             {
                 // Current price is within +-0.7% of any key level and has a Pivot.Low in the last 5 candles
 
@@ -128,6 +128,6 @@ public class QCTrader : ITrader
             }
         });
 
-        return relevantTickers.ToArray();
+        return [.. relevantTickers];
     }
 }
