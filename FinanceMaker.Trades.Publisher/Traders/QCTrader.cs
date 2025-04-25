@@ -111,20 +111,20 @@ public class QCTrader : ITrader
 
             if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
 
-            var hasPivotLowInRange = interdayCandleSticks.TakeLast(3).Any(candle => candle.Pivot == Pivot.Low);
-
-            var currentCandle = interdayCandleSticks.Last();
-            var currentPrice = currentCandle.Close;
-
-            var isInRange = candleSticks.KeyLevels.Any(keyLevel =>
-                currentPrice >= keyLevel * 0.993 && currentPrice <= keyLevel * 1.007);
-            if (!isInRange) return;
-
-            //if (hasPivotLowInRange)
+            foreach (var keylevel in candleSticks.KeyLevels)
             {
-                // Current price is within +-0.7% of any key level and has a Pivot.Low in the last 5 candles
+                var lastCandleStick = interdayCandleSticks.Last();
+                var averageValue = interdayCandleSticks.TakeLast(5)
+                                                       .Average(candle => candle.Close);
 
-                relevantTickers.Add((ticker, currentPrice));
+                var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
+                // I am not sure the pivot will work, but the average value key level should work instead
+                // That should also solve the problem we have with the candles at the start
+                if (valueDivision <= 1 && valueDivision >= 0.995 && averageValue >= keylevel)
+                {
+                    relevantTickers.Add((ticker, lastCandleStick.Close));
+                    break;
+                }
             }
         });
 
