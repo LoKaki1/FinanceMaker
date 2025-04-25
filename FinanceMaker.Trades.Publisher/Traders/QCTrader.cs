@@ -65,7 +65,7 @@ public class QCTrader : ITrader
 
             if (quntity == 0) continue;
 
-            var stopLoss = entryPrice * 0.99f;
+            var stopLoss = entryPrice * 0.985f;
             var takeProfit = entryPrice * 1.015f;
             var description = $"Entry price: {entryPrice}, Stop loss: {stopLoss}, Take profit: {takeProfit}";
             var order = new EntryExitOutputIdea(description, ticker, entryPrice, takeProfit, stopLoss, quntity);

@@ -120,7 +120,7 @@ public class RangeAlgoritm : QCAlgorithm
 
             if (holdings.Quantity > 0)
             {
-                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
+                if (currentPrice >= avgPrice * 1.04m || currentPrice <= avgPrice * 0.98m)
                 {
                     Sell(data.Symbol);
                 }
