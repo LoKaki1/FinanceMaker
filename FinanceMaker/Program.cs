@@ -1,9 +1,30 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-//using FinanceMaker.Algorithms.QuantConnectAlgorithms;
-using FinanceMaker.BackTester;
+﻿using System;
+using System.Collections.Generic;
+using FinanceMaker.Algorithms;
+using FinanceMaker.Algorithms.News.Analyziers;
+using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.BackTester.QCAlggorithms;
-
+using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Ideas.IdeaInputs;
+using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
+using FinanceMaker.Common.Models.Pullers.Enums;
+using FinanceMaker.Ideas.Ideas;
+using FinanceMaker.Ideas.Ideas.Abstracts;
+using FinanceMaker.Publisher.Orders.Trader;
+using FinanceMaker.Publisher.Orders.Trader.Interfaces;
+using FinanceMaker.Publisher.Traders;
+using FinanceMaker.Publisher.Traders.Interfaces;
+using FinanceMaker.Pullers;
+using FinanceMaker.Pullers.NewsPullers;
+using FinanceMaker.Pullers.NewsPullers.Interfaces;
+using FinanceMaker.Pullers.PricesPullers;
+using FinanceMaker.Pullers.PricesPullers.Interfaces;
+using FinanceMaker.Pullers.TickerPullers;
+using FinanceMaker.Pullers.TickerPullers.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ScottPlot;
 Console.WriteLine("Hello, World!");
 
 
@@ -42,39 +63,104 @@ Console.WriteLine("Hello, World!");
 //       |          V
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 // 
-//   "algorithm-type-name": "ZeroFeeRegressionAlgorithm",
 
-//   // Algorithm language selector - options CSharp, Python
-//   "algorithm-language": "CSharp",
+var app = Host.CreateDefaultBuilder(args)
+            .ConfigureServices(services =>
+            {
+                services.AddHttpClient();
+                // Can't use the extension (the service collection becomes read only after the build)
+                services.AddSingleton<MarketStatus>();
+                services.AddSingleton<FinvizTickersPuller>();
+                services.AddSingleton<TradingViewTickersPuller>();
+                services.AddSingleton<MostVolatiltyTickers>();
+                services.AddSingleton(sp => new IParamtizedTickersPuller[]
+                {
+                    sp.GetService<MostVolatiltyTickers>()
+                });
+                services.AddSingleton(sp => Array.Empty<IRelatedTickersPuller>());
+                services.AddSingleton(sp => Array.Empty<ITickerPuller>());
+                services.AddSingleton<MainTickersPuller>();
 
-//   //Physical DLL location
-//   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
-// Config.Set("algorithm-type-name", nameof(RangeAlgoritm));
-// Config.Set("data-folder", "../../../../FinanceMaker/Data");
-// Config.Set("algorithm-language", "CSharp");
-// Config.Set("algorithm-location", "FinanceMaker.BackTester.dll");
+                services.AddSingleton<YahooPricesPuller>();
+                services.AddSingleton<YahooInterdayPricesPuller>();
+
+                services.AddSingleton(sp => new IPricesPuller[]
+                {
+                    // sp.GetService<YahooPricesPuller>(),
+                    sp.GetService<YahooInterdayPricesPuller>(),
+
+                });
+                services.AddSingleton<IPricesPuller, MainPricesPuller>();
+                services.AddSingleton<GoogleNewsPuller>();
+                services.AddSingleton<YahooFinanceNewsPuller>();
+                services.AddSingleton(sp => new INewsPuller[]
+                {
+                    sp.GetService<GoogleNewsPuller>(),
+                    sp.GetService<YahooFinanceNewsPuller>(),
+                    sp.GetService<FinvizNewPuller>(),
+
+                });
+
+                services.AddSingleton<KeyLevelsRunner>();
+                services.AddSingleton<EMARunner>();
+                services.AddSingleton<BreakOutDetectionRunner>();
+
+                services.AddSingleton<IEnumerable<IAlgorithmRunner<RangeAlgorithmInput>>>(
+                    sp =>
+                    {
+                        var runner3 = sp.GetService<KeyLevelsRunner>();
+                        var runner1 = sp.GetService<EMARunner>();
+                        var runner2 = sp.GetService<BreakOutDetectionRunner>();
 
 
+                        return [runner1, runner2, runner3];
+                    }
+                );
+
+                services.AddSingleton<RangeAlgorithmsRunner>();
+                services.AddSingleton<INewsPuller, MainNewsPuller>();
+                services.AddSingleton<KeywordsDetectorAnalysed>();
+                services.AddSingleton<INewsAnalyzer[]>(sp => [
+                    sp.GetService<KeywordsDetectorAnalysed>()
+                ]);
+                services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
+                services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
+                services.AddSingleton<OverNightBreakout>();
+                services.AddSingleton<IBroker, AlpacaBroker>();
+                services.AddSingleton<ITrader, QCTrader>();
 
 
-// //Name thread for the profiler:
-// Thread.CurrentThread.Name = "Algorithm Analysis Thread";
+            })
+            .Build();
 
-// Initializer.Start();
-// var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
+// var startDateForAlgo = new DateTime(2020, 1, 1);
+// var endDate = DateTime.Now;
+// var startDateForAlgo = endDate.Subtract(TimeSpan.FromDays(2));
+// var endDateForAlgo = endDate;
+// var rangeAlgorithm = app.Services.GetService<RangeAlgorithmsRunner>();
+// var range = await rangeAlgorithm!.Run<EMACandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(
+//                     "TSLA",
+//                     startDateForAlgo,
+//                     endDateForAlgo, // I removed some years which make the algorithm to be more realistic
+//                     Period.OneMinute), Algorithm.KeyLevels), CancellationToken.None);
 
-// //-> Pull job from QuantConnect job queue, or, pull local build:
-// var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
+// var candles = range; ;
+// var keyLevels = range as KeyLevelCandleSticks;
 
-// var leanEngineAlgorithmHandlers = Initializer.GetAlgorithmHandlers();
+// // Convert to OHLC arrays
+// OHLC[] ohlcs = candles.Select(c => new OHLC(c.Open, c.High, c.Low, c.Close, c.Time, TimeSpan.FromMinutes(1))).ToArray();
 
-// // Create the algorithm manager and start our engine
-// var algorithmManager = new AlgorithmManager(QuantConnect.Globals.LiveMode, job);
 
-// leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
+// ScottPlot.Plot myPlot = new();
+// myPlot.Add.Candlestick(ohlcs);
+// if (keyLevels != null)
+// {
+//     foreach (var level in keyLevels.KeyLevels)
+//     {
+//         myPlot.Add.HorizontalLine(level, color: Color.FromColor(System.Drawing.Color.Aqua), width: 2);
+//     }
+// }
 
-// OS.Initialize();
-
-// var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
-// engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
-BackTester.Runner(typeof(RangeAlgoritm));
+// myPlot.SavePng("quickstart.png", 2560, 1440);
+// BackTester.Runner(typeof(RangeAlgoritm));
+LeanLauncher.StartLiveAlpaca();

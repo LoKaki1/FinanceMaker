@@ -161,3 +161,45 @@ public class RangeAlgoritm : QCAlgorithm
         //}
     }
 }
+
+// Be sure to replace <YOUR_ALPACA_API_KEY> and <YOUR_ALPACA_SECRET_KEY> with your actual Alpaca credentials before use.
+public static class LiveTradingRunner
+{
+    public static void RunAlpacaLive()
+    {
+        var config = new Dictionary<string, string>
+        {
+            ["environment"] = "live",
+            ["live-mode-brokerage"] = "Alpaca",
+            ["alpaca-key-id"] = "<YOUR_ALPACA_API_KEY>",
+            ["alpaca-secret-key"] = "<YOUR_ALPACA_SECRET_KEY>",
+            ["alpaca-trading-mode"] = "live",
+            ["live-data-provider"] = "Alpaca",
+            ["job-project-id"] = "RangeAlgorithm",
+            ["algorithm-type-name"] = "FinanceMaker.BackTester.QCAlggorithms.RangeAlgoritm",
+            ["algorithm-location"] = "FinanceMaker.BackTester.dll"
+        };
+
+        var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
+        File.WriteAllText(configFilePath, System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+        var leanPath = "lean"; // assuming LEAN CLI is installed and in PATH
+        var psi = new System.Diagnostics.ProcessStartInfo
+        {
+            FileName = leanPath,
+            Arguments = "live start --config config.json",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        using var process = System.Diagnostics.Process.Start(psi);
+        if (process != null)
+        {
+            Console.WriteLine(process.StandardOutput.ReadToEnd());
+            Console.Error.WriteLine(process.StandardError.ReadToEnd());
+            process.WaitForExit();
+        }
+    }
+}
