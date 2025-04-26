@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http.Headers;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
@@ -63,7 +64,28 @@ Console.WriteLine("Hello, World!");
 //       |          V
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 // 
+// Client Portal Web API usually uses self-signed certs, so bypass validation (for dev only!)
+HttpClientHandler handler = new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+};
 
+using var httpClient = new HttpClient(handler);
+httpClient.BaseAddress = new Uri("https://localhost:5001/v1/api/");
+httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+httpClient.DefaultRequestHeaders.Add("Host", "api.ibkr.com");
+httpClient.DefaultRequestHeaders.Add("User-Agent", "api.ibkr.com");
+
+try
+{
+    var response = await httpClient.GetAsync("iserver/auth/status");
+    var content = await response.Content.ReadAsStringAsync();
+    Console.WriteLine($"Auth Status Response:\n{content}");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+}
 var app = Host.CreateDefaultBuilder(args)
             .ConfigureServices(services =>
             {
