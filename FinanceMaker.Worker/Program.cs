@@ -99,6 +99,7 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
                 services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
                 services.AddSingleton<OverNightBreakout>();
+                services.AddSingleton<IBKRClient>();
                 services.AddSingleton<IBroker, IBKRBroker>();
                 services.AddSingleton<ITrader, QCTrader>();
                 services.AddSingleton<Worker>();

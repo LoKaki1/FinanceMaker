@@ -1,7 +1,16 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": []
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch FinanceMaker.Worker",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "dotnet: build",
+      "program": "${workspaceFolder}/FinanceMaker.Worker/bin/Debug/net9.0/FinanceMaker.Worker.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/FinanceMaker.Worker",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
 }

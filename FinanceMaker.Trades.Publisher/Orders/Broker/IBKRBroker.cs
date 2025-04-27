@@ -10,6 +10,7 @@ using FinanceMaker.Common.Models.Trades.Trader;
 using FinanceMaker.Publisher.Orders.Trader.Abstracts;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Orders.Trades;
+using IBApi;
 using ITrade = FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces.ITrade;
 
 namespace FinanceMaker.Publisher.Orders.Broker;
@@ -21,13 +22,14 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
     private readonly string m_BaseUrl;
     private readonly JsonSerializerOptions m_JsonOptions;
     private string? m_SessionId;
+    private readonly IBKRClient _ibkrClient;
 
     public override TraderType Type => TraderType.EntryExit | TraderType.StopLoss;
 
-    public IBKRBroker(IHttpClientFactory httpClientFactory)
+    public IBKRBroker(IHttpClientFactory httpClientFactory, IBKRClient ibkrClient)
     {
-
         m_HttpClientFactory = httpClientFactory;
+        _ibkrClient = ibkrClient;
         m_Handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -39,6 +41,7 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
+        _ibkrClient.Connect("127.0.0.1", 4002, 0);
     }
 
     private void ConfigureClientHeaders(HttpClient client)
@@ -50,6 +53,7 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
     private async Task EnsureAuthenticated(CancellationToken cancellationToken)
     {
+        return;
         try
         {
             if (!string.IsNullOrEmpty(m_SessionId))
@@ -111,40 +115,44 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
     {
         await EnsureAuthenticated(cancellationToken);
 
-        var client = m_HttpClientFactory.CreateClient("IBKR");
-        ConfigureClientHeaders(client);
-
-        var orderRequest = new IBKROrderRequest
+        var contract = new Contract
         {
-            ConId = await GetContractId(idea.Ticker, cancellationToken),
-            Side = idea.Trade == IdeaTradeType.Long ? "BUY" : "SELL",
-            Quantity = idea.Quantity,
-            Price = (decimal)idea.Entry,
-            StopPrice = (decimal)idea.Stoploss,
-            TakeProfit = (decimal)idea.Exit,
-            OrderType = "LMT",
-            Tif = "GTC",
-            OutsideRth = true
+            Symbol = idea.Ticker,
+            SecType = "STK",
+            Exchange = "SMART",
+            Currency = "USD"
         };
 
-        var json = JsonSerializer.Serialize(orderRequest, m_JsonOptions);
-        using var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-        using var response = await client.PostAsync($"{m_BaseUrl}/iserver/account/orders", content, cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        var entryOrder = new Order
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception($"Order placement failed: {errorContent}");
-        }
+            Action = idea.Trade == IdeaTradeType.Long ? "BUY" : "SELL",
+            OrderType = "LMT",
+            TotalQuantity = idea.Quantity,
+            LmtPrice = (double)idea.Entry,
+            Tif = "GTC"
+        };
 
-        var result = await response.Content.ReadFromJsonAsync<IBKROrderResponse>(m_JsonOptions, cancellationToken);
-
-        if (!string.IsNullOrEmpty(result?.OrderId))
+        var takeProfitOrder = new Order
         {
-            return new Trade(idea, Guid.Parse(result.OrderId), true);
-        }
+            Action = idea.Trade == IdeaTradeType.Long ? "SELL" : "BUY",
+            OrderType = "LMT",
+            TotalQuantity = idea.Quantity,
+            LmtPrice = (double)idea.Exit,
+            Tif = "GTC"
+        };
 
-        return Trade.Empty;
+        var stopLossOrder = new Order
+        {
+            Action = idea.Trade == IdeaTradeType.Long ? "SELL" : "BUY",
+            OrderType = "STP",
+            TotalQuantity = idea.Quantity,
+            AuxPrice = (double)idea.Stoploss,
+            Tif = "GTC"
+        };
+
+        _ibkrClient.PlaceBracketOrder(idea.GetHashCode(), contract, entryOrder, takeProfitOrder, stopLossOrder);
+
+        return new Trade(idea, Guid.NewGuid(), true);
     }
 
     private async Task<string> GetContractId(string symbol, CancellationToken cancellationToken)
@@ -173,29 +181,18 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
     public override async Task<Position> GetClientPosition(CancellationToken cancellationToken)
     {
         await EnsureAuthenticated(cancellationToken);
-
-        var client = m_HttpClientFactory.CreateClient("IBKR");
-        client.DefaultRequestHeaders.Add("X-IB-Session", m_SessionId);
-
-        var accountResponse = await client.GetAsync($"{m_BaseUrl}/portfolio/accounts", cancellationToken);
-        var accounts = await accountResponse.Content.ReadFromJsonAsync<List<IBKRAccountSummary>>(cancellationToken);
-
-        if (accounts?.Count == 0)
-            throw new Exception("No accounts found");
-
-        var accountId = accounts[0].Id;
-
-        var positionsResponse = await client.GetAsync($"{m_BaseUrl}/portfolio/{accountId}/positions", cancellationToken);
-        var positions = await positionsResponse.Content.ReadFromJsonAsync<List<IBKRPosition>>(cancellationToken);
-
-        var ordersResponse = await client.GetAsync($"{m_BaseUrl}/iserver/account/orders", cancellationToken);
-        var orders = await ordersResponse.Content.ReadFromJsonAsync<List<IBKROrderResponse>>(cancellationToken);
-
+        _ibkrClient.RequestAccountSummary();
+        _ibkrClient.RequestCurrentPositions();
+        _ibkrClient.RequestOpenOrders();
+        await Task.Delay(10_000, cancellationToken); // Wait for the data to be populated
+        var positions = _ibkrClient.GetCurrentPositions();
+        var buyingPower = _ibkrClient.GetBuyingPower();
+        var openOrders = _ibkrClient.GetOpenOrders();
         return new Position
         {
-            BuyingPower = (float)accounts[0].BuyingPower,
-            OpenedPositions = positions?.Select(p => p.Symbol).ToArray() ?? Array.Empty<string>(),
-            Orders = orders?.Select(o => o.Symbol).ToArray() ?? Array.Empty<string>()
+            BuyingPower = (float)buyingPower,
+            OpenedPositions = positions.Select(p => p.Symbol).ToArray(),
+            Orders = openOrders.Select(o => o.Symbol).ToArray()
         };
     }
 
