@@ -43,7 +43,7 @@ public class RangeAlgoritm : QCAlgorithm
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"];
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
