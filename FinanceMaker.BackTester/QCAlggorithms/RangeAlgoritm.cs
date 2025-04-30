@@ -107,7 +107,19 @@ public class RangeAlgoritm : QCAlgorithm
 
                     if (holdingsq == 0)
                     {
-                        Buy(data.Symbol);
+                        // var previousHistory = History<FinanceData>(data.Symbol, 1, Resolution.Minute);
+
+                        // if (previousHistory is not null && previousHistory.Any())
+                        {
+                            // // var previous = previousHistory.First();
+                            // if (previous.CandleStick.Open > data.CandleStick.Close &&
+                            //     data.CandleStick.Open > data.CandleStick.Close &&
+                            //     valueDivision <= 1 && valueDivision >= 0.995)
+                            if (valueDivision <= 1 && valueDivision >= 0.995)
+                            {
+                                Buy(data.Symbol);
+                            }
+                        }
 
                         return;
                     }
