@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
@@ -8,6 +9,7 @@ using FinanceMaker.Common.Models.Ideas.IdeaInputs;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Ideas.Ideas.Abstracts;
+using FinanceMaker.Publisher.Orders.Broker;
 using FinanceMaker.Publisher.Orders.Trader;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders;
@@ -26,7 +28,19 @@ using Microsoft.Extensions.Hosting;
 var app = Host.CreateDefaultBuilder(args)
             .ConfigureServices(services =>
             {
-                services.AddHttpClient();
+                services.AddHttpClient().ConfigureHttpClientDefaults((a) =>
+                {
+                    a.ConfigurePrimaryHttpMessageHandler(() =>
+                    {
+                        var handler = new HttpClientHandler
+                        {
+                            CookieContainer = new System.Net.CookieContainer(),
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        };
+                        return handler;
+                    });
+
+                });
                 // Can't use the extension (the service collection becomes read only after the build)
                 services.AddSingleton<MarketStatus>();
                 services.AddSingleton<FinvizTickersPuller>();
@@ -85,7 +99,8 @@ var app = Host.CreateDefaultBuilder(args)
                 services.AddSingleton<INewsAnalyzer, NewsAnalyzer>();
                 services.AddSingleton<IdeaBase<TechnicalIdeaInput, EntryExitOutputIdea>, OverNightBreakout>();
                 services.AddSingleton<OverNightBreakout>();
-                services.AddSingleton<IBroker, AlpacaBroker>();
+                services.AddSingleton<IBKRClient>();
+                services.AddSingleton<IBroker, IBKRBroker>();
                 services.AddSingleton<ITrader, QCTrader>();
                 services.AddSingleton<Worker>();
 

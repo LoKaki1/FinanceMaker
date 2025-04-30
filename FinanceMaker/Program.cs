@@ -1,9 +1,32 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-//using FinanceMaker.Algorithms.QuantConnectAlgorithms;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+using FinanceMaker.Algorithms;
+using FinanceMaker.Algorithms.News.Analyziers;
+using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.BackTester;
 using FinanceMaker.BackTester.QCAlggorithms;
-
+using FinanceMaker.Common;
+using FinanceMaker.Common.Models.Finance;
+using FinanceMaker.Common.Models.Ideas.IdeaInputs;
+using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
+using FinanceMaker.Common.Models.Pullers.Enums;
+using FinanceMaker.Ideas.Ideas;
+using FinanceMaker.Ideas.Ideas.Abstracts;
+using FinanceMaker.Publisher.Orders.Trader;
+using FinanceMaker.Publisher.Orders.Trader.Interfaces;
+using FinanceMaker.Publisher.Traders;
+using FinanceMaker.Publisher.Traders.Interfaces;
+using FinanceMaker.Pullers;
+using FinanceMaker.Pullers.NewsPullers;
+using FinanceMaker.Pullers.NewsPullers.Interfaces;
+using FinanceMaker.Pullers.PricesPullers;
+using FinanceMaker.Pullers.PricesPullers.Interfaces;
+using FinanceMaker.Pullers.TickerPullers;
+using FinanceMaker.Pullers.TickerPullers.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ScottPlot;
 Console.WriteLine("Hello, World!");
 
 
@@ -42,39 +65,6 @@ Console.WriteLine("Hello, World!");
 //       |          V
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 // 
-//   "algorithm-type-name": "ZeroFeeRegressionAlgorithm",
+// Client Portal Web API usually uses self-signed certs, so bypass validation (for dev only!)
 
-//   // Algorithm language selector - options CSharp, Python
-//   "algorithm-language": "CSharp",
-
-//   //Physical DLL location
-//   "algorithm-location": "QuantConnect.Algorithm.CSharp.dll",
-// Config.Set("algorithm-type-name", nameof(RangeAlgoritm));
-// Config.Set("data-folder", "../../../../FinanceMaker/Data");
-// Config.Set("algorithm-language", "CSharp");
-// Config.Set("algorithm-location", "FinanceMaker.BackTester.dll");
-
-
-
-
-// //Name thread for the profiler:
-// Thread.CurrentThread.Name = "Algorithm Analysis Thread";
-
-// Initializer.Start();
-// var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
-
-// //-> Pull job from QuantConnect job queue, or, pull local build:
-// var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
-
-// var leanEngineAlgorithmHandlers = Initializer.GetAlgorithmHandlers();
-
-// // Create the algorithm manager and start our engine
-// var algorithmManager = new AlgorithmManager(QuantConnect.Globals.LiveMode, job);
-
-// leanEngineSystemHandlers.LeanManager.Initialize(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, job, algorithmManager);
-
-// OS.Initialize();
-
-// var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, QuantConnect.Globals.LiveMode);
-// engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
 BackTester.Runner(typeof(RangeAlgoritm));

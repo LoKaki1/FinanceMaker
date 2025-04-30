@@ -3,6 +3,7 @@ using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
+using QuantConnect;
 
 namespace FinanceMaker.Algorithms;
 
@@ -80,9 +81,76 @@ public sealed class KeyLevelsRunner :
             }
         }
         var reuslt = new KeyLevelCandleSticks(emaCandles, distinctedLevels);
+        // var newLevels = DetectKeyLevels(input.ToList());
+        // reuslt.KeyLevels = [.. newLevels];
         return Task.FromResult(reuslt);
         // return Task.FromResult((IEnumerable<EMACandleStick>)emaCandles);
+
     }
+
+    /// <summary>
+    /// Detects key support and resistance levels from a list of candlesticks.
+    /// </summary>
+    /// <param name="candles">List of daily candlestick data.</param>
+    /// <returns>List of key levels as float values.</returns>
+    public List<float> DetectKeyLevels(List<FinanceCandleStick> candles)
+    {
+        var levels = new List<float>();
+        if (candles == null || candles.Count < 5)
+            return levels;
+
+        // Calculate average candle size to determine proximity threshold
+        float avgRange = candles.Average(c => c.High - c.Low);
+
+        for (int i = 2; i < candles.Count - 2; i++)
+        {
+            if (IsSupport(candles, i))
+            {
+                float level = candles[i].Low;
+                if (IsFarFromLevel(level, levels, avgRange))
+                    levels.Add(level);
+            }
+            else if (IsResistance(candles, i))
+            {
+                float level = candles[i].High;
+                if (IsFarFromLevel(level, levels, avgRange))
+                    levels.Add(level);
+            }
+        }
+
+        return levels;
+    }
+
+    /// <summary>
+    /// Determines if the candle at index i is a support level.
+    /// </summary>
+    private bool IsSupport(List<FinanceCandleStick> candles, int i)
+    {
+        return candles[i].Low < candles[i - 1].Low &&
+               candles[i].Low < candles[i + 1].Low &&
+               candles[i + 1].Low < candles[i + 2].Low &&
+               candles[i - 1].Low < candles[i - 2].Low;
+    }
+
+    /// <summary>
+    /// Determines if the candle at index i is a resistance level.
+    /// </summary>
+    private bool IsResistance(List<FinanceCandleStick> candles, int i)
+    {
+        return candles[i].High > candles[i - 1].High &&
+               candles[i].High > candles[i + 1].High &&
+               candles[i + 1].High > candles[i + 2].High &&
+               candles[i - 1].High > candles[i - 2].High;
+    }
+
+    /// <summary>
+    /// Checks if the level is sufficiently far from existing levels.
+    /// </summary>
+    private bool IsFarFromLevel(float level, List<float> levels, float threshold)
+    {
+        return levels.All(existingLevel => Math.Abs(level - existingLevel) > threshold);
+    }
+
 
     /// <summary>
     /// Calculate the pivot of the current candle by the NIO algorithm 
