@@ -82,7 +82,7 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
+        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP", "NIO"];
         //var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
         //tickers = tickers.Concat(moreTicker)
         //                 .Distinct()
