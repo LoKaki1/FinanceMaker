@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 public class MarketStatus
 {
@@ -13,13 +13,21 @@ public class MarketStatus
 
     public async Task<bool> IsMarketOpenAsync(CancellationToken cancellationToken)
     {
-        var httpClient = m_HttpClientFactory.CreateClient();
-        var response = await httpClient.GetStreamAsync($"{apiUrl}&token={apiKey}", cancellationToken);
-        var marketData = await JsonSerializer.DeserializeAsync<MarketOpenResponse>(response, cancellationToken: cancellationToken);
+        try 
+        {
+            var httpClient = m_HttpClientFactory.CreateClient();
+            var response = await httpClient.GetStreamAsync($"{apiUrl}&token={apiKey}", cancellationToken);
+            var marketData = await JsonSerializer.DeserializeAsync<MarketOpenResponse>(response, cancellationToken: cancellationToken);
 
-        if (marketData is null) return false;
+            if (marketData is null) return false;
 
-        return marketData!.IsOpen;
+            return marketData!.IsOpen;
+        }
+        catch
+        {
+            return false;
+
+        }
     }
 }
 
