@@ -53,7 +53,7 @@ public class QCTrader : ITrader
                                        .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
 
-        var moneyForEachTrade = currentPosion.BuyingPower * 0.5f;
+        var moneyForEachTrade = currentPosion.BuyingPower * 0.1f;
 
         if (moneyForEachTrade < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
 
@@ -65,12 +65,13 @@ public class QCTrader : ITrader
 
             if (quntity == 0) continue;
 
-            var stopLoss = entryPrice * 0.99f;
+            var stopLoss = entryPrice * 0.985f;
             var takeProfit = entryPrice * 1.015f;
             var description = $"Entry price: {entryPrice}, Stop loss: {stopLoss}, Take profit: {takeProfit}";
             var order = new EntryExitOutputIdea(description, ticker, entryPrice, takeProfit, stopLoss, quntity);
 
             var trade = await m_Broker.BrokerTrade(order, cancellationToken);
+
         }
     }
 
@@ -81,7 +82,7 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"];
+        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP", "NIO"];
         //var moreTicker = await m_TickersPullers.ScanTickers(shortTickers, cancellationToken);
         //tickers = tickers.Concat(moreTicker)
         //                 .Distinct()
@@ -120,7 +121,7 @@ public class QCTrader : ITrader
                 var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
                 // I am not sure the pivot will work, but the average value key level should work instead
                 // That should also solve the problem we have with the candles at the start
-                if (valueDivision <= 1 && valueDivision >= 0.995 && averageValue >= keylevel)
+                if (valueDivision <= 1 && valueDivision >= 0.995)
                 {
                     relevantTickers.Add((ticker, lastCandleStick.Close));
                     break;

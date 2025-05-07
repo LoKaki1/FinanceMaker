@@ -1,7 +1,8 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
+using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Interactive;
@@ -113,8 +114,6 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
     protected override async Task<ITrade> TradeInternal(EntryExitOutputIdea idea, CancellationToken cancellationToken)
     {
-        await EnsureAuthenticated(cancellationToken);
-
         var contract = new Contract
         {
             Symbol = idea.Ticker,
@@ -126,9 +125,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
         var entryOrder = new Order
         {
             Action = idea.Trade == IdeaTradeType.Long ? "BUY" : "SELL",
-            OrderType = "LMT",
+            OrderType = "MKT",
             TotalQuantity = idea.Quantity,
-            LmtPrice = (double)idea.Entry,
             Tif = "GTC"
         };
 
@@ -137,7 +135,7 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             Action = idea.Trade == IdeaTradeType.Long ? "SELL" : "BUY",
             OrderType = "LMT",
             TotalQuantity = idea.Quantity,
-            LmtPrice = (double)idea.Exit,
+            LmtPrice = Math.Round(idea.Exit, 2),
             Tif = "GTC"
         };
 
@@ -146,11 +144,15 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             Action = idea.Trade == IdeaTradeType.Long ? "SELL" : "BUY",
             OrderType = "STP",
             TotalQuantity = idea.Quantity,
-            AuxPrice = (double)idea.Stoploss,
+            AuxPrice = Math.Round(idea.Stoploss, 2),
+
+
             Tif = "GTC"
         };
-
-        _ibkrClient.PlaceBracketOrder(idea.GetHashCode(), contract, entryOrder, takeProfitOrder, stopLossOrder);
+        int id = _ibkrClient.GetNextOrderId() ;
+        
+        _ibkrClient.PlaceBracketOrder(id, contract, entryOrder, takeProfitOrder, stopLossOrder);
+        await Task.Delay(5_000, cancellationToken); // Wait for the orders to be placed
 
         return new Trade(idea, Guid.NewGuid(), true);
     }

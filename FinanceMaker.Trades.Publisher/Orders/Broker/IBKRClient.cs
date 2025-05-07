@@ -1,7 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using FinanceMaker.Common.Models.Interactive;
 using IBApi;
+using NetMQ.Sockets;
 
 namespace FinanceMaker.Publisher.Orders.Broker;
 
@@ -11,6 +12,7 @@ public class IBKRClient : EWrapper
     private readonly EReaderSignal _signal;
     private readonly List<IBKRPosition> _positions = new List<IBKRPosition>();
     private decimal _buyingPower;
+    private int _nextOrderId;
     private readonly List<IBKROrderResponse> _openOrders = new List<IBKROrderResponse>();
 
     public IBKRClient()
@@ -35,17 +37,29 @@ public class IBKRClient : EWrapper
 
     public void PlaceBracketOrder(int orderId, Contract contract, Order entryOrder, Order takeProfitOrder, Order stopLossOrder)
     {
-        // Place entry order
-        _clientSocket.placeOrder(orderId, contract, entryOrder);
-        Console.WriteLine($"Entry order {orderId} placed for {contract.Symbol}");
+        // Set parent order
+        entryOrder.OrderId = orderId;
+        entryOrder.Transmit = false;
 
-        // Place take profit order
-        _clientSocket.placeOrder(orderId + 1, contract, takeProfitOrder);
-        Console.WriteLine($"Take profit order {orderId + 1} placed for {contract.Symbol}");
+        // Set take profit order
+        takeProfitOrder.OrderId = orderId + 1;
+        takeProfitOrder.ParentId = orderId;
+        takeProfitOrder.Transmit = false;
 
-        // Place stop loss order
-        _clientSocket.placeOrder(orderId + 2, contract, stopLossOrder);
-        Console.WriteLine($"Stop loss order {orderId + 2} placed for {contract.Symbol}");
+        // Set stop loss order
+        stopLossOrder.OrderId = orderId + 2;
+        stopLossOrder.ParentId = orderId;
+        stopLossOrder.Transmit = true;
+
+        // Place orders
+        _clientSocket.placeOrder(entryOrder.OrderId, contract, entryOrder);
+        Console.WriteLine($"Entry order {entryOrder.OrderId} placed for {contract.Symbol}");
+
+        _clientSocket.placeOrder(takeProfitOrder.OrderId, contract, takeProfitOrder);
+        Console.WriteLine($"Take profit order {takeProfitOrder.OrderId} placed for {contract.Symbol}");
+
+        _clientSocket.placeOrder(stopLossOrder.OrderId, contract, stopLossOrder);
+        Console.WriteLine($"Stop loss order {stopLossOrder.OrderId} placed for {contract.Symbol}");
     }
 
     public void RequestCurrentPositions()
@@ -68,7 +82,11 @@ public class IBKRClient : EWrapper
     public void error(Exception e) { Console.WriteLine($"Error: {e.Message}"); }
     public void error(string str) { Console.WriteLine($"Error: {str}"); }
     public void error(int id, int errorCode, string errorMsg) { Console.WriteLine($"Error: {id}, {errorCode}, {errorMsg}"); }
-    public void nextValidId(int orderId) { Console.WriteLine($"Next Valid Id: {orderId}"); }
+    public void nextValidId(int orderId)
+    {
+        Console.WriteLine($"Next Valid Id: {orderId}");
+        _nextOrderId = orderId;
+    }
     public void position(string account, Contract contract, double pos, double avgCost)
     {
         Console.WriteLine($"Position: {account}, {contract.Symbol}, {pos}, {avgCost}");
@@ -176,5 +194,10 @@ public class IBKRClient : EWrapper
     public List<IBKROrderResponse> GetOpenOrders()
     {
         return new List<IBKROrderResponse>(_openOrders);
+    }
+    public int GetNextOrderId()
+    {
+        _clientSocket.reqIds(1);
+        return _nextOrderId;
     }
 }

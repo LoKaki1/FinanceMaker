@@ -73,6 +73,7 @@ public class BackTester
         var dataFolder = Config.Get("data-folder");
         var customDataDirectory = Path.Combine(dataFolder, "Custom");
         var aaa = engine.AlgorithmHandlers.Results;
+        
         if (Directory.Exists(customDataDirectory))
         {
             Directory.Delete(customDataDirectory, true);

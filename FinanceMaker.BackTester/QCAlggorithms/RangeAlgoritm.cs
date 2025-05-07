@@ -1,4 +1,4 @@
-﻿using FinanceMaker.Algorithms;
+using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
@@ -43,7 +43,7 @@ public class RangeAlgoritm : QCAlgorithm
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "AMD", "NFLX"];
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
@@ -132,7 +132,7 @@ public class RangeAlgoritm : QCAlgorithm
 
             if (holdings.Quantity > 0)
             {
-                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.98m)
+                if (currentPrice >= avgPrice * 1.04m || currentPrice <= avgPrice * 0.98m)
                 {
                     Sell(data.Symbol);
                 }
