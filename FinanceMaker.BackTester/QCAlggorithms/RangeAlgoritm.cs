@@ -22,7 +22,7 @@ public class RangeAlgoritm : QCAlgorithm
     public override void Initialize()
     {
         // Now we can test for last month minutely
-        var startDate = DateTime.Now.AddDays(-29);
+        var startDate = DateTime.Now.AddDays(-15);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(-11);
@@ -43,7 +43,7 @@ public class RangeAlgoritm : QCAlgorithm
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA"];
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "AMD", "NFLX"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
