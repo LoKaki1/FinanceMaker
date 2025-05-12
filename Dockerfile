@@ -1,18 +1,20 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy the remaining source code
+# Copy everything
 COPY . ./
-RUN dotnet publish -c Release -o out
+
+# Go to your main project folder
+WORKDIR /src/FinanceMaker.Worker
+
+# Restore and publish the main project
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
 WORKDIR /app
-COPY --from=build /app/out ./
+COPY --from=build /app ./
 
 ENTRYPOINT ["dotnet", "FinanceMaker.Worker.dll"]

@@ -1,12 +1,19 @@
 name: algo-trader
 services:
-  ib-gateway:
-    restart: always
+  trading-bot:
     build:
-      context: ./stable
-      tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+      context: .
+    depends_on:
+      - ib-gateway
+    environment:
+      IB_HOST: ib-gateway
+      IB_PORT: 4001
+    # uncomment if you want to forward logs or debug
+    # ports:
+    #   - "5000:80"
+  ib-gateway:
+    image: gnzsnz/ib-gateway:latest
+    platform: linux/amd64
     environment:
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
@@ -39,11 +46,11 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
-#    volumes:
-#      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
-#      - ${PWD}/ssh/:/home/ibgateway/.ssh
+    # volumes:
+    # - ${PWD}/jts.ini:/home/ibgateway/Jts
+    # - ${PWD}/config.ini:/home/ibgateway/ibc
+    # - ${PWD}/tws_settings:/home/ibgateway/Jts
+    # - ${PWD}/ssh:/home/ibgateway/.ssh
     ports:
       - "127.0.0.1:4001:4003"
       - "127.0.0.1:4002:4004"
