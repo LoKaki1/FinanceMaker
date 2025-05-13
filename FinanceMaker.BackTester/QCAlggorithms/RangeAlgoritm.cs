@@ -1,4 +1,4 @@
-﻿using FinanceMaker.Algorithms;
+using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
@@ -22,7 +22,7 @@ public class RangeAlgoritm : QCAlgorithm
     public override void Initialize()
     {
         // Now we can test for last month minutely
-        var startDate = DateTime.Now.AddDays(-29);
+        var startDate = DateTime.Now.AddDays(-15);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(-11);

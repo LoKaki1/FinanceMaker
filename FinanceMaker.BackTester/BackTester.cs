@@ -88,3 +88,38 @@ public class BackTester
     // We don't need to connect the backtester to the worker, we just need to implement this logic, in the worker
     // I don't know ennglish that well its just using the Copilot
 }
+
+
+
+public class RealTimeTesting
+{
+    public static void Runner(Type algorithm)
+    {
+        Config.Set("algorithm-type-name", algorithm.Name);
+        Config.Set("data-folder", "../../../../FinanceMaker.BackTester/Data");
+        Config.Set("algorithm-language", "CSharp");
+        Config.Set("algorithm-location", "FinanceMaker.BackTester.dll");
+        Config.Set("live-mode", "true");
+
+        Thread.CurrentThread.Name = "RealTime Algorithm Thread";
+
+        Initializer.Start();
+        var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
+        var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
+        var leanEngineAlgorithmHandlers = Initializer.GetAlgorithmHandlers();
+
+        var algorithmManager = new AlgorithmManager(true, job);
+
+        leanEngineSystemHandlers.LeanManager.Initialize(
+            leanEngineSystemHandlers,
+            leanEngineAlgorithmHandlers,
+            job,
+            algorithmManager
+        );
+
+        OS.Initialize();
+
+        var engine = new Engine(leanEngineSystemHandlers, leanEngineAlgorithmHandlers, true);
+        engine.Run(job, algorithmManager, assemblyPath, WorkerThread.Instance);
+    }
+}

@@ -116,7 +116,7 @@ public class QCTrader : ITrader
             foreach (var keylevel in candleSticks.KeyLevels)
             {
                 var lastCandleStick = interdayCandleSticks.Last();
-                var averageValue = interdayCandleSticks.TakeLast(5)
+                var averageValue = interdayCandleSticks[^4..^2]
                                                        .Average(candle => candle.Close);
 
                 var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
