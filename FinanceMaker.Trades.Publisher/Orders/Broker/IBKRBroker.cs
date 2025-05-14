@@ -125,8 +125,9 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
         var entryOrder = new Order
         {
             Action = idea.Trade == IdeaTradeType.Long ? "BUY" : "SELL",
-            OrderType = "MKT",
+            OrderType = "LMT",
             TotalQuantity = idea.Quantity,
+            LmtPrice = Math.Round(idea.Entry, 2),
             Tif = "GTC"
         };
 
