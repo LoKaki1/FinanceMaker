@@ -126,7 +126,9 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
                                                         CancellationToken cancellationToken)
     {
         var client = m_RequestsService.CreateClient();
-        client.AddBrowserUserAgent();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Itay-Barel");
+
+        //client.AddBrowserUserAgent();
         var startTime = ((DateTimeOffset)startDate.ToUniversalTime()).ToUnixTimeSeconds();
         var endTime = ((DateTimeOffset)endDate.ToUniversalTime()).ToUnixTimeSeconds();
 
@@ -144,6 +146,7 @@ public sealed class YahooInterdayPricesPuller : IPricesPuller
                 response = await client.GetAsync(url, cancellationToken);
                 if (response.IsSuccessStatusCode)
                 {
+                    var data = await response.Content.ReadAsStringAsync(cancellationToken);
                     break;
                 }
             }

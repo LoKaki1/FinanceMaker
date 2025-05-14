@@ -95,22 +95,23 @@ public class QCTrader : ITrader
         tickers = tickers.Distinct().ToList();
         // Now we've got the stocks, we should analyze them
         var relevantTickers = new ConcurrentBag<(string ticker, float price)>();
-        await Parallel.ForEachAsync(tickers, cancellationToken, async (ticker, taskToken) =>
+
+        foreach (var ticker in tickers)
         {
             var range = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(new PricesPullerParameters(
                     ticker,
-                    DateTime.Now.AddYears(-5),
+                    DateTime.Now.AddYears(-2),
                     DateTime.Now,
-                    Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), taskToken);
+                    Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), cancellationToken);
 
-            if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) return;
+            if (range is not KeyLevelCandleSticks candleSticks || !candleSticks.Any()) continue;
 
             var interdayCandles = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
-                                                                                    taskToken);
+                                                                                    cancellationToken);
 
-            if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) return;
+            if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) continue;
 
             foreach (var keylevel in candleSticks.KeyLevels)
             {
@@ -127,7 +128,7 @@ public class QCTrader : ITrader
                     break;
                 }
             }
-        });
+        }
 
         return [.. relevantTickers];
     }
