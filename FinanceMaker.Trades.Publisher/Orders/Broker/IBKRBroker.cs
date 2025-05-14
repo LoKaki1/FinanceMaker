@@ -18,98 +18,14 @@ namespace FinanceMaker.Publisher.Orders.Broker;
 
 public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 {
-    private readonly IHttpClientFactory m_HttpClientFactory;
-    private readonly HttpClientHandler m_Handler;
-    private readonly string m_BaseUrl;
-    private readonly JsonSerializerOptions m_JsonOptions;
-    private string? m_SessionId;
-    private readonly IBKRClient _ibkrClient;
+    private readonly IBKRClient m_IbkrClient;
 
     public override TraderType Type => TraderType.EntryExit | TraderType.StopLoss;
 
-    public IBKRBroker(IHttpClientFactory httpClientFactory, IBKRClient ibkrClient)
+    public IBKRBroker(IBKRClient ibkrClient)
     {
-        m_HttpClientFactory = httpClientFactory;
-        _ibkrClient = ibkrClient;
-        m_Handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-        };
-        // The base URL should point to your local Client Portal Gateway instance
-        m_BaseUrl = "https://localhost:5001/v1/api";
-        m_JsonOptions = new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
-        _ibkrClient.Connect("127.0.0.1", 4002, 0);
-    }
-
-    private void ConfigureClientHeaders(HttpClient client)
-    {
-        client.DefaultRequestHeaders.Add("User-Agent", "FinanceMaker/1.0");
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-        client.DefaultRequestHeaders.Add("Host", "api.ibkr.com");
-    }
-
-    private async Task EnsureAuthenticated(CancellationToken cancellationToken)
-    {
-        return;
-        try
-        {
-            if (!string.IsNullOrEmpty(m_SessionId))
-                return;
-
-            var client = m_HttpClientFactory.CreateClient("IBKR");
-            ConfigureClientHeaders(client);
-
-            // First validate if we're already authenticated
-            var statusResponse = await client.GetAsync($"{m_BaseUrl}/iserver/auth/status", cancellationToken);
-            var statusResult = await statusResponse.Content.ReadFromJsonAsync<IBKRAuthResponse>(m_JsonOptions, cancellationToken);
-            var statusResult1 = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            if (statusResult?.Authenticated == true)
-            {
-                m_SessionId = statusResponse.Headers.GetValues("X-IB-Session").FirstOrDefault();
-                return;
-            }
-
-            // If not authenticated, try to authenticate
-            var payload = new
-            {
-                publish = true,
-                compete = true
-            };
-
-            string jsonString = JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            var authResponse = await client.PostAsync($"{m_BaseUrl}/iserver/auth/ssodh/init", content, cancellationToken);
-            var errorContenta = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-            if (!authResponse.IsSuccessStatusCode)
-            {
-                var errorContent = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-                throw new Exception($"Authentication failed: {errorContent}");
-            }
-
-            var authResult = await authResponse.Content.ReadFromJsonAsync<IBKRAuthResponse>(m_JsonOptions, cancellationToken);
-            var authResult1 = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            if (authResult?.Authenticated == true)
-            {
-                m_SessionId = authResponse.Headers.GetValues("X-IB-Session").FirstOrDefault();
-                // Validate the session
-                await client.PostAsync($"{m_BaseUrl}/iserver/auth/validateSession", null, cancellationToken);
-            }
-            else
-            {
-                throw new Exception("Failed to authenticate with IBKR Client Portal. Make sure the Client Portal Gateway is running and you're logged in.");
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Error during authentication: {ex.Message}", ex);
-        }
-
+        m_IbkrClient = ibkrClient;
+        m_IbkrClient.Connect("127.0.0.1", 4002, 0);
     }
 
     protected override async Task<ITrade> TradeInternal(EntryExitOutputIdea idea, CancellationToken cancellationToken)
@@ -145,51 +61,27 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             OrderType = "STP",
             TotalQuantity = idea.Quantity,
             AuxPrice = Math.Round(idea.Stoploss, 2),
-
-
             Tif = "GTC"
         };
-        int id = _ibkrClient.GetNextOrderId() ;
-        
-        _ibkrClient.PlaceBracketOrder(id, contract, entryOrder, takeProfitOrder, stopLossOrder);
+        int id = m_IbkrClient.GetNextOrderId();
+
+        m_IbkrClient.PlaceBracketOrder(id, contract, entryOrder, takeProfitOrder, stopLossOrder);
         await Task.Delay(5_000, cancellationToken); // Wait for the orders to be placed
 
         return new Trade(idea, Guid.NewGuid(), true);
     }
 
-    private async Task<string> GetContractId(string symbol, CancellationToken cancellationToken)
-    {
-        var client = m_HttpClientFactory.CreateClient("IBKR");
-        ConfigureClientHeaders(client);
-
-        var response = await client.GetAsync($"{m_BaseUrl}/iserver/secdef/search?symbol={Uri.EscapeDataString(symbol)}", cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
-            throw new Exception($"Contract search failed: {errorContent}");
-        }
-
-        var results = await response.Content.ReadFromJsonAsync<List<IBKRContract>>(m_JsonOptions, cancellationToken);
-
-        if (results?.Count > 0)
-        {
-            return results[0].ConId;
-        }
-
-        throw new Exception($"Could not find contract ID for symbol: {symbol}");
-    }
-
     public override async Task<Position> GetClientPosition(CancellationToken cancellationToken)
     {
-        await EnsureAuthenticated(cancellationToken);
-        _ibkrClient.RequestAccountSummary();
-        _ibkrClient.RequestCurrentPositions();
-        _ibkrClient.RequestOpenOrders();
+        m_IbkrClient.RequestAccountSummary();
+        m_IbkrClient.RequestCurrentPositions();
+        m_IbkrClient.RequestOpenOrders();
         await Task.Delay(10_000, cancellationToken); // Wait for the data to be populated
-        var positions = _ibkrClient.GetCurrentPositions();
-        var buyingPower = _ibkrClient.GetBuyingPower();
-        var openOrders = _ibkrClient.GetOpenOrders();
+
+        var positions = m_IbkrClient.GetCurrentPositions();
+        var buyingPower = m_IbkrClient.GetBuyingPower();
+        var openOrders = m_IbkrClient.GetOpenOrders();
+
         return new Position
         {
             BuyingPower = (float)buyingPower,
@@ -200,12 +92,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
     public override async Task CancelTrade(ITrade trade, CancellationToken cancellationToken)
     {
-        await EnsureAuthenticated(cancellationToken);
-
-        var client = m_HttpClientFactory.CreateClient("IBKR");
-        client.DefaultRequestHeaders.Add("X-IB-Session", m_SessionId);
-
-        await client.DeleteAsync($"{m_BaseUrl}/iserver/account/order/{trade.TradeId}", cancellationToken);
+        // Use the m_IbkrClient directly instead of HTTP requests
+        // Implement cancellation using IBKRClient functionality
         await trade.Cancel(cancellationToken);
     }
 }
