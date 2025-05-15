@@ -1,4 +1,4 @@
-using FinanceMaker.Common.Models.Pullers;
+﻿using FinanceMaker.Common.Models.Pullers;
 
 namespace FinanceMaker.Pullers.TickerPullers;
 
@@ -16,6 +16,10 @@ public class NivTickersPuller : FinvizTickersPuller
         // But I think this docummentation will recover your memory 
         // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/async/ 
         // (It's just from the copilot and it looks cool don't really click on it)
+        // I love eating the same food every day, but I don't think you do
+        // I think you should try to make it more dynamic, but I don't know how
+        
+
         return await GetTickers(m_FinvizUrl, cancellationToken);
     }
 }
