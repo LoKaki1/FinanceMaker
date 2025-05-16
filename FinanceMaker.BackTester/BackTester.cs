@@ -1,4 +1,6 @@
-﻿using QuantConnect;
+﻿using System.Diagnostics;
+using FinanceMaker.BackTester.QCHelpers;
+using QuantConnect;
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;
 using QuantConnect.Util;
@@ -73,7 +75,8 @@ public class BackTester
         var dataFolder = Config.Get("data-folder");
         var customDataDirectory = Path.Combine(dataFolder, "Custom");
         var aaa = engine.AlgorithmHandlers.Results;
-        
+        var data = FinanceData.CounterDataSource;
+
         if (Directory.Exists(customDataDirectory))
         {
             Directory.Delete(customDataDirectory, true);

@@ -1,4 +1,4 @@
-using FinanceMaker.Algorithms;
+﻿using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
@@ -22,7 +22,7 @@ public class RangeAlgoritm : QCAlgorithm
     public override void Initialize()
     {
         // Now we can test for last month minutely
-        var startDate = DateTime.Now.AddDays(-15);
+        var startDate = DateTime.Now.AddDays(-5);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(-11);
@@ -43,7 +43,8 @@ public class RangeAlgoritm : QCAlgorithm
 
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
+        // tickers = ["AAPL"], "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
@@ -90,6 +91,7 @@ public class RangeAlgoritm : QCAlgorithm
     }
     public void OnData(FinanceData data)
     {
+        FinanceData.CounterData++;
         var ticker = data.Symbol.Value;
 
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;

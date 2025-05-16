@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
@@ -14,6 +15,9 @@ public class FinanceData : BaseData
     }
     public static DateTime EndDate { get; set; }
     public EMACandleStick CandleStick { get; set; } = EMACandleStick.Empty;
+    public static int CounterData { get; set; }
+    public static int CounterDataSource { get; private set; }
+
     public Period ConvertResolutionToPeriod(Resolution resolution)
     {
         return resolution switch
@@ -29,10 +33,11 @@ public class FinanceData : BaseData
     public override SubscriptionDataSource GetSource(SubscriptionDataConfig config, DateTime date, bool isLiveMode)
     {
         // Define the path to your custom data file
+        CounterDataSource++;
         var filePath = Helper.SaveCandlestickDataToCsv(config.Symbol.Value,
                                 ConvertResolutionToPeriod(config.Resolution),
-                                                StartDate,
-                                                EndDate).Result;
+                                                date,
+                                                date.AddDays(1)).Result;
         return new SubscriptionDataSource(filePath, SubscriptionTransportMedium.LocalFile);
     }
 
@@ -49,43 +54,54 @@ public class FinanceData : BaseData
         };
     }
 
-    public override BaseData Reader(SubscriptionDataConfig config, string line, DateTime date, bool isLiveMode)
-
+    public override BaseData Reader(SubscriptionDataConfig config,
+                                    string line,
+                                    DateTime date,
+                                    bool isLiveMode)
     {
-        // Parse the CSV line
-        var data = line.Split(',');
-        var candleTime = DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture);
-        var candleEndDate = config.Resolution switch
+
+        try
         {
-            Resolution.Minute => candleTime.AddMinutes(1),
-            Resolution.Hour => candleTime.AddHours(1),
-            Resolution.Daily => candleTime.AddDays(1),
-            _ => throw new ArgumentOutOfRangeException(nameof(config.Resolution), config.Resolution, null)
-        };
-        var aaa = new FinanceData
-        {
-            Symbol = config.Symbol,
-            EndTime = candleEndDate,
-            Time = candleTime,
-            Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
-            CandleStick = new EMACandleStick
+            // Parse the CSV line
+            var data = line.Split(',');
+            var candleTime = DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture);
+            var candleEndDate = config.Resolution switch
+            {
+                Resolution.Minute => candleTime.AddMinutes(1),
+                Resolution.Hour => candleTime.AddHours(1),
+                Resolution.Daily => candleTime.AddDays(1),
+                _ => throw new ArgumentOutOfRangeException(nameof(config.Resolution), config.Resolution, null)
+            };
+            var aaa = new FinanceData
+            {
+                Symbol = config.Symbol,
+                EndTime = candleEndDate,
+                Time = candleTime,
+                Value = Convert.ToDecimal(data[4], CultureInfo.InvariantCulture),
+                CandleStick = new EMACandleStick
                 (new FinanceCandleStick
                 (
-                    DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture),
-                    Convert.ToSingle(data[1], CultureInfo.InvariantCulture),
-                    Convert.ToSingle(data[2], CultureInfo.InvariantCulture),
-                    Convert.ToSingle(data[3], CultureInfo.InvariantCulture),
-                    Convert.ToSingle(data[4], CultureInfo.InvariantCulture),
-                    Convert.ToInt64(data[5], CultureInfo.InvariantCulture)
+                DateTime.ParseExact(data[0], "yyyyMMdd HH:mm:ss", CultureInfo.InvariantCulture),
+                Convert.ToSingle(data[1], CultureInfo.InvariantCulture),
+                Convert.ToSingle(data[2], CultureInfo.InvariantCulture),
+                Convert.ToSingle(data[3], CultureInfo.InvariantCulture),
+                Convert.ToSingle(data[4], CultureInfo.InvariantCulture),
+                Convert.ToInt64(data[5], CultureInfo.InvariantCulture)
 
                 ), Convert.ToSingle(data[6], CultureInfo.InvariantCulture))
-            {
-                EMASignal = (TrendTypes)Convert.ToInt32(data[7], CultureInfo.InvariantCulture),
-                BreakThrough = (TrendTypes)Convert.ToInt32(data[8], CultureInfo.InvariantCulture),
-                Pivot = (Pivot)Convert.ToInt32(data[9], CultureInfo.InvariantCulture)
-            }
-        };
+                {
+                    EMASignal = (TrendTypes)Convert.ToInt32(data[7], CultureInfo.InvariantCulture),
+                    BreakThrough = (TrendTypes)Convert.ToInt32(data[8], CultureInfo.InvariantCulture),
+                    Pivot = (Pivot)Convert.ToInt32(data[9], CultureInfo.InvariantCulture)
+                }
+            };
 
-        return aaa;
+            return aaa;
+        }
+        catch (Exception ex)
+        {
+            // Log or handle the exception as needed
+            throw new Exception($"Error parsing line: {line}. Details: {ex.Message}", ex);
+        }
     }
 }
