@@ -10,7 +10,6 @@ using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Ideas.Ideas;
 using FinanceMaker.Ideas.Ideas.Abstracts;
 using FinanceMaker.Publisher.Orders.Broker;
-using FinanceMaker.Publisher.Orders.Trader;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders;
 using FinanceMaker.Publisher.Traders.Interfaces;

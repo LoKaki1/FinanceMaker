@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+COPY ["FinanceMaker.Broker.Server/FinanceMaker.Broker.Server.csproj", "FinanceMaker.Broker.Server/"]
+COPY ["FinanceMaker.Broker/FinanceMaker.Broker.csproj", "FinanceMaker.Broker/"]
+RUN dotnet restore "FinanceMaker.Broker.Server/FinanceMaker.Broker.Server.csproj"
+COPY . .
+WORKDIR "/src/FinanceMaker.Broker.Server"
+RUN dotnet build "FinanceMaker.Broker.Server.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "FinanceMaker.Broker.Server.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "FinanceMaker.Broker.Server.dll"] 

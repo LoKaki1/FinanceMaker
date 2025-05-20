@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
+﻿using System.Collections.Concurrent;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
-using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Pullers;
 using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Traders.Interfaces;
-using FinanceMaker.Pullers.PricesPullers;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Pullers.TickerPullers;
-using QuantConnect.Indicators;
 
 namespace FinanceMaker.Publisher.Traders;
 

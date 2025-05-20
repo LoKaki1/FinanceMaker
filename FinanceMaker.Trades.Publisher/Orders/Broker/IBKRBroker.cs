@@ -2,14 +2,12 @@
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using Alpaca.Markets;
 using FinanceMaker.Common.Models.Ideas.Enums;
 using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
 using FinanceMaker.Common.Models.Interactive;
 using FinanceMaker.Common.Models.Trades.Enums;
 using FinanceMaker.Common.Models.Trades.Trader;
 using FinanceMaker.Publisher.Orders.Trader.Abstracts;
-using FinanceMaker.Publisher.Orders.Trader.Interfaces;
 using FinanceMaker.Publisher.Orders.Trades;
 using IBApi;
 using ITrade = FinanceMaker.Trades.Publisher.Orders.Trades.Interfaces.ITrade;
@@ -150,8 +148,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
             Tif = "GTC"
         };
-        int id = _ibkrClient.GetNextOrderId() ;
-        
+        int id = _ibkrClient.GetNextOrderId();
+
         _ibkrClient.PlaceBracketOrder(id, contract, entryOrder, takeProfitOrder, stopLossOrder);
         await Task.Delay(5_000, cancellationToken); // Wait for the orders to be placed
 

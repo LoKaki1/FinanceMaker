@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using FinanceMaker.Common;
-using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Pullers.Enums;
 using FinanceMaker.Common.Models.Pullers.YahooFinance;

@@ -1,32 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http.Headers;
-using FinanceMaker.Algorithms;
-using FinanceMaker.Algorithms.News.Analyziers;
-using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
-using FinanceMaker.BackTester;
+﻿using FinanceMaker.BackTester;
 using FinanceMaker.BackTester.QCAlggorithms;
-using FinanceMaker.Common;
-using FinanceMaker.Common.Models.Finance;
-using FinanceMaker.Common.Models.Ideas.IdeaInputs;
-using FinanceMaker.Common.Models.Ideas.IdeaOutputs;
-using FinanceMaker.Common.Models.Pullers.Enums;
-using FinanceMaker.Ideas.Ideas;
-using FinanceMaker.Ideas.Ideas.Abstracts;
-using FinanceMaker.Publisher.Orders.Trader;
-using FinanceMaker.Publisher.Orders.Trader.Interfaces;
-using FinanceMaker.Publisher.Traders;
-using FinanceMaker.Publisher.Traders.Interfaces;
-using FinanceMaker.Pullers;
-using FinanceMaker.Pullers.NewsPullers;
-using FinanceMaker.Pullers.NewsPullers.Interfaces;
-using FinanceMaker.Pullers.PricesPullers;
-using FinanceMaker.Pullers.PricesPullers.Interfaces;
-using FinanceMaker.Pullers.TickerPullers;
-using FinanceMaker.Pullers.TickerPullers.Interfaces;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using ScottPlot;
 Console.WriteLine("Hello, World!");
 
 

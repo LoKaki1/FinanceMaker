@@ -1,4 +1,3 @@
-using System;
 using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
@@ -8,7 +7,6 @@ using FinanceMaker.Pullers.TickerPullers;
 using Microsoft.Extensions.DependencyInjection;
 using QuantConnect;
 using QuantConnect.Algorithm;
-using QuantConnect.Data;
 using QuantConnect.Data.Market;
 using QuantConnect.Indicators;
 using QuantConnect.Orders.Fees;

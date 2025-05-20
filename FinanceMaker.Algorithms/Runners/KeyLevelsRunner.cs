@@ -3,7 +3,6 @@ using FinanceMaker.Common.Extensions;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
-using QuantConnect;
 
 namespace FinanceMaker.Algorithms;
 

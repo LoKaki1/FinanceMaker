@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using FinanceMaker.BackTester.QCHelpers;
+﻿using FinanceMaker.BackTester.QCHelpers;
 using QuantConnect;
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;

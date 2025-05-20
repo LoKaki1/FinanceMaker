@@ -1,10 +1,8 @@
-using System.Globalization;
 using FinanceMaker.Algorithms;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Finance.Enums;
 using FinanceMaker.Common.Models.Pullers.Enums;
-using FinanceMaker.Pullers;
 using Microsoft.Extensions.DependencyInjection;
 using QuantConnect.Configuration;
 
