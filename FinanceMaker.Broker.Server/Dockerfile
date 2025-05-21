@@ -5,12 +5,8 @@ EXPOSE 8081
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["FinanceMaker.Broker.Server/FinanceMaker.Broker.Server.csproj", "FinanceMaker.Broker.Server/"]
-COPY ["FinanceMaker.Broker/FinanceMaker.Broker.csproj", "FinanceMaker.Broker/"]
 RUN dotnet restore "FinanceMaker.Broker.Server/FinanceMaker.Broker.Server.csproj"
 COPY . .
-WORKDIR "/src/FinanceMaker.Broker.Server"
-RUN dotnet build "FinanceMaker.Broker.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
 RUN dotnet publish "FinanceMaker.Broker.Server.csproj" -c Release -o /app/publish /p:UseAppHost=false

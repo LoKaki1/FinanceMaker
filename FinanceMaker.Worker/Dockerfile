@@ -3,10 +3,12 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["FinanceMaker.Worker/FinanceMaker.Worker.csproj", "FinanceMaker.Worker/"]
-COPY ["FinanceMaker.Broker/FinanceMaker.Broker.csproj", "FinanceMaker.Broker/"]
-RUN dotnet restore "FinanceMaker.Worker/FinanceMaker.Worker.csproj"
+
+# Copy everything and restore
 COPY . .
+RUN dotnet restore "FinanceMaker.Worker/FinanceMaker.Worker.csproj"
+
+# Build
 WORKDIR "/src/FinanceMaker.Worker"
 RUN dotnet build "FinanceMaker.Worker.csproj" -c Release -o /app/build
 

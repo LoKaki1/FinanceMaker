@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FinanceMaker.Broker.Data;
 using FinanceMaker.Broker.Models;
+using FinanceMaker.Broker.Models.Enums;
 using FinanceMaker.Broker.Models.Responses;
 using FinanceMaker.Broker.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -112,7 +113,7 @@ public class OrderProcessorService : IOrderProcessorService
 
     private async Task ProcessLimitOrder(Order order, decimal currentPrice, Account account)
     {
-        if (order.LimitPrice is null)
+        if (order.Price is null)
         {
             throw new ArgumentException("Limit price is required for limit orders");
         }
@@ -124,8 +125,8 @@ public class OrderProcessorService : IOrderProcessorService
 
     private bool IsLimitOrderExecutable(Order order, decimal currentPrice)
     {
-        return (order.Side == OrderSide.Buy && currentPrice <= order.LimitPrice) ||
-               (order.Side == OrderSide.Sell && currentPrice >= order.LimitPrice);
+        return (order.Side == OrderSide.Buy && currentPrice <= order.Price) ||
+               (order.Side == OrderSide.Sell && currentPrice >= order.Price);
     }
 
     private async Task ProcessStopOrder(Order order, decimal currentPrice, Account account)
@@ -152,7 +153,7 @@ public class OrderProcessorService : IOrderProcessorService
         {
             UserId = account.UserId,
             Symbol = order.Symbol,
-            Quantity = order.Quantity,
+            Quantity = (int)order.Quantity,
             Price = currentPrice,
             Type = order.Side == OrderSide.Buy ? TransactionType.Buy : TransactionType.Sell,
             Timestamp = DateTime.UtcNow

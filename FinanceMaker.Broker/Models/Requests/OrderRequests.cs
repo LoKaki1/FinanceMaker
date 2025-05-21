@@ -1,4 +1,5 @@
 namespace FinanceMaker.Broker.Models.Requests;
+using FinanceMaker.Broker.Models.Enums;
 
 public class PlaceOrderRequest
 {

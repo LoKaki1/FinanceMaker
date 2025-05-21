@@ -6,7 +6,8 @@ namespace FinanceMaker.Broker.Models;
 public class Account
 {
     [Key]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     [Required]
     public Guid UserId { get; set; }

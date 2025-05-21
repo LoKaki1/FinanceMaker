@@ -56,7 +56,8 @@ public class AuthService : IAuthService
         m_DbContext.Accounts.Add(newAccount);
         await m_DbContext.SaveChangesAsync();
 
-        return AuthResponse.CreateSuccess(string.Empty);
+        var token = GenerateJwtToken(newUser);
+        return AuthResponse.CreateSuccess(token);
     }
 
     public async Task<AuthResponse> LoginAsync(string username, string password)
@@ -94,7 +95,6 @@ public class AuthService : IAuthService
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.Email, user.Email)
             }),
-            Expires = DateTime.UtcNow.AddMinutes(m_JwtOptions.ExpiryInMinutes),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(key),
                 SecurityAlgorithms.HmacSha256Signature),

@@ -1,29 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using FinanceMaker.Broker.Models.Enums;
 
 namespace FinanceMaker.Broker.Models;
-
-public enum OrderType
-{
-    Market,
-    Limit,
-    Stop,
-    StopLimit
-}
-
-public enum OrderStatus
-{
-    Open,
-    Filled,
-    Cancelled,
-    Rejected
-}
-
-public enum OrderSide
-{
-    Buy,
-    Sell
-}
 
 public class Order
 {
@@ -47,10 +26,10 @@ public class Order
     public OrderSide Side { get; set; }
 
     [Required]
-    public int Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
-    public decimal? LimitPrice { get; set; }
+    public decimal? Price { get; set; }
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal? StopPrice { get; set; }
@@ -67,7 +46,8 @@ public class Order
     [Column(TypeName = "decimal(18,2)")]
     public decimal? FilledPrice { get; set; }
 
-    public int? FilledQuantity { get; set; }
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal? FilledQuantity { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

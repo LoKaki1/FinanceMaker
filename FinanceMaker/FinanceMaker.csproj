@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="ScottPlot" Version="5.0.55" />
     <PackageReference Include="ServiceExtensions.Hosting" Version="1.0.2" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.0-preview.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../FinanceMaker.Trades.Publisher/FinanceMaker.Publisher.csproj" />

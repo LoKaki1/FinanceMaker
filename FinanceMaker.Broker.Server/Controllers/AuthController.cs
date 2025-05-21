@@ -23,7 +23,7 @@ public class AuthController : ControllerBase
         {
             return BadRequest(new { error = response.Error });
         }
-        return Ok();
+        return Ok(new { token = response.Token });
     }
 
     [HttpPost("login")]
