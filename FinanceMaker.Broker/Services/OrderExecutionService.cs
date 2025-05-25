@@ -1,26 +1,34 @@
-using FinanceMaker.Broker.Data;
-using FinanceMaker.Broker.Interfaces;
 using FinanceMaker.Broker.Models;
 using FinanceMaker.Broker.Models.Enums;
 using FinanceMaker.Broker.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace FinanceMaker.Broker.Services;
 
+public interface IOrderExecutionService
+{
+    Task<Order> ExecuteOrderAsync(Order order, CancellationToken cancellationToken);
+}
+
 public class OrderExecutionService : IOrderExecutionService
 {
-    private readonly BrokerDbContext m_DbContext;
     private readonly IMarketDataService m_MarketDataService;
+    private readonly IOrderValidationService m_OrderValidationService;
+    private readonly IAccountManagementService m_AccountManagementService;
+    private readonly IPositionManagementService m_PositionManagementService;
     private readonly ILogger<OrderExecutionService> m_Logger;
 
     public OrderExecutionService(
-        BrokerDbContext dbContext,
         IMarketDataService marketDataService,
+        IOrderValidationService orderValidationService,
+        IAccountManagementService accountManagementService,
+        IPositionManagementService positionManagementService,
         ILogger<OrderExecutionService> logger)
     {
-        m_DbContext = dbContext;
         m_MarketDataService = marketDataService;
+        m_OrderValidationService = orderValidationService;
+        m_AccountManagementService = accountManagementService;
+        m_PositionManagementService = positionManagementService;
         m_Logger = logger;
     }
 
@@ -35,20 +43,9 @@ public class OrderExecutionService : IOrderExecutionService
                 return order;
             }
 
-            using var transaction = await m_DbContext.Database.BeginTransactionAsync(cancellationToken);
-            try
-            {
-                await UpdateOrderStatusAsync(order, currentPrice, cancellationToken);
-                await UpdatePositionAsync(order, currentPrice, cancellationToken);
-                await UpdateAccountBalanceAsync(order, currentPrice, cancellationToken);
-
-                await transaction.CommitAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                throw;
-            }
+            await UpdateOrderStatusAsync(order, currentPrice);
+            await m_AccountManagementService.UpdateAccountBalanceAsync(order, currentPrice, cancellationToken);
+            await m_PositionManagementService.UpdatePositionAsync(order, currentPrice, cancellationToken);
 
             return order;
         }
@@ -77,91 +74,11 @@ public class OrderExecutionService : IOrderExecutionService
         };
     }
 
-    private async Task UpdateOrderStatusAsync(Order order, decimal executionPrice, CancellationToken cancellationToken)
+    private async Task UpdateOrderStatusAsync(Order order, decimal executionPrice)
     {
         order.Status = OrderStatus.Filled;
         order.FilledPrice = executionPrice;
         order.FilledQuantity = (int)order.Quantity;
         order.FilledAt = DateTime.UtcNow;
-
-        await m_DbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task UpdatePositionAsync(Order order, decimal executionPrice, CancellationToken cancellationToken)
-    {
-        var position = await m_DbContext.Positions
-            .FirstOrDefaultAsync(p => p.AccountId == order.AccountId && p.Symbol == order.Symbol, cancellationToken);
-
-        if (position == null)
-        {
-            position = new Position
-            {
-                AccountId = order.AccountId,
-                Symbol = order.Symbol,
-                Quantity = 0,
-                AveragePrice = 0,
-                LastPrice = executionPrice,
-                RealizedPnL = 0
-            };
-            m_DbContext.Positions.Add(position);
-        }
-
-        var oldQuantity = position.Quantity;
-        var oldAveragePrice = position.AveragePrice;
-
-        if (order.Side == OrderSide.Buy)
-        {
-            position.Quantity += (int)order.Quantity;
-            position.AveragePrice = ((oldQuantity * oldAveragePrice) + ((int)order.Quantity * executionPrice)) / position.Quantity;
-        }
-        else
-        {
-            position.Quantity -= (int)order.Quantity;
-            if (position.Quantity == 0)
-            {
-                position.AveragePrice = 0;
-            }
-        }
-
-        position.LastPrice = executionPrice;
-        position.LastUpdated = DateTime.UtcNow;
-
-        // Calculate PnL
-        if (order.Side == OrderSide.Sell)
-        {
-            var realizedPnL = (executionPrice - oldAveragePrice) * (int)order.Quantity;
-            position.RealizedPnL += realizedPnL;
-        }
-
-        await m_DbContext.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task UpdateAccountBalanceAsync(Order order, decimal executionPrice, CancellationToken cancellationToken)
-    {
-        var account = await m_DbContext.Accounts
-            .FirstOrDefaultAsync(a => a.Id == order.AccountId, cancellationToken);
-
-        if (account == null)
-        {
-            throw new InvalidOperationException("Account not found");
-        }
-
-        var orderValue = order.Quantity * executionPrice;
-
-        if (order.Side == OrderSide.Buy)
-        {
-            account.CashBalance -= orderValue;
-            account.MarginUsed += orderValue;
-        }
-        else
-        {
-            account.CashBalance += orderValue;
-            account.MarginUsed -= orderValue;
-        }
-
-        account.AvailableFunds = account.CashBalance - account.MarginUsed;
-        account.LastUpdated = DateTime.UtcNow;
-
-        await m_DbContext.SaveChangesAsync(cancellationToken);
     }
 }
