@@ -17,11 +17,12 @@ public class MarketStatus
         {
             var httpClient = m_HttpClientFactory.CreateClient();
             var response = await httpClient.GetStreamAsync($"{apiUrl}&token={apiKey}", cancellationToken);
+            //var data = response.Rea
             var marketData = await JsonSerializer.DeserializeAsync<MarketOpenResponse>(response, cancellationToken: cancellationToken);
 
             if (marketData is null) return false;
 
-            return marketData!.IsOpen;
+            return marketData!.IsOpen || marketData.Session =="pre-market" || marketData.Session == "post-market";
         }
         catch
         {
@@ -35,4 +36,6 @@ public sealed class MarketOpenResponse
 {
     [JsonPropertyName("isOpen")]
     public bool IsOpen { get; set; }
+    [JsonPropertyName("session")]
+    public required string Session { get; set; }
 }

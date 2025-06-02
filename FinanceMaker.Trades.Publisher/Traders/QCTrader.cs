@@ -82,7 +82,7 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO"];
+        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO",  "MARA", "RIOT", "HUT"];
 
         tickers = tickers.Distinct().ToList();
         // Now we've got the stocks, we should analyze them
@@ -102,24 +102,64 @@ public class QCTrader : ITrader
             var interdayCandles = await m_RangeAlgorithmsRunner.Run<EMACandleStick>(
                 new RangeAlgorithmInput(PricesPullerParameters.GetTodayParams(ticker), Algorithm.KeyLevels),
                                                                                     cancellationToken);
-
-            if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) continue;
+            if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any())
+                continue;
 
             foreach (var keylevel in candleSticks.KeyLevels)
             {
                 var lastCandleStick = interdayCandleSticks.Last();
-                var averageValue = interdayCandleSticks[^4..^2]
-                                                       .Average(candle => candle.Close);
+                var recentCandles = interdayCandleSticks[^4..]; // last 4 candles
+                var averageValue = recentCandles[..2].Average(candle => candle.Close);
 
                 var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
-                // I am not sure the pivot will work, but the average value key level should work instead
-                // That should also solve the problem we have with the candles at the start
-                if (valueDivision <= 1 && valueDivision >= 0.995)
+
+                bool nearKeyLevel = valueDivision <= 1 && valueDivision >= 0.995;
+
+                // Tentative pivot detection on the last 3 candles
+                bool hasTentativePivot = false;
+                if (recentCandles.Count >= 3)
+                {
+                    for (int i = 2; i < recentCandles.Count; i++)
+                    {
+                        var c0 = recentCandles[i - 2];
+                        var c1 = recentCandles[i - 1];
+                        var c2 = recentCandles[i];
+
+                        bool isTentativeHigh = c1.High > c0.High && c1.High > c2.High;
+                        bool isTentativeLow = c1.Low < c0.Low && c1.Low < c2.Low;
+
+                        if (isTentativeLow)
+                        {
+                            hasTentativePivot = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (nearKeyLevel || hasTentativePivot)
                 {
                     relevantTickers.Add((ticker, lastCandleStick.Close));
                     break;
                 }
             }
+
+            //if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) continue;
+
+            //foreach (var keylevel in candleSticks.KeyLevels)
+            //{
+            //    var lastCandleStick = interdayCandleSticks.Last();
+            //    var averageValue = interdayCandleSticks[^4..^2]
+            //                                           .Average(candle => candle.Close);
+
+            //    var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
+            //    // I am not sure the pivot will work, but the average value key level should work instead
+            //    // That should also solve the problem we have with the candles at the start
+            //    if (valueDivision <= 1 && valueDivision >= 0.995)
+            //    {
+            //        relevantTickers.Add((ticker, lastCandleStick.Close));
+            //        break;
+            //    }
+            //}
         }
 
         return [.. relevantTickers];

@@ -1,4 +1,6 @@
-﻿using FinanceMaker.Algorithms;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+
+using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
@@ -8,7 +10,6 @@ using FinanceMaker.Pullers.TickerPullers;
 using Microsoft.Extensions.DependencyInjection;
 using QuantConnect;
 using QuantConnect.Algorithm;
-using QuantConnect.Data;
 using QuantConnect.Indicators;
 using QuantConnect.Orders.Fees;
 
@@ -22,10 +23,10 @@ public class RangeAlgoritm : QCAlgorithm
     public override void Initialize()
     {
         // Now we can test for last month minutely
-        var startDate = DateTime.Now.AddDays(-5);
+        var startDate = DateTime.Now.AddDays(-29);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
-        var endDateForAlgo = endDate.AddYears(-1).AddMonths(-11);
+        var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
         SetCash(3_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
@@ -44,7 +45,7 @@ public class RangeAlgoritm : QCAlgorithm
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
         // tickers = ["AAPL"], "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO"];
+        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
@@ -87,7 +88,6 @@ public class RangeAlgoritm : QCAlgorithm
             AddData<FinanceData>(ticker, Resolution.Minute);
 
         }
-
     }
     public void OnData(FinanceData data)
     {
@@ -101,7 +101,7 @@ public class RangeAlgoritm : QCAlgorithm
             var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
             var pivot = data.CandleStick.Pivot;
 
-            if (valueDivision <= 1 && valueDivision >= 0.995)
+            if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.Low)
             {
                 {
                     var symbol = data.Symbol.Value;
@@ -127,6 +127,32 @@ public class RangeAlgoritm : QCAlgorithm
                     }
                 }
             }
+            //else if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.High)
+            //{
+            //    {
+            //        var symbol = data.Symbol.Value;
+            //        var holdingsq = Securities[symbol].Holdings.Quantity;
+
+            //        if (holdingsq == 0)
+            //        {
+            //            // var previousHistory = History<FinanceData>(data.Symbol, 1, Resolution.Minute);
+
+            //            // if (previousHistory is not null && previousHistory.Any())
+            //            {
+            //                // // var previous = previousHistory.First();
+            //                // if (previous.CandleStick.Open > data.CandleStick.Close &&
+            //                //     data.CandleStick.Open > data.CandleStick.Close &&
+            //                //     valueDivision <= 1 && valueDivision >= 0.995)
+            //                if (valueDivision <= 1 && valueDivision >= 0.995)
+            //                {
+            //                    Short(data.Symbol);
+            //                }
+            //            }
+
+            //            return;
+            //        }
+            //    }
+            //}
 
             var holdings = Securities[data.Symbol].Holdings;
             var avgPrice = holdings.AveragePrice;
@@ -134,11 +160,19 @@ public class RangeAlgoritm : QCAlgorithm
 
             if (holdings.Quantity > 0)
             {
-                if (currentPrice >= avgPrice * 1.04m || currentPrice <= avgPrice * 0.98m)
+                if (currentPrice >= avgPrice * 1.025m || currentPrice <= avgPrice * 0.985m)
                 {
                     Sell(data.Symbol);
                 }
             }
+            if (holdings.Quantity < 0)
+            {
+                if (currentPrice >= avgPrice * 1.015m || currentPrice <= avgPrice * 0.975m)
+                {
+                    Sell(data.Symbol);
+                }
+            }
+
         }
     }
 
@@ -169,6 +203,17 @@ public class RangeAlgoritm : QCAlgorithm
         //if (s.Quantity > 0 && _macdDic[symbol] < 0m)
         //{
         Liquidate(symbol);
+
+        //Debug("Selling: " + symbol + " at sell MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
+        //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Profit from sale: " + s.LastTradeProfit);
+        //}
+    }
+    public void Short(Symbol symbol)
+    {
+        //var s = Securities[symbol].Holdings;
+        //if (s.Quantity > 0 && _macdDic[symbol] < 0m)
+        //{
+        SetHoldings(symbol, 0.5);
 
         //Debug("Selling: " + symbol + " at sell MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
         //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Profit from sale: " + s.LastTradeProfit);

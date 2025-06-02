@@ -28,7 +28,7 @@ public class Worker
         {
             var isMarketOpen = await m_MarketStatus.IsMarketOpenAsync(stoppingToken);
             # if DEBUG
-            isMarketOpen = true;
+            //isMarketOpen = true;
             #endif
             if (isMarketOpen)
             {

@@ -40,17 +40,19 @@ public class IBKRClient : EWrapper
         // Set parent order
         entryOrder.OrderId = orderId;
         entryOrder.Transmit = false;
+        entryOrder.OutsideRth = true;
 
         // Set take profit order
         takeProfitOrder.OrderId = orderId + 1;
         takeProfitOrder.ParentId = orderId;
         takeProfitOrder.Transmit = false;
+        takeProfitOrder.OutsideRth = true;
 
         // Set stop loss order
         stopLossOrder.OrderId = orderId + 2;
         stopLossOrder.ParentId = orderId;
         stopLossOrder.Transmit = true;
-
+        stopLossOrder.OutsideRth = true;
         // Place orders
         _clientSocket.placeOrder(entryOrder.OrderId, contract, entryOrder);
         Console.WriteLine($"Entry order {entryOrder.OrderId} placed for {contract.Symbol}");
@@ -122,7 +124,7 @@ public class IBKRClient : EWrapper
     public void openOrder(int orderId, Contract contract, Order order, OrderState orderState)
     {
         Console.WriteLine($"Open Order: {orderId}, {contract.Symbol}");
-        _openOrders.Add(new IBKROrderResponse { OrderId = orderId.ToString(), Symbol = contract.Symbol, Status = orderState.Status });
+        _openOrders.Add(new IBKROrderResponse { OrderId = orderId.ToString(), Symbol = contract.Symbol, Status = orderState.Status,  });
     }
     public void openOrderEnd() { Console.WriteLine("Open Order End"); }
     public void contractDetails(int reqId, ContractDetails contractDetails) { Console.WriteLine($"Contract Details: {reqId}, {contractDetails.Summary.Symbol}"); }
