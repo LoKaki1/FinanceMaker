@@ -84,7 +84,7 @@ public class RangeAlgoritm : QCAlgorithm
         foreach (var ticker in actualTickers)
         {
             if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
-            var symbol = AddEquity(ticker, Resolution.Minute);
+            var symbol = AddEquity(ticker, Resolution.Minute, extendedMarketHours: true);
             AddData<FinanceData>(ticker, Resolution.Minute);
 
         }
@@ -95,6 +95,13 @@ public class RangeAlgoritm : QCAlgorithm
         var ticker = data.Symbol.Value;
 
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
+
+        // Check if we have enough cash for a single trade (StartMoney / 10)
+        var minTradeAmount = Portfolio.CashBook.TotalValueInAccountCurrency / 10m;
+        if (Portfolio.Cash < minTradeAmount)
+        {
+            return;
+        }
 
         foreach (var value in keyLevels)
         {
@@ -127,7 +134,7 @@ public class RangeAlgoritm : QCAlgorithm
                     }
                 }
             }
-            //else if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.High)
+            //if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.High)
             //{
             //    {
             //        var symbol = data.Symbol.Value;
