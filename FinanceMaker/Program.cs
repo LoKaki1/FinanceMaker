@@ -6,6 +6,7 @@ using FinanceMaker.Algorithms.News.Analyziers;
 using FinanceMaker.Algorithms.News.Analyziers.Interfaces;
 using FinanceMaker.BackTester;
 using FinanceMaker.BackTester.QCAlggorithms;
+using FinanceMaker.BackTester.RealTime;
 using FinanceMaker.Common;
 using FinanceMaker.Common.Models.Finance;
 using FinanceMaker.Common.Models.Ideas.IdeaInputs;
@@ -66,5 +67,5 @@ Console.WriteLine("Hello, World!");
 //        --- |TradesPublisher| * Publishing to the relevant brokers
 // 
 // Client Portal Web API usually uses self-signed certs, so bypass validation (for dev only!)
-
-BackTester.Runner(typeof(RangeAlgoritm));
+RealTimeTester.Runner(typeof(AlpacaRealTimeBroker));
+// BackTester.Runner(typeof(RangeAlgoritm));

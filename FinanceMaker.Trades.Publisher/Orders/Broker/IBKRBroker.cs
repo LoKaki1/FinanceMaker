@@ -150,8 +150,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
             Tif = "GTC"
         };
-        int id = _ibkrClient.GetNextOrderId() ;
-        
+        int id = _ibkrClient.GetNextOrderId();
+
         _ibkrClient.PlaceBracketOrder(id, contract, entryOrder, takeProfitOrder, stopLossOrder);
         await Task.Delay(5_000, cancellationToken); // Wait for the orders to be placed
 
@@ -194,8 +194,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
         return new Position
         {
             BuyingPower = (float)buyingPower,
-            OpenedPositions = positions.Select(p => p.Symbol).ToArray(),
-            Orders = openOrders.Select(o => o.Symbol).ToArray()
+            OpenedPositions = positions.Where(p => p.AvgPrice > 0).Select(p => p.Symbol).ToArray(),
+            Orders = openOrders.Where(_ => _.Status == "Submitted").Select(o => o.Symbol).ToArray()
         };
     }
 
