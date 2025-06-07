@@ -1,6 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using FinanceMaker.BackTester.QCHelpers;
+using Newtonsoft.Json.Linq;
 using QuantConnect;
+using QuantConnect.Algorithm.CSharp.Benchmarks;
 using QuantConnect.Brokerages;
 using QuantConnect.Configuration;
 using QuantConnect.Lean.Engine;
@@ -68,22 +70,31 @@ public class RealTimeTester
         Config.Set("data-folder", "../../../../FinanceMaker.BackTester/Data");
         Config.Set("algorithm-language", "CSharp");
         Config.Set("algorithm-location", "FinanceMaker.BackTester.dll");
-        Config.Set("environment", "live");
-        Config.Set("live-mode-brokerage", "Alpaca");
+        Config.Set("environment", "live-alpaca");
+        Config.Set("live-mode", true);
+        Config.Set("brokerage", "AlpacaBrokerage");
+        Config.Set("data-queue-handler", JToken.FromObject(new List<string> { "FinanceMaker.BackTester.QCHelpers.YahooLiveQuoteHandler" }));
+        Config.Set("history-provider", JToken.FromObject(new List<string> { "FinanceMaker.BackTester.QCHelpers.SubscriptionDataReaderHistoryProvider" }));
 
         //Name thread for the profiler:
         Thread.CurrentThread.Name = "Algorithm Analysis Thread";
+        var b = new YahooLiveQuoteHandler();
+        var c = new SubscriptionDataReaderHistoryProvider();
+        Composer.Instance.AddPart(b);
+        Composer.Instance.AddPart(c);
 
         Initializer.Start();
         var leanEngineSystemHandlers = Initializer.GetSystemHandlers();
-        var liveJob = new LiveNodePacket
-        {
-            Type = PacketType.LiveNode,
-            DataQueueHandler = "AlpacaDataQueueHandler",
-            Language = Language.CSharp,
-            Parameters = new Dictionary<string, string>(),
-            // Add your own settings here
-        };
+        //var liveJob = new LiveNodePacket
+        //{
+        //    Type = PacketType.LiveNode,
+        //    DataQueueHandler = "AlpacaDataQueueHandler",
+        //    Language = Language.CSharp,
+        //    Parameters = new Dictionary<string, string>(),
+        //    // Add your own settings here
+        //};
+        //-> Pull job from QuantConnect job queue, or, pull local build:
+        var liveJob = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
         //-> Pull job from QuantConnect job queue, or, pull local build:
         // var job = leanEngineSystemHandlers.JobQueue.NextJob(out var assemblyPath);
 
