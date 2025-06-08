@@ -13,18 +13,27 @@ namespace FinanceMaker.BackTester.QCHelpers
 {
     public class YahooLiveQuoteHandler : IDataQueueHandler
     {
-        private readonly ConcurrentQueue<BaseData> _dataQueue = new();
-        private ClientWebSocket _webSocket;
-        private CancellationTokenSource _cts;
-        private Task _listenerTask;
-        private readonly HashSet<string> _symbols = new();
+        private readonly ConcurrentQueue<BaseData> m_DataQueue;
+        private ClientWebSocket m_WebSocket;
+        private CancellationTokenSource m_Cts;
+        private Task m_ListenerTask;
+        private readonly HashSet<string> m_Symbols;
 
-        public bool IsConnected => _webSocket != null && _webSocket.State == WebSocketState.Open;
+        public YahooLiveQuoteHandler()
+        {
+            m_DataQueue = new ConcurrentQueue<BaseData>();
+            m_Symbols = new HashSet<string>();
+            m_WebSocket = new ClientWebSocket();
+            m_ListenerTask = Task.CompletedTask;
+            m_Cts = new CancellationTokenSource();
+        }
 
+        public bool IsConnected => m_WebSocket != null && m_WebSocket.State == WebSocketState.Open;
+        public bool IsRunning => m_ListenerTask.Status == TaskStatus.Running;
         public void Dispose()
         {
-            _cts?.Cancel();
-            _webSocket?.Dispose();
+            m_Cts?.Cancel();
+            m_WebSocket?.Dispose();
         }
 
         public void SetJob(LiveNodePacket job)
@@ -34,51 +43,52 @@ namespace FinanceMaker.BackTester.QCHelpers
 
         public IEnumerator<BaseData> Subscribe(SubscriptionDataConfig dataConfig, EventHandler newDataAvailableHandler)
         {
-            _symbols.Add(dataConfig.Symbol.Value);
+            m_Symbols.Add(dataConfig.Symbol.Value);
 
-            if (_webSocket == null)
+            if (!IsConnected)
             {
-                _cts = new CancellationTokenSource();
-                _webSocket = new ClientWebSocket();
-                _listenerTask = Task.Run(() => StartListener(_cts.Token, newDataAvailableHandler));
+                m_ListenerTask = Task.Run(() => StartListener(m_Cts.Token, newDataAvailableHandler));
             }
             else if (IsConnected)
             {
-                var subscribeMessage = new { subscribe = _symbols }; // JSON: {"subscribe":["AAPL", "NIO"]}
+                var subscribeMessage = new { subscribe = m_Symbols }; // JSON: {"subscribe":["AAPL", "NIO"]}
                 var json = JsonSerializer.Serialize(subscribeMessage);
                 var bytes = Encoding.UTF8.GetBytes(json);
-                _webSocket.SendAsync(bytes, WebSocketMessageType.Text, true, _cts.Token);
+                m_WebSocket.SendAsync(bytes, WebSocketMessageType.Text, true, m_Cts.Token);
             }
 
-            return _dataQueue.GetEnumerator();
+            return m_DataQueue.GetEnumerator();
         }
 
         public void Unsubscribe(SubscriptionDataConfig dataConfig)
         {
-            _symbols.Remove(dataConfig.Symbol.Value);
+            m_Symbols.Remove(dataConfig.Symbol.Value);
         }
 
         private async Task StartListener(CancellationToken token, EventHandler newDataAvailableHandler)
         {
             try
             {
-                await _webSocket.ConnectAsync(new Uri("wss://streamer.finance.yahoo.com/?version=2"), token);
+                await m_WebSocket.ConnectAsync(new Uri("wss://streamer.finance.yahoo.com/?version=2"), token);
 
-                var subscribeMessage = new { subscribe = _symbols };
+                var subscribeMessage = new { subscribe = m_Symbols };
                 var json = JsonSerializer.Serialize(subscribeMessage);
                 var bytesToSend = Encoding.UTF8.GetBytes(json);
-                await _webSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, token);
+                await m_WebSocket.SendAsync(bytesToSend, WebSocketMessageType.Text, true, token);
 
                 var buffer = new byte[4096];
 
-                while (!token.IsCancellationRequested && _webSocket.State == WebSocketState.Open)
+                while (!token.IsCancellationRequested && m_WebSocket.State == WebSocketState.Open)
                 {
-                    var result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+                    var result = await m_WebSocket.ReceiveAsync(new ArraySegment<byte>(buffer), token);
                     if (result.MessageType == WebSocketMessageType.Close) break;
 
                     var message1 = Encoding.UTF8.GetString(buffer, 0, result.Count);
                     var jsonMessage = JsonSerializer.Deserialize<JsonElement>(message1);
                     var actualMessage = jsonMessage.GetProperty("message").GetString();
+
+                    if (string.IsNullOrEmpty(actualMessage)) continue;
+
                     byte[] data = Convert.FromBase64String(actualMessage);
 
                     var msg = PricingData.Parser.ParseFrom(data);
@@ -93,7 +103,7 @@ namespace FinanceMaker.BackTester.QCHelpers
                         TickType = TickType.Quote
                     };
 
-                    _dataQueue.Enqueue(tick);
+                    m_DataQueue.Enqueue(tick);
                     newDataAvailableHandler?.Invoke(this, EventArgs.Empty);
                 }
             }
