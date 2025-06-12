@@ -52,65 +52,6 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
         client.DefaultRequestHeaders.Add("Host", "api.ibkr.com");
     }
 
-    private async Task EnsureAuthenticated(CancellationToken cancellationToken)
-    {
-        return;
-        try
-        {
-            if (!string.IsNullOrEmpty(m_SessionId))
-                return;
-
-            var client = m_HttpClientFactory.CreateClient("IBKR");
-            ConfigureClientHeaders(client);
-
-            // First validate if we're already authenticated
-            var statusResponse = await client.GetAsync($"{m_BaseUrl}/iserver/auth/status", cancellationToken);
-            var statusResult = await statusResponse.Content.ReadFromJsonAsync<IBKRAuthResponse>(m_JsonOptions, cancellationToken);
-            var statusResult1 = await statusResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            if (statusResult?.Authenticated == true)
-            {
-                m_SessionId = statusResponse.Headers.GetValues("X-IB-Session").FirstOrDefault();
-                return;
-            }
-
-            // If not authenticated, try to authenticate
-            var payload = new
-            {
-                publish = true,
-                compete = true
-            };
-
-            string jsonString = JsonSerializer.Serialize(payload);
-            var content = new StringContent(jsonString, Encoding.UTF8, "application/json");
-            var authResponse = await client.PostAsync($"{m_BaseUrl}/iserver/auth/ssodh/init", content, cancellationToken);
-            var errorContenta = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-            if (!authResponse.IsSuccessStatusCode)
-            {
-                var errorContent = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-                throw new Exception($"Authentication failed: {errorContent}");
-            }
-
-            var authResult = await authResponse.Content.ReadFromJsonAsync<IBKRAuthResponse>(m_JsonOptions, cancellationToken);
-            var authResult1 = await authResponse.Content.ReadAsStringAsync(cancellationToken);
-
-            if (authResult?.Authenticated == true)
-            {
-                m_SessionId = authResponse.Headers.GetValues("X-IB-Session").FirstOrDefault();
-                // Validate the session
-                await client.PostAsync($"{m_BaseUrl}/iserver/auth/validateSession", null, cancellationToken);
-            }
-            else
-            {
-                throw new Exception("Failed to authenticate with IBKR Client Portal. Make sure the Client Portal Gateway is running and you're logged in.");
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Error during authentication: {ex.Message}", ex);
-        }
-
-    }
 
     protected override async Task<ITrade> TradeInternal(EntryExitOutputIdea idea, CancellationToken cancellationToken)
     {
@@ -119,7 +60,8 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             Symbol = idea.Ticker,
             SecType = "STK",
             Exchange = "SMART",
-            Currency = "USD"
+            Currency = "USD",
+            
         };
 
         var entryOrder = new Order
@@ -128,7 +70,7 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
             OrderType = "LMT",
             TotalQuantity = idea.Quantity,
             LmtPrice = Math.Round(idea.Entry, 2),
-            Tif = "GTC"
+            //Tif = "DA"
         };
 
         var takeProfitOrder = new Order
@@ -183,7 +125,6 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
     public override async Task<Position> GetClientPosition(CancellationToken cancellationToken)
     {
-        await EnsureAuthenticated(cancellationToken);
         _ibkrClient.RequestAccountSummary();
         _ibkrClient.RequestCurrentPositions();
         _ibkrClient.RequestOpenOrders();
@@ -201,7 +142,6 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
 
     public override async Task CancelTrade(ITrade trade, CancellationToken cancellationToken)
     {
-        await EnsureAuthenticated(cancellationToken);
 
         var client = m_HttpClientFactory.CreateClient("IBKR");
         client.DefaultRequestHeaders.Add("X-IB-Session", m_SessionId);

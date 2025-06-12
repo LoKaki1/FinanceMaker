@@ -27,8 +27,10 @@ public class Worker
         while (!stoppingToken.IsCancellationRequested)
         {
             var isMarketOpen = await m_MarketStatus.IsMarketOpenAsync(stoppingToken);
+            
             # if DEBUG
             isMarketOpen = true;
+            
             #endif
             if (isMarketOpen)
             {
