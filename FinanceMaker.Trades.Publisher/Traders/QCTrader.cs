@@ -30,7 +30,7 @@ public class QCTrader : ITrader
     private readonly IPricesPuller m_PricesPuller;
     private readonly IBroker m_Broker;
     private const int NUMBER_OF_OPEN_TRADES = 10;
-    private const int STARTED_MONEY = 50_000;
+    private const int STARTED_MONEY = 25_000;
     public QCTrader(MainTickersPuller pricesPuller,
                     RangeAlgorithmsRunner rangeAlgorithmsRunner,
                     IPricesPuller mainPricesPuller,
@@ -52,8 +52,8 @@ public class QCTrader : ITrader
         tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
                                        .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
-
-        var moneyForEachTrade = currentPosion.BuyingPower * 0.1f;
+        var byingPower = currentPosion.BuyingPower;
+        var moneyForEachTrade = byingPower * 0.1f;
 
         if (moneyForEachTrade < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
 
