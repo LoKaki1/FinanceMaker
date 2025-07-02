@@ -193,7 +193,7 @@ public class IBKRBroker : BrokerrBase<EntryExitOutputIdea>
         var openOrders = _ibkrClient.GetOpenOrders();
         return new Position
         {
-            BuyingPower = (float)buyingPower,
+            BuyingPower = (float)buyingPower / 1,
             OpenedPositions = positions.Where(p => p.AvgPrice > 0).Select(p => p.Symbol).ToArray(),
             Orders = openOrders.Where(_ => _.Status == "Submitted").Select(o => o.Symbol).ToArray()
         };
