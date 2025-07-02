@@ -1,13 +1,28 @@
-name: algo-trader
+version: '3.8'
 services:
-  ib-gateway:
-    restart: always
+  financemaker-worker:
     build:
-      context: ./stable
-      tags:
-        - "ghcr.io/gnzsnz/ib-gateway:stable"
-    image: ghcr.io/gnzsnz/ib-gateway:stable
+      context: .
+      dockerfile: FinanceMaker.Worker/Dockerfile
+    image: financemaker-worker:latest
+    ports:
+      - "5001:5001"
     environment:
+      # Add your environment variables here or use secrets
+    depends_on:
+      - ib-gateway
+    networks:
+      - finance-net
+
+  ib-gateway:
+    image: ghcr.io/gnzsnz/ib-gateway:stable
+    restart: always
+    ports:
+      - "127.0.0.1:4001:4003"
+      - "127.0.0.1:4002:4004"
+      - "127.0.0.1:5900:5900"
+    environment:
+      # Set these in a .env file (for local) or as GitHub secrets (for CI/CD)
       TWS_USERID: ${TWS_USERID}
       TWS_PASSWORD: ${TWS_PASSWORD}
       TRADING_MODE: ${TRADING_MODE:-paper}
@@ -39,12 +54,9 @@ services:
       SSH_USER_TUNNEL: ${SSH_USER_TUNNEL:-}
       SSH_RESTART: ${SSH_RESTART:-}
       SSH_VNC_PORT: ${SSH_VNC_PORT:-}
-#    volumes:
-#      - ${PWD}/jts.ini:/home/ibgateway/Jts/jts.ini
-#      - ${PWD}/config.ini:/home/ibgateway/ibc/config.ini
-#      - ${PWD}/tws_settings/:${TWS_SETTINGS_PATH:-/home/ibgateway/Jts}
-#      - ${PWD}/ssh/:/home/ibgateway/.ssh
-    ports:
-      - "127.0.0.1:4001:4003"
-      - "127.0.0.1:4002:4004"
-      - "127.0.0.1:5900:5900"
+    networks:
+      - finance-net
+
+networks:
+  finance-net:
+    driver: bridge

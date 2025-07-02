@@ -1,0 +1,61 @@
+name: Build, Test and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+
+    - name: Test
+      run: dotnet test --no-build --configuration Release --verbosity normal
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+    - name: Docker login to Artifact Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ secrets.GCP_REGION }}-docker.pkg.dev
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Build and Push FinanceMaker.Worker Docker Image
+      run: |
+        IMAGE_NAME="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/financemaker-worker:${{ github.sha }}"
+        echo "Building Docker image: $IMAGE_NAME"
+        docker build -f FinanceMaker.Worker/Dockerfile -t "$IMAGE_NAME" .
+        echo "Pushing Docker image..."
+        docker push "$IMAGE_NAME"
+
+    - name: Build and Push IB Gateway Docker Image (re-tag and push public image)
+      run: |
+        IB_IMAGE_SRC="ghcr.io/gnzsnz/ib-gateway:stable"
+        IB_IMAGE_DEST="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/ib-gateway:${{ github.sha }}"
+        echo "Pulling public IB Gateway image: $IB_IMAGE_SRC"
+        docker pull "$IB_IMAGE_SRC"
+        echo "Tagging and pushing to Artifact Registry: $IB_IMAGE_DEST"
+        docker tag "$IB_IMAGE_SRC" "$IB_IMAGE_DEST"
+        docker push "$IB_IMAGE_DEST" 
