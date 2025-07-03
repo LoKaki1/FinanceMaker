@@ -1,13 +1,16 @@
 #!/bin/bash
 
 # Start IB Gateway
-/entrypoint.sh &
+echo "Starting IB Gateway..."
+cd /ibgateway/ibgateway-linux-x64-1009
+java -jar ibgateway.jar &
 
-# Wait for it to initialize
-sleep 10
+# Wait for it to boot
+sleep 15
 
-# Start your bot
-dotnet FinanceMaker.Worker.dll &
+# Start your C# trading bot
+echo "Starting FinanceMaker bot..."
+dotnet /app/FinanceMaker.Worker.dll &
 
-# Dummy HTTP server for Cloud Run
+# Keep container alive (for Cloud Run)
 python3 -m http.server 8080

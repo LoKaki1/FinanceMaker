@@ -4,24 +4,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore
 COPY FinanceMaker.Worker/*.csproj ./FinanceMaker.Worker/
 RUN dotnet restore ./FinanceMaker.Worker/FinanceMaker.Worker.csproj
 
-# Copy rest of the code
 COPY . .
 RUN dotnet publish ./FinanceMaker.Worker/FinanceMaker.Worker.csproj -c Release -o /app/publish
 
 # ---------------------------
-# Runtime Base: IB Gateway + .NET app
+# Final Image: Ubuntu + Java + .NET + IB Gateway + your bot
 # ---------------------------
-FROM ghcr.io/gnzsnz/ib-gateway:stable
+FROM ubuntu:22.04
 
-USER root
+ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
 
-# Install Python (for Cloud Run) and .NET 9 runtime
+# Install dependencies: Java (for IBKR), .NET, Python
 RUN apt-get update && \
-    apt-get install -y wget python3 && \
+    apt-get install -y curl unzip wget openjdk-17-jre python3 && \
     wget https://dot.net/v1/dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 9.0 && \
@@ -29,15 +28,19 @@ RUN apt-get update && \
 
 ENV PATH=$PATH:/root/.dotnet
 
-# Copy published C# app
-WORKDIR /app
-COPY --from=build /app/publish .
+# Download IB Gateway
+RUN mkdir /ibgateway && \
+    cd /ibgateway && \
+    wget https://download2.interactivebrokers.com/installers/ibgateway/1009/ibgateway-linux-x64-1009.zip && \
+    unzip ibgateway-linux-x64-1009.zip
 
-# Cloud Run requirement
-EXPOSE 8080
+# Copy C# app
+COPY --from=build /app/publish /app
 
-# Entrypoint script
+# Copy run.sh script
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
+
+EXPOSE 8080
 
 CMD ["/run.sh"]
