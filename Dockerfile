@@ -17,6 +17,10 @@ RUN dotnet publish ./FinanceMaker.Worker/FinanceMaker.Worker.csproj -c Release -
 # ---------------------------
 FROM ghcr.io/gnzsnz/ib-gateway:stable
 
+USER root
+
+RUN apt-get update && apt-get install -y python3 wget
+# rest of your Dockerfile...
 # Install .NET runtime (9.0)
 RUN apt-get update && \
     apt-get install -y wget && \
