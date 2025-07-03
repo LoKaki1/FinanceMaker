@@ -2,7 +2,7 @@
 
 # Start IB Gateway
 echo "Starting IB Gateway..."
-cd /ibgateway/ibgateway-linux-x64-1009
+cd /ibgateway/ibgateway-linux-x64-1010
 java -jar ibgateway.jar &
 
 # Wait for it to boot

@@ -31,8 +31,8 @@ ENV PATH=$PATH:/root/.dotnet
 # Download IB Gateway
 RUN mkdir /ibgateway && \
     cd /ibgateway && \
-    wget https://download2.interactivebrokers.com/installers/ibgateway/1009/ibgateway-linux-x64-1009.zip && \
-    unzip ibgateway-linux-x64-1009.zip
+    wget https://download2.interactivebrokers.com/installers/ibgateway/1010/ibgateway-linux-x64-1010.zip && \
+    unzip ibgateway-linux-x64-1010.zip
 
 # Copy C# app
 COPY --from=build /app/publish /app
