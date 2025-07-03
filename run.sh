@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Start IBKR Gateway in background
-/opt/ibgateway/entrypoint.sh &
+# Start IB Gateway
+/entrypoint.sh &
 
-# Wait 10 seconds to let IBKR start
+# Wait for it to initialize
 sleep 10
 
-# Start C# bot
+# Start your bot
 dotnet FinanceMaker.Worker.dll &
 
 # Dummy HTTP server for Cloud Run
