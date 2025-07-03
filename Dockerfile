@@ -1,18 +1,42 @@
-# Build stage
+# ---------------------------
+# Build Stage for C# app
+# ---------------------------
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+# Copy csproj and restore
+COPY FinanceMaker.Worker/*.csproj ./FinanceMaker.Worker/
+RUN dotnet restore ./FinanceMaker.Worker/FinanceMaker.Worker.csproj
+
+# Copy rest of the code
+COPY . .
+RUN dotnet publish ./FinanceMaker.Worker/FinanceMaker.Worker.csproj -c Release -o /app/publish
+
+# ---------------------------
+# Runtime Base: IB Gateway + .NET app
+# ---------------------------
+FROM ghcr.io/gnzsnz/ib-gateway:stable
+
+# Install .NET runtime (9.0)
+RUN apt-get update && \
+    apt-get install -y wget && \
+    wget https://dot.net/v1/dotnet-install.sh && \
+    chmod +x dotnet-install.sh && \
+    ./dotnet-install.sh --channel 9.0 && \
+    ln -s /root/.dotnet/dotnet /usr/bin/dotnet
+
+# Copy published C# app
 WORKDIR /app
+COPY --from=build /app/publish .
 
-# Copy csproj and restore as distinct layers
-COPY *.csproj ./
-RUN dotnet restore
+# Required by Cloud Run
+EXPOSE 8080
 
-# Copy the remaining source code
-COPY . ./
-RUN dotnet publish -c Release -o out
+# Healthcheck workaround (Cloud Run needs something listening on 8080)
+RUN apt-get install -y python3
 
-# Runtime stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0
-WORKDIR /app
-COPY --from=build /app/out ./
+# Entrypoint script
+COPY run.sh /run.sh
+RUN chmod +x /run.sh
 
-ENTRYPOINT ["dotnet", "FinanceMaker.Worker.dll"]
+CMD ["/run.sh"]

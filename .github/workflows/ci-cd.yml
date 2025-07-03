@@ -42,20 +42,20 @@ jobs:
         username: _json_key
         password: ${{ secrets.GCP_SA_KEY }}
 
-    - name: Build and Push FinanceMaker.Worker Docker Image
+    - name: Build and Push Combined IBKR + Bot Docker Image
       run: |
-        IMAGE_NAME="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/financemaker-worker:${{ github.sha }}"
-        echo "Building Docker image: $IMAGE_NAME"
-        docker build -f FinanceMaker.Worker/Dockerfile -t "$IMAGE_NAME" .
-        echo "Pushing Docker image..."
+        IMAGE_NAME="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/ibkr-financemaker:${{ github.sha }}"
+        echo "Building combined image: $IMAGE_NAME"
+        docker build -t "$IMAGE_NAME" .
+        echo "Pushing..."
         docker push "$IMAGE_NAME"
 
-    - name: Build and Push IB Gateway Docker Image (re-tag and push public image)
+    - name: Deploy to Cloud Run
       run: |
-        IB_IMAGE_SRC="ghcr.io/gnzsnz/ib-gateway:stable"
-        IB_IMAGE_DEST="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/ib-gateway:${{ github.sha }}"
-        echo "Pulling public IB Gateway image: $IB_IMAGE_SRC"
-        docker pull "$IB_IMAGE_SRC"
-        echo "Tagging and pushing to Artifact Registry: $IB_IMAGE_DEST"
-        docker tag "$IB_IMAGE_SRC" "$IB_IMAGE_DEST"
-        docker push "$IB_IMAGE_DEST" 
+        gcloud run deploy ibkr-financemaker \
+          --image="${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/financemaker/ibkr-financemaker:${{ github.sha }}" \
+          --region=${{ secrets.GCP_REGION }} \
+          --platform=managed \
+          --allow-unauthenticated \
+          --memory=1Gi \
+          --set-env-vars="TWS_USERID=${{ secrets.TWS_USERID }},TWS_PASSWORD=${{ secrets.TWS_PASSWORD }},TRADING_MODE=paper"
