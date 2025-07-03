@@ -19,25 +19,22 @@ FROM ghcr.io/gnzsnz/ib-gateway:stable
 
 USER root
 
-RUN apt-get update && apt-get install -y python3 wget
-# rest of your Dockerfile...
-# Install .NET runtime (9.0)
+# Install Python (for Cloud Run) and .NET 9 runtime
 RUN apt-get update && \
-    apt-get install -y wget && \
+    apt-get install -y wget python3 && \
     wget https://dot.net/v1/dotnet-install.sh && \
     chmod +x dotnet-install.sh && \
     ./dotnet-install.sh --channel 9.0 && \
-    ln -s /root/.dotnet/dotnet /usr/bin/dotnet
+    echo 'export PATH=$PATH:/root/.dotnet' >> ~/.bashrc
+
+ENV PATH=$PATH:/root/.dotnet
 
 # Copy published C# app
 WORKDIR /app
 COPY --from=build /app/publish .
 
-# Required by Cloud Run
+# Cloud Run requirement
 EXPOSE 8080
-
-# Healthcheck workaround (Cloud Run needs something listening on 8080)
-RUN apt-get install -y python3
 
 # Entrypoint script
 COPY run.sh /run.sh
