@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY FinanceMaker.Worker/*.csproj ./FinanceMaker.Worker/
 RUN dotnet restore ./FinanceMaker.Worker/FinanceMaker.Worker.csproj
-COPY FinanceMaker.Worker/ ./FinanceMaker.Worker/
+COPY . .
 RUN dotnet publish ./FinanceMaker.Worker/FinanceMaker.Worker.csproj -c Release -o /app/publish
 
 # 2. Final runtime image: Ubuntu with Java, .NET, Python, IBController, IB Gateway
