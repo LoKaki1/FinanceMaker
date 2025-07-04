@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Start IB Gateway binary (not .jar)
-echo "Starting IB Gateway..."
-/ibgateway/ibgateway/ibgateway &
+# Start IB Gateway + IBC
+/root/scripts/run.sh
 
+# Wait for it to become responsive
 sleep 15
 
-echo "Starting FinanceMaker bot..."
+# Run your C# bot
 dotnet /app/FinanceMaker.Worker.dll &
 
-# Keep Cloud Run happy
+# Serve HTTP for Cloud Run health
 python3 -m http.server 8080
