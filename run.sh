@@ -1,24 +1,26 @@
 #!/bin/bash
-set -euo pipefail
 
-echo "[IB] Starting IB Gateway in background"
-/opt/ibgateway/entrypoint.sh &
+# ----------------------------
+# Launch IB Gateway via IBC
+# ----------------------------
+echo "Starting IB Gateway via IBC..."
+cd /opt/ibc/IBC
+./IBC.sh &
 
-# Wait for port 4001
-for i in {1..30}; do
-  if nc -z localhost 4001; then
-    echo "[IB] Gateway is up on port 4001"
-    break
-  fi
-  sleep 2
-done
+# ----------------------------
+# Give it time to boot
+# ----------------------------
+echo "Waiting 20 seconds for IB Gateway to boot..."
+sleep 20
 
-echo "[Bot] Starting FinanceMaker.Worker"
-dotnet /app/FinanceMaker.Worker.dll & BOT=$!
+# ----------------------------
+# Start your .NET trading bot
+# ----------------------------
+echo "Starting FinanceMaker.Worker..."
+dotnet /app/FinanceMaker.Worker.dll &
 
-# Cloud Run needs a health port
-python3 -u -m http.server 8080 &
-
-wait -n
-kill "$BOT" || true
-exit 1
+# ----------------------------
+# Keep the container alive for Cloud Run
+# ----------------------------
+echo "Starting Python health server on port 8080..."
+python3 -m http.server 8080
