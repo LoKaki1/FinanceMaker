@@ -1,38 +1,30 @@
 #!/bin/bash
-
-# Exit immediately on error, undefined var, or failed pipeline
 set -euo pipefail
 
-# Start a virtual display required by IB Gateway/IBController
 Xvfb :1 -screen 0 1024x768x16 &
-echo "🖥 Xvfb started"
+echo "[Xvfb] display started"
 
-# Launch IB Gateway using IBController automation (in background)
-# Logs are redirected to a file in /app
-/opt/ibcontroller/ibcontroller.sh -g >/app/ibcontroller.log 2>&1 &
-echo "🔐 IBController + IB Gateway started"
+# Launch IB Gateway via IBCAlpha
+/opt/ibc/IBC.sh & 
+echo "[IBC] IB Gateway startup triggered"
 
-# Wait until the Gateway is ready (port 4001 open) or timeout
-echo "⏳ Waiting for Gateway socket..."
-timeout=60
-while ! netstat -tln | grep -q ':4001'; do
+# Wait until API port is ready
+time_left=60
+echo "[Gateway] Waiting for port 4001..."
+while ! nc -z localhost 4001; do
   sleep 2
-  ((timeout--)) || (echo "❌ Gateway socket not ready in time" && exit 1)
+  ((time_left--)) || (echo "Timeout awaiting gateway" && exit 1)
 done
-echo "✅ Gateway socket is open"
+echo "[Gateway] API port ready"
 
-# Start the C# FinanceMaker bot in background
-echo "🤖 Starting FinanceMaker bot..."
-dotnet /app/FinanceMaker.Worker.dll &
-BOT_PID=$!
+# Start trading bot
+echo "[Bot] Starting FinanceMaker Worker"
+dotnet /app/FinanceMaker.Worker.dll & BOT=$!
 
-# Start a basic HTTP server for health checks (port 8080)
+# Start health HTTP server
 python3 -u -m http.server 8080 &
 
-# Wait for any process to exit (Gateway or bot)
 wait -n
-
-# Clean up gracefully if something crashes
-echo "⚠️ One of the processes exited; stopping bot..."
-kill "$BOT_PID" || true
+echo "[Error] Process exited"
+kill "$BOT" || true
 exit 1
