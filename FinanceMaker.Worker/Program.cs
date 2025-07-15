@@ -21,6 +21,7 @@ using FinanceMaker.Pullers.PricesPullers;
 using FinanceMaker.Pullers.PricesPullers.Interfaces;
 using FinanceMaker.Pullers.TickerPullers;
 using FinanceMaker.Pullers.TickerPullers.Interfaces;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -28,6 +29,17 @@ using Microsoft.Extensions.Hosting;
 var app = Host.CreateDefaultBuilder(args)
             .ConfigureServices(services =>
             {
+                services.AddSingleton<IConfiguration>(provider =>
+                {
+                    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+                    var configuration = new ConfigurationBuilder()
+                        .SetBasePath(AppContext.BaseDirectory)
+                        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                        .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
+                        .AddEnvironmentVariables()
+                        .Build();
+                    return configuration;
+                });
                 services.AddHttpClient().ConfigureHttpClientDefaults((a) =>
                 {
                     a.ConfigurePrimaryHttpMessageHandler(() =>
@@ -107,5 +119,6 @@ var app = Host.CreateDefaultBuilder(args)
 
             })
             .Build();
+
 var aa = app.Services.GetRequiredService<Worker>();
 await aa.ExecuteAsync(new System.Threading.CancellationToken());

@@ -29,8 +29,8 @@ public class QCTrader : ITrader
     private readonly RangeAlgorithmsRunner m_RangeAlgorithmsRunner;
     private readonly IPricesPuller m_PricesPuller;
     private readonly IBroker m_Broker;
-    private const int NUMBER_OF_OPEN_TRADES = 10;
-    private const int STARTED_MONEY = 25_000;
+    private const int NUMBER_OF_OPEN_TRADES = 3;
+    private const int STARTED_MONEY = 1900;
     public QCTrader(MainTickersPuller pricesPuller,
                     RangeAlgorithmsRunner rangeAlgorithmsRunner,
                     IPricesPuller mainPricesPuller,
@@ -53,7 +53,7 @@ public class QCTrader : ITrader
                                        .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
         var byingPower = currentPosion.BuyingPower;
-        var moneyForEachTrade = byingPower * 0.1f;
+        var moneyForEachTrade = byingPower * 0.5f;
 
         if (moneyForEachTrade < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
 
@@ -82,7 +82,7 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO",  "MARA", "RIOT", "HUT"];
+        List<string> tickers = ["GOOG", "MSFT", "AAPL", "TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"]; ;
 
         tickers = tickers.Distinct().ToList();
         // Now we've got the stocks, we should analyze them
