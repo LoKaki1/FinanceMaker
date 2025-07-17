@@ -28,7 +28,7 @@ public class RangeAlgoritm : QCAlgorithm
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(3_000);
+        SetCash(2_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
         SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(1m))); // $1 per trade
@@ -46,7 +46,7 @@ public class RangeAlgoritm : QCAlgorithm
         List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
         // var random = new Random();
         // tickers = ["AAPL"], "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
-        tickers = ["AAPL", "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"];
+        tickers = ["TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"];
         // var tickersNumber = 20;
         // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
         //foreach (var technicalIdeaInput in technicalIdeaInputs)
@@ -141,7 +141,7 @@ public class RangeAlgoritm : QCAlgorithm
                             }
                             // var previous = previousHistory.First();
                             if (hasTentativePivot &&
-                                (valueDivision <= 1.005 && valueDivision >= 0.995))
+                                (valueDivision <= 1.005 && valueDivision >= 0.99))
                             // if (valueDivision <= 1 && valueDivision >= 0.995)
                             {
                                 Buy(data.Symbol);
@@ -160,7 +160,7 @@ public class RangeAlgoritm : QCAlgorithm
 
             if (holdings.Quantity > 0)
             {
-                if (currentPrice >= avgPrice * 1.025m || currentPrice <= avgPrice * 0.985m)
+                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.985m)
                 {
                     Sell(data.Symbol);
                 }
