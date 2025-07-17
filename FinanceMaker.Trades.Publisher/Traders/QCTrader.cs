@@ -66,7 +66,7 @@ public class QCTrader : ITrader
             if (quntity == 0) continue;
 
             var stopLoss = entryPrice * 0.985f;
-            var takeProfit = entryPrice * 1.015f;
+            var takeProfit = entryPrice * 1.02f;
             var description = $"Entry price: {entryPrice}, Stop loss: {stopLoss}, Take profit: {takeProfit}";
             var order = new EntryExitOutputIdea(description, ticker, entryPrice, takeProfit, stopLoss, quntity);
 
@@ -116,23 +116,46 @@ public class QCTrader : ITrader
                 bool nearKeyLevel = valueDivision <= 1 && valueDivision >= 0.995;
 
                 // Tentative pivot detection on the last 3 candles
-                bool hasTentativePivot = false;
-                if (recentCandles.Count >= 3)
+                // bool hasTentativePivot = false;
+                // if (recentCandles.Count >= 3)
+                // {
+                //     for (int i = 2; i < recentCandles.Count; i++)
+                //     {
+                //         var c0 = recentCandles[i - 2];
+                //         var c1 = recentCandles[i - 1];
+                //         var c2 = recentCandles[i];
+
+                //         bool isTentativeHigh = c1.High > c0.High && c1.High > c2.High;
+                //         bool isTentativeLow = c1.Low < c0.Low && c1.Low < c2.Low;
+
+                //         if (isTentativeLow)
+                //         {
+                //             hasTentativePivot = true;
+                //             break;
+                //         }
+                //     }
+                // }
+                var previousHistory = recentCandles;
+                bool hasTentativePivot = true;
+
+                if (previousHistory is not null && previousHistory.Any())
                 {
-                    for (int i = 2; i < recentCandles.Count; i++)
+                    var previousList = previousHistory.ToList();
+                    for (int i = 0; i < previousList.Count - 1; i++)
                     {
-                        var c0 = recentCandles[i - 2];
-                        var c1 = recentCandles[i - 1];
-                        var c2 = recentCandles[i];
-
-                        bool isTentativeHigh = c1.High > c0.High && c1.High > c2.High;
-                        bool isTentativeLow = c1.Low < c0.Low && c1.Low < c2.Low;
-
-                        if (isTentativeLow)
+                        if (previousList[i].Close > previousList[i + 1].Close)
                         {
-                            hasTentativePivot = true;
+                            hasTentativePivot &= true;
+                        }
+                        else
+                        {
+                            hasTentativePivot = false;
                             break;
                         }
+                    }
+                    if (hasTentativePivot && previousList.Count > 0)
+                    {
+                        hasTentativePivot &= previousList.Last().Close > lastCandleStick.Open;
                     }
                 }
 

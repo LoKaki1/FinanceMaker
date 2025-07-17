@@ -67,5 +67,5 @@ Console.WriteLine("Hello, World!");
 // 
 // Client Portal Web API usually uses self-signed certs, so bypass validation (for dev only!)
 
-//BackTester.Runner(typeof(RangeAlgoritm));
-RealTimeTester.Runner(typeof(RangeAlgoritm));
+BackTester.Runner(typeof(RangeAlgoritm));
+// RealTimeTester.Runner(typeof(RangeAlgoritm));

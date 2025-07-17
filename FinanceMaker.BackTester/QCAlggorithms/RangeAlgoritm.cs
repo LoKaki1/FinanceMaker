@@ -18,6 +18,7 @@ namespace FinanceMaker.BackTester.QCAlggorithms;
 public class RangeAlgoritm : QCAlgorithm
 {
     private Dictionary<string, float[]> m_TickerToKeyLevels = new();
+    private Dictionary<string, float> m_TickerToMoney = new();
     private Dictionary<string, RelativeStrengthIndex> m_RsiIndicators = new();
 
     public override void Initialize()
@@ -108,7 +109,7 @@ public class RangeAlgoritm : QCAlgorithm
             var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
             var pivot = data.CandleStick.Pivot;
 
-            if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.Low)
+            if (valueDivision <= 1 && valueDivision >= 0.995)
             {
                 {
                     var symbol = data.Symbol.Value;
@@ -116,15 +117,32 @@ public class RangeAlgoritm : QCAlgorithm
 
                     if (holdingsq == 0)
                     {
-                        // var previousHistory = History<FinanceData>(data.Symbol, 1, Resolution.Minute);
+                        var previousHistory = History<FinanceData>(data.Symbol, 3, Resolution.Minute);
 
-                        // if (previousHistory is not null && previousHistory.Any())
+                        if (previousHistory is not null && previousHistory.Any())
                         {
-                            // // var previous = previousHistory.First();
-                            // if (previous.CandleStick.Open > data.CandleStick.Close &&
-                            //     data.CandleStick.Open > data.CandleStick.Close &&
-                            //     valueDivision <= 1 && valueDivision >= 0.995)
-                            if (valueDivision <= 1 && valueDivision >= 0.995)
+                            bool hasTentativePivot = true;
+                            var previousList = previousHistory.ToList();
+                            for (int i = 0; i < previousList.Count - 1; i++)
+                            {
+                                if (previousList[i].CandleStick.Close > previousList[i + 1].CandleStick.Close)
+                                {
+                                    hasTentativePivot &= true;
+                                }
+                                else
+                                {
+                                    hasTentativePivot = false;
+                                    break;
+                                }
+                            }
+                            if (hasTentativePivot && previousList.Count > 0)
+                            {
+                                hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
+                            }
+                            // var previous = previousHistory.First();
+                            if (hasTentativePivot &&
+                                (valueDivision <= 1.005 && valueDivision >= 0.995))
+                            // if (valueDivision <= 1 && valueDivision >= 0.995)
                             {
                                 Buy(data.Symbol);
                             }
@@ -134,32 +152,7 @@ public class RangeAlgoritm : QCAlgorithm
                     }
                 }
             }
-            //if (valueDivision <= 1 && valueDivision >= 0.995 && pivot == Pivot.High)
-            //{
-            //    {
-            //        var symbol = data.Symbol.Value;
-            //        var holdingsq = Securities[symbol].Holdings.Quantity;
 
-            //        if (holdingsq == 0)
-            //        {
-            //            // var previousHistory = History<FinanceData>(data.Symbol, 1, Resolution.Minute);
-
-            //            // if (previousHistory is not null && previousHistory.Any())
-            //            {
-            //                // // var previous = previousHistory.First();
-            //                // if (previous.CandleStick.Open > data.CandleStick.Close &&
-            //                //     data.CandleStick.Open > data.CandleStick.Close &&
-            //                //     valueDivision <= 1 && valueDivision >= 0.995)
-            //                if (valueDivision <= 1 && valueDivision >= 0.995)
-            //                {
-            //                    Short(data.Symbol);
-            //                }
-            //            }
-
-            //            return;
-            //        }
-            //    }
-            //}
 
             var holdings = Securities[data.Symbol].Holdings;
             var avgPrice = holdings.AveragePrice;
