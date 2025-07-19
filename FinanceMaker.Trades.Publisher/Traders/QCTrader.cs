@@ -49,6 +49,10 @@ public class QCTrader : ITrader
         if (currentPosion.BuyingPower < STARTED_MONEY / NUMBER_OF_OPEN_TRADES) return;
 
         var tickersToTrade = await GetRelevantTickers(cancellationToken);
+        tickersToTrade = tickersToTrade
+            .Select(ticker => (ticker.ticker, ticker.price))
+            .OrderByDescending(ticker => ticker.price)
+            .ToArray();
         tickersToTrade = tickersToTrade.Where(_ => !currentPosion.OpenedPositions.Contains(_.ticker) && !currentPosion.Orders.Contains(_.ticker))
                                        .Take(NUMBER_OF_OPEN_TRADES)
                                        .ToArray();
@@ -82,7 +86,7 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = ["GOOG", "MSFT", "AAPL", "TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"]; ;
+        List<string> tickers = ["TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT", "PLTR", "HUT"];
 
         tickers = tickers.Distinct().ToList();
         // Now we've got the stocks, we should analyze them
@@ -113,28 +117,7 @@ public class QCTrader : ITrader
 
                 var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
 
-                bool nearKeyLevel = valueDivision <= 1 && valueDivision >= 0.995;
-
-                // Tentative pivot detection on the last 3 candles
-                // bool hasTentativePivot = false;
-                // if (recentCandles.Count >= 3)
-                // {
-                //     for (int i = 2; i < recentCandles.Count; i++)
-                //     {
-                //         var c0 = recentCandles[i - 2];
-                //         var c1 = recentCandles[i - 1];
-                //         var c2 = recentCandles[i];
-
-                //         bool isTentativeHigh = c1.High > c0.High && c1.High > c2.High;
-                //         bool isTentativeLow = c1.Low < c0.Low && c1.Low < c2.Low;
-
-                //         if (isTentativeLow)
-                //         {
-                //             hasTentativePivot = true;
-                //             break;
-                //         }
-                //     }
-                // }
+                bool nearKeyLevel = valueDivision <= 1.005 && valueDivision >= 0.995;
                 var previousHistory = recentCandles;
                 bool hasTentativePivot = true;
 
@@ -159,7 +142,7 @@ public class QCTrader : ITrader
                     }
                 }
 
-                if (nearKeyLevel || hasTentativePivot)
+                if (nearKeyLevel && hasTentativePivot)
                 {
                     relevantTickers.Add((ticker, lastCandleStick.Close));
                     break;

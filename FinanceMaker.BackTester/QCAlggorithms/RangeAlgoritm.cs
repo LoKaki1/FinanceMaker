@@ -1,5 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using FinanceMaker.Algorithms;
 using FinanceMaker.BackTester.QCHelpers;
 using FinanceMaker.Common;
@@ -11,24 +15,33 @@ using Microsoft.Extensions.DependencyInjection;
 using QuantConnect;
 using QuantConnect.Algorithm;
 using QuantConnect.Indicators;
+using QuantConnect.Orders;
 using QuantConnect.Orders.Fees;
 
 namespace FinanceMaker.BackTester.QCAlggorithms;
 
+/// <summary>
+/// Range trading algorithm using key levels and RSI for entry/exit, with per-ticker realized P&L tracking.
+/// </summary>
 public class RangeAlgoritm : QCAlgorithm
 {
     private Dictionary<string, float[]> m_TickerToKeyLevels = new();
     private Dictionary<string, float> m_TickerToMoney = new();
     private Dictionary<string, RelativeStrengthIndex> m_RsiIndicators = new();
+    // Track open position and average price per ticker for P&L calculation
+    private Dictionary<string, int> m_TickerToPosition = new();
+    private Dictionary<string, decimal> m_TickerToAvgPrice = new();
 
+    /// <summary>
+    /// Initializes the algorithm, loads tickers and key levels, and sets up securities.
+    /// </summary>
     public override void Initialize()
     {
-        // Now we can test for last month minutely
-        var startDate = DateTime.Now.AddDays(-29);
+        var startDate = DateTime.Now.AddDays(-7);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(2_000);
+        SetCash(1750);
         SetStartDate(startDate);
         SetEndDate(endDate);
         SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(1m))); // $1 per trade
@@ -36,27 +49,11 @@ public class RangeAlgoritm : QCAlgorithm
         FinanceData.EndDate = endDate;
 
         var serviceProvider = StaticContainer.ServiceProvider;
-
         var mainTickersPuller = serviceProvider.GetRequiredService<MainTickersPuller>();
-        TechnicalIdeaInput[] technicalIdeaInputs = [
-            TechnicalIdeaInput.BestBuyers,
-            TechnicalIdeaInput.BestSellers,
-        ];
-
-        List<string> tickers = mainTickersPuller.ScanTickers(TechnicalIdeaInput.BestBuyers.TechnicalParams, CancellationToken.None).Result.ToList();
-        // var random = new Random();
-        // tickers = ["AAPL"], "MSFT", "GOOGL", "AMZN", "TSLA", "META", "NVDA", "NFLX", "ADBE", "ORCL", "INTC", "AMD", "CRM", "PYPL", "CSCO", "QCOM", "AVGO", "TXN", "IBM", "SHOP"];
-        tickers = ["TSLA", "META", "NVDA", "NIO", "MARA", "RIOT", "HUT", "AMD", "BABA", "BA"];
-        // var tickersNumber = 20;
-        // tickers = tickers.OrderBy(_ => random.Next()).Take(tickersNumber).ToList();
-        //foreach (var technicalIdeaInput in technicalIdeaInputs)
-        //{
-        //    var ideas = mainTickersPuller.ScanTickers(technicalIdeaInput.TechnicalParams, CancellationToken.None);
-        //    tickers.AddRange(ideas.Result);
-        //}
-        // tickers.AddRange(["NIO", "BABA", "AAPL", "TSLA", "MSFT", "AMZN", "GOOGL", "FB", "NVDA", "AMD", "GME", "AMC", "BBBY", "SPCE", "NKLA", "PLTR", "RKT", "FUBO", "QS", "RIOT"]);
-        // tickers = ["RSLS", "APVO", "DGLY", "IBG", "SOBR", "ICCT", "CNTM", "VMAR", "SYRA", "PCSA"];
-        // tickers = ["TSM", "COST", "BBY", "BAC", "AMZN", "INTC", "PLTR", "AMTM", "RKT", "MRX", "SMMT", "CMPX", "GRRR", "SHAK", "HOLO"];
+        List<string> tickers = [];
+        tickers = ["TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT", "PLTR", "HUT"];
+        tickers = ["TSLA", "NVDA", "MARA", "AMD", "BA", "LI", "ENPH", "PLTR", "HUT"];
+        // tickers = ["TSLA", "BABA", "LI", "PLTR", "HUT"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
@@ -68,15 +65,13 @@ public class RangeAlgoritm : QCAlgorithm
                 var range = await rangeAlgorithm!.Run<FinanceCandleStick>(new RangeAlgorithmInput(new PricesPullerParameters(
                     actualTicker,
                     startDateForAlgo,
-                    endDateForAlgo, // I removed some years which make the algorithm to be more realistic
+                    endDateForAlgo,
                     Common.Models.Pullers.Enums.Period.Daily), Algorithm.KeyLevels), CancellationToken.None);
                 if (range is not KeyLevelCandleSticks candleSticks) return;
                 m_TickerToKeyLevels[actualTicker] = candleSticks.KeyLevels;
             });
-
             tickersKeyLevelsLoader.Add(tickerKeyLevelsLoader);
         }
-
         Task.WhenAll(tickersKeyLevelsLoader).Wait();
 
         var actualTickers = m_TickerToKeyLevels.OrderByDescending(_ => _.Value?.Length ?? 0)
@@ -87,80 +82,66 @@ public class RangeAlgoritm : QCAlgorithm
             if (string.IsNullOrEmpty(ticker) || !m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels) || keyLevels.Length == 0) continue;
             var symbol = AddEquity(ticker, Resolution.Minute, extendedMarketHours: true);
             AddData<FinanceData>(ticker, Resolution.Minute);
-
+            m_TickerToMoney[ticker] = 0f; // Initialize realized P&L
+            m_TickerToPosition[ticker] = 0;
+            m_TickerToAvgPrice[ticker] = 0m;
         }
     }
+
+    /// <summary>
+    /// Main data event handler. Contains entry/exit logic.
+    /// </summary>
+    /// <param name="data">FinanceData for a single ticker</param>
     public void OnData(FinanceData data)
     {
         FinanceData.CounterData++;
         var ticker = data.Symbol.Value;
-
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
-
-        // Check if we have enough cash for a single trade (StartMoney / 10)
-        var minTradeAmount = Portfolio.CashBook.TotalValueInAccountCurrency / 10m;
-        if (Portfolio.Cash < minTradeAmount)
-        {
-            return;
-        }
+        var minTradeAmount = Portfolio.CashBook.TotalValueInAccountCurrency / 2m;
+        if (Portfolio.Cash < minTradeAmount) return;
 
         foreach (var value in keyLevels)
         {
             var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
-            var pivot = data.CandleStick.Pivot;
-
             if (valueDivision <= 1 && valueDivision >= 0.995)
             {
+                var symbol = data.Symbol.Value;
+                var holdingsq = Securities[symbol].Holdings.Quantity;
+                if (holdingsq == 0)
                 {
-                    var symbol = data.Symbol.Value;
-                    var holdingsq = Securities[symbol].Holdings.Quantity;
-
-                    if (holdingsq == 0)
+                    var previousHistory = History<FinanceData>(data.Symbol, 3, Resolution.Minute);
+                    if (previousHistory is not null && previousHistory.Any())
                     {
-                        var previousHistory = History<FinanceData>(data.Symbol, 3, Resolution.Minute);
-
-                        if (previousHistory is not null && previousHistory.Any())
+                        bool hasTentativePivot = true;
+                        var previousList = previousHistory.ToList();
+                        for (int i = 0; i < previousList.Count - 1; i++)
                         {
-                            bool hasTentativePivot = true;
-                            var previousList = previousHistory.ToList();
-                            for (int i = 0; i < previousList.Count - 1; i++)
+                            if (previousList[i].CandleStick.Close > previousList[i + 1].CandleStick.Close)
+                                hasTentativePivot &= true;
+                            else
                             {
-                                if (previousList[i].CandleStick.Close > previousList[i + 1].CandleStick.Close)
-                                {
-                                    hasTentativePivot &= true;
-                                }
-                                else
-                                {
-                                    hasTentativePivot = false;
-                                    break;
-                                }
-                            }
-                            if (hasTentativePivot && previousList.Count > 0)
-                            {
-                                hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
-                            }
-                            // var previous = previousHistory.First();
-                            if (hasTentativePivot &&
-                                (valueDivision <= 1.005 && valueDivision >= 0.99))
-                            // if (valueDivision <= 1 && valueDivision >= 0.995)
-                            {
-                                Buy(data.Symbol);
+                                hasTentativePivot = false;
+                                break;
                             }
                         }
-
-                        return;
+                        if (hasTentativePivot && previousList.Count > 0)
+                        {
+                            hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
+                        }
+                        if (hasTentativePivot && (valueDivision <= 1.005 && valueDivision >= 0.99))
+                        {
+                            Buy(data.Symbol);
+                        }
                     }
+                    return;
                 }
             }
-
-
             var holdings = Securities[data.Symbol].Holdings;
             var avgPrice = holdings.AveragePrice;
             var currentPrice = (decimal)data.CandleStick.Close;
-
             if (holdings.Quantity > 0)
             {
-                if (currentPrice >= avgPrice * 1.03m || currentPrice <= avgPrice * 0.985m)
+                if (currentPrice >= avgPrice * 1.02m || currentPrice <= avgPrice * 0.985m)
                 {
                     Sell(data.Symbol);
                 }
@@ -172,93 +153,106 @@ public class RangeAlgoritm : QCAlgorithm
                     Sell(data.Symbol);
                 }
             }
-
         }
     }
 
-
     /// <summary>
-    /// Buy this symbol
+    /// Executes a buy order for the given symbol.
     /// </summary>
+    /// <param name="symbol">The symbol to buy.</param>
     public void Buy(Symbol symbol)
     {
-        //if (_macdDic[symbol] > 0m)
-        //{
-
-
         SetHoldings(symbol, 0.5);
-
-        //Debug("Purchasing: " + symbol + "   MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
-        //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Quantity: " + s.Quantity);
-        //}
     }
 
     /// <summary>
-    /// Sell this symbol
+    /// Executes a sell (liquidate) order for the given symbol.
     /// </summary>
-    /// <param name="symbol"></param>
+    /// <param name="symbol">The symbol to sell.</param>
     public void Sell(Symbol symbol)
     {
-        //var s = Securities[symbol].Holdings;
-        //if (s.Quantity > 0 && _macdDic[symbol] < 0m)
-        //{
         Liquidate(symbol);
-
-        //Debug("Selling: " + symbol + " at sell MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
-        //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Profit from sale: " + s.LastTradeProfit);
-        //}
     }
+
+    /// <summary>
+    /// Executes a short order for the given symbol.
+    /// </summary>
+    /// <param name="symbol">The symbol to short.</param>
     public void Short(Symbol symbol)
     {
-        //var s = Securities[symbol].Holdings;
-        //if (s.Quantity > 0 && _macdDic[symbol] < 0m)
-        //{
         SetHoldings(symbol, 0.5);
-
-        //Debug("Selling: " + symbol + " at sell MACD: " + _macdDic[symbol] + "   RSI: " + _rsiDic[symbol]
-        //    + "   Price: " + Math.Round(Securities[symbol].Price, 2) + "   Profit from sale: " + s.LastTradeProfit);
-        //}
     }
-}
 
-// Be sure to replace <YOUR_ALPACA_API_KEY> and <YOUR_ALPACA_SECRET_KEY> with your actual Alpaca credentials before use.
-public static class LiveTradingRunner
-{
-    public static void RunAlpacaLive()
+    /// <summary>
+    /// Handles order events to track realized P&L per ticker.
+    /// </summary>
+    /// <param name="orderEvent">The order event.</param>
+    public override void OnOrderEvent(OrderEvent orderEvent)
     {
-        var config = new Dictionary<string, string>
-        {
-            ["environment"] = "live",
-            ["live-mode-brokerage"] = "Alpaca",
-            ["alpaca-key-id"] = "<YOUR_ALPACA_API_KEY>",
-            ["alpaca-secret-key"] = "<YOUR_ALPACA_SECRET_KEY>",
-            ["alpaca-trading-mode"] = "live",
-            ["live-data-provider"] = "Alpaca",
-            ["job-project-id"] = "RangeAlgorithm",
-            ["algorithm-type-name"] = "FinanceMaker.BackTester.QCAlggorithms.RangeAlgoritm",
-            ["algorithm-location"] = "FinanceMaker.BackTester.dll"
-        };
+        base.OnOrderEvent(orderEvent);
+        if (orderEvent.Status != OrderStatus.Filled && orderEvent.Status != OrderStatus.PartiallyFilled)
+            return;
+        var symbol = orderEvent.Symbol.Value;
+        if (!m_TickerToMoney.ContainsKey(symbol))
+            m_TickerToMoney[symbol] = 0f;
+        if (!m_TickerToPosition.ContainsKey(symbol))
+            m_TickerToPosition[symbol] = 0;
+        if (!m_TickerToAvgPrice.ContainsKey(symbol))
+            m_TickerToAvgPrice[symbol] = 0m;
 
-        var configFilePath = Path.Combine(Directory.GetCurrentDirectory(), "config.json");
-        File.WriteAllText(configFilePath, System.Text.Json.JsonSerializer.Serialize(config, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        int fillQty = (int)orderEvent.FillQuantity;
+        decimal fillPrice = orderEvent.FillPrice;
+        decimal orderFee = orderEvent.OrderFee?.Value.Amount ?? 0m;
+        int prevPosition = m_TickerToPosition[symbol];
+        decimal prevAvgPrice = m_TickerToAvgPrice[symbol];
+        int newPosition = prevPosition + fillQty;
 
-        var leanPath = "lean"; // assuming LEAN CLI is installed and in PATH
-        var psi = new System.Diagnostics.ProcessStartInfo
+        // If closing part or all of a position (direction change or reduce)
+        if (prevPosition != 0 && Math.Sign(prevPosition) != Math.Sign(fillQty))
         {
-            FileName = leanPath,
-            Arguments = "live start --config config.json",
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
+            // Amount being closed is the smaller of abs(fillQty) and abs(prevPosition)
+            int closingQty = Math.Abs(Math.Min(Math.Abs(fillQty), Math.Abs(prevPosition)) * Math.Sign(fillQty));
+            decimal realized = 0m;
+            if (prevPosition > 0) // Closing a long
+                realized = closingQty * (fillPrice - prevAvgPrice) - orderFee;
+            else // Closing a short
+                realized = closingQty * (prevAvgPrice - fillPrice) - orderFee;
+            m_TickerToMoney[symbol] += (float)realized;
+            Debug($"[P&L] {symbol} CLOSE {closingQty} @ {fillPrice} (avg {prevAvgPrice}) => Realized: {realized}, Fee: {orderFee}");
+        }
 
-        using var process = System.Diagnostics.Process.Start(psi);
-        if (process != null)
+        // Update position and average price
+        int totalQty = prevPosition + fillQty;
+        if (totalQty == 0)
         {
-            Console.WriteLine(process.StandardOutput.ReadToEnd());
-            Console.Error.WriteLine(process.StandardError.ReadToEnd());
-            process.WaitForExit();
+            m_TickerToAvgPrice[symbol] = 0m;
+            m_TickerToPosition[symbol] = 0;
+        }
+        else if (Math.Sign(fillQty) == Math.Sign(totalQty))
+        {
+            // Increasing position in same direction, update average price
+            m_TickerToAvgPrice[symbol] = (prevAvgPrice * prevPosition + fillPrice * fillQty) / totalQty;
+            m_TickerToPosition[symbol] = totalQty;
+        }
+        else
+        {
+            // Flipping position: set avg price to fill price for new position
+            m_TickerToAvgPrice[symbol] = fillPrice;
+            m_TickerToPosition[symbol] = totalQty;
+        }
+    }
+
+    /// <summary>
+    /// Called at the end of the algorithm. Prints per-ticker realized P&L.
+    /// </summary>
+    public override void OnEndOfAlgorithm()
+    {
+        Debug("--- Per-Ticker Realized P&L ---");
+        m_TickerToMoney = m_TickerToMoney.OrderByDescending(kvp => kvp.Value)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        foreach (var kvp in m_TickerToMoney)
+        {
+            Debug($"Ticker: {kvp.Key}, Realized P&L: {kvp.Value:C2}");
         }
     }
 }
