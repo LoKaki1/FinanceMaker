@@ -41,7 +41,7 @@ public class RangeAlgoritm : QCAlgorithm
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(25_000);
+        SetCash(1969);
         SetStartDate(startDate);
         SetEndDate(endDate);
         SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(2.5m))); // $1 per trade
@@ -128,7 +128,7 @@ public class RangeAlgoritm : QCAlgorithm
                         {
                             hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
                         }
-                        if ((valueDivision <= 1.005 && valueDivision >= 0.995))
+                        if (hasTentativePivot && (valueDivision <= 1.005 && valueDivision >= 0.995))
                         {
                             Buy(data.Symbol);
                         }

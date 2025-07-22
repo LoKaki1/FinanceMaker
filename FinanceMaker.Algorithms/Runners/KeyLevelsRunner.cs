@@ -15,7 +15,7 @@ public sealed class KeyLevelsRunner :
 
     public KeyLevelsRunner(IPricesPuller pricesPuller) : base(pricesPuller)
     {
-        m_Neighbors = 3;
+        m_Neighbors = 12;
         m_Epsilon = 0.005f;
     }
 
