@@ -37,14 +37,14 @@ public class RangeAlgoritm : QCAlgorithm
     /// </summary>
     public override void Initialize()
     {
-        var startDate = DateTime.Now.AddDays(-7);
+        var startDate = DateTime.Now.AddDays(-29);
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(1750);
+        SetCash(25_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
-        SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(1m))); // $1 per trade
+        SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(2.5m))); // $1 per trade
         FinanceData.StartDate = startDate;
         FinanceData.EndDate = endDate;
 
@@ -103,13 +103,13 @@ public class RangeAlgoritm : QCAlgorithm
         foreach (var value in keyLevels)
         {
             var valueDivision = Math.Abs((float)data.CandleStick.Close) / value;
-            if (valueDivision <= 1 && valueDivision >= 0.995)
+            if (valueDivision <= 1.005 && valueDivision >= 0.995)
             {
                 var symbol = data.Symbol.Value;
                 var holdingsq = Securities[symbol].Holdings.Quantity;
                 if (holdingsq == 0)
                 {
-                    var previousHistory = History<FinanceData>(data.Symbol, 3, Resolution.Minute);
+                    var previousHistory = History<FinanceData>(data.Symbol, 2, Resolution.Minute);
                     if (previousHistory is not null && previousHistory.Any())
                     {
                         bool hasTentativePivot = true;
@@ -128,7 +128,7 @@ public class RangeAlgoritm : QCAlgorithm
                         {
                             hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
                         }
-                        if (hasTentativePivot && (valueDivision <= 1.005 && valueDivision >= 0.99))
+                        if ((valueDivision <= 1.005 && valueDivision >= 0.995))
                         {
                             Buy(data.Symbol);
                         }

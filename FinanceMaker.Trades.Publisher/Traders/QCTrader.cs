@@ -112,8 +112,11 @@ public class QCTrader : ITrader
             foreach (var keylevel in candleSticks.KeyLevels)
             {
                 var lastCandleStick = interdayCandleSticks.Last();
-                var recentCandles = interdayCandleSticks[^4..]; // last 4 candles
-                var averageValue = recentCandles[..2].Average(candle => candle.Close);
+                var recentCandles = interdayCandleSticks[^2..]; // last 4 candles
+                // If we want to use the average value of the last 2 candles, we can uncomment the next line
+                // This is not the best way to do it, but it will work for now
+                // var averageValue = recentCandles[^2..].Average(candle => candle.Close);  
+                // var averageValue = recentCandles[..2].Average(candle => candle.Close);
 
                 var valueDivision = Math.Abs(lastCandleStick.Close) / keylevel;
 
@@ -121,7 +124,7 @@ public class QCTrader : ITrader
                 var previousHistory = recentCandles;
                 bool hasTentativePivot = true;
 
-                if (previousHistory is not null && previousHistory.Any())
+                if (previousHistory is not null && previousHistory.Any() && nearKeyLevel)
                 {
                     var previousList = previousHistory.ToList();
                     for (int i = 0; i < previousList.Count - 1; i++)
@@ -140,13 +143,14 @@ public class QCTrader : ITrader
                     {
                         hasTentativePivot &= previousList.Last().Close > lastCandleStick.Open;
                     }
+
+
+                    {
+                        relevantTickers.Add((ticker, lastCandleStick.Close));
+                        break;
+                    }
                 }
 
-                if (nearKeyLevel && hasTentativePivot)
-                {
-                    relevantTickers.Add((ticker, lastCandleStick.Close));
-                    break;
-                }
             }
 
             //if (interdayCandles is not KeyLevelCandleSticks interdayCandleSticks || !interdayCandleSticks.Any()) continue;
