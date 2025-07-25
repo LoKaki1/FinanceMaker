@@ -41,7 +41,7 @@ public class RangeAlgoritm : QCAlgorithm
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(1969);
+        SetCash(25_000);
         SetStartDate(startDate);
         SetEndDate(endDate);
         SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(2.5m))); // $1 per trade
@@ -51,8 +51,44 @@ public class RangeAlgoritm : QCAlgorithm
         var serviceProvider = StaticContainer.ServiceProvider;
         var mainTickersPuller = serviceProvider.GetRequiredService<MainTickersPuller>();
         List<string> tickers = [];
-        tickers = ["TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT", "PLTR", "HUT"];
-        tickers = ["TSLA", "NVDA", "MARA", "AMD", "BA", "LI", "ENPH", "PLTR", "HUT"];
+        // Define candidate tickers (Big 7, Intel, and other large-cap tech)
+        tickers = [
+            "TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT",
+            // Big 7
+            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+            // More large-cap tech
+            "INTC", "NFLX", "ADBE", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
+        ];
+
+        // Filter tickers with at least 4% daily range in each of the last 17 days
+        // var filteredTickers = new List<string>();
+        // foreach (var ticker in candidateTickers.Distinct())
+        // {
+        //     try
+        //     {
+        //         // Get last 17 daily bars
+        //         var history = History(ticker, 17, Resolution.Daily).ToList();
+        //         if (history.Count < 17)
+        //             continue;
+
+        //         bool allDaysAbove4Percent = history.All(bar =>
+        //         {
+        //             var open = (decimal)bar.Open;
+        //             var close = (decimal)bar.Close;
+        //             if (open == 0) return false;
+        //             var range = Math.Abs(close - open) / open;
+        //             return range >= 0.04m;
+        //         });
+
+        //         if (allDaysAbove4Percent)
+        //             filteredTickers.Add(ticker);
+        //     }
+        //     catch
+        //     {
+        //         // Ignore tickers with missing data
+        //     }
+        // }
+        // tickers = ["TSLA", "NVDA", "MARA", "AMD", "BA", "LI", "ENPH", "PLTR", "HUT"];
         // tickers = ["TSLA", "BABA", "LI", "PLTR", "HUT"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
@@ -96,8 +132,11 @@ public class RangeAlgoritm : QCAlgorithm
     {
         FinanceData.CounterData++;
         var ticker = data.Symbol.Value;
+
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
+
         var minTradeAmount = Portfolio.CashBook.TotalValueInAccountCurrency / 2m;
+
         if (Portfolio.Cash < minTradeAmount) return;
 
         foreach (var value in keyLevels)
@@ -126,7 +165,7 @@ public class RangeAlgoritm : QCAlgorithm
                         }
                         if (hasTentativePivot && previousList.Count > 0)
                         {
-                            hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
+                            // hasTentativePivot &= previousList.Last().CandleStick.Close > data.CandleStick.Open;
                         }
                         if (hasTentativePivot && (valueDivision <= 1.005 && valueDivision >= 0.995))
                         {
@@ -162,6 +201,7 @@ public class RangeAlgoritm : QCAlgorithm
     /// <param name="symbol">The symbol to buy.</param>
     public void Buy(Symbol symbol)
     {
+        Debug("Trying to buy " + symbol.Value);
         SetHoldings(symbol, 0.5);
     }
 
