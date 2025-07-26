@@ -29,7 +29,7 @@ public class QCTrader : ITrader
     private readonly RangeAlgorithmsRunner m_RangeAlgorithmsRunner;
     private readonly IPricesPuller m_PricesPuller;
     private readonly IBroker m_Broker;
-    private const int NUMBER_OF_OPEN_TRADES = 4;
+    private const int NUMBER_OF_OPEN_TRADES = 2;
     private const int STARTED_MONEY = 1900;
     public QCTrader(MainTickersPuller pricesPuller,
                     RangeAlgorithmsRunner rangeAlgorithmsRunner,
@@ -86,12 +86,17 @@ public class QCTrader : ITrader
         // For now only long tickers, I will implement the function of short but I don't want to
         // scanTickersTwice
         // var shortTickers = TickersPullerParameters.BestSellers;
-        List<string> tickers = tickers = [
-            "TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT",
+        List<string> tickers = [
+            //Bitcoin miners
+            "HUT",
+            // Cars
+            "TSLA", 
+            // Best buyers
+            "NVDA",  "AMD", "BABA", "ENPH", "PLTR",
             // Big 7
-            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+            "AAPL", "MSFT", "GOOGL", "NVDA", "TSLA",
             // More large-cap tech
-            "INTC", "NFLX", "ADBE", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
+            "NFLX", "CRM", "ORCL", "AVGO", "CSCO",  "AMD"
         ];
 
         tickers = tickers.Distinct().ToList();
