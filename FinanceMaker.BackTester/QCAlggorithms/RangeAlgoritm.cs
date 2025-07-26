@@ -41,7 +41,7 @@ public class RangeAlgoritm : QCAlgorithm
         var startDateForAlgo = new DateTime(2020, 1, 1);
         var endDate = DateTime.Now;
         var endDateForAlgo = endDate.AddYears(-1).AddMonths(11);
-        SetCash(25_000);
+        SetCash(10_000); // Starting cash for the algorithm
         SetStartDate(startDate);
         SetEndDate(endDate);
         SetSecurityInitializer(security => security.SetFeeModel(new ConstantFeeModel(2.5m))); // $1 per trade
@@ -53,43 +53,17 @@ public class RangeAlgoritm : QCAlgorithm
         List<string> tickers = [];
         // Define candidate tickers (Big 7, Intel, and other large-cap tech)
         tickers = [
-            "TSLA", "NVDA", "NIO", "MARA", "RIOT", "AMD", "BABA", "BA", "LI", "ENPH", "PLTR", "HUT",
+            //Bitcoin miners
+            "HUT",
+            // Cars
+            "TSLA", 
+            // Best buyers
+            "NVDA",  "AMD", "BABA", "BA", "ENPH", "PLTR",
             // Big 7
             "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
             // More large-cap tech
-            "INTC", "NFLX", "ADBE", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
+            "INTC", "NFLX", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
         ];
-
-        // Filter tickers with at least 4% daily range in each of the last 17 days
-        // var filteredTickers = new List<string>();
-        // foreach (var ticker in candidateTickers.Distinct())
-        // {
-        //     try
-        //     {
-        //         // Get last 17 daily bars
-        //         var history = History(ticker, 17, Resolution.Daily).ToList();
-        //         if (history.Count < 17)
-        //             continue;
-
-        //         bool allDaysAbove4Percent = history.All(bar =>
-        //         {
-        //             var open = (decimal)bar.Open;
-        //             var close = (decimal)bar.Close;
-        //             if (open == 0) return false;
-        //             var range = Math.Abs(close - open) / open;
-        //             return range >= 0.04m;
-        //         });
-
-        //         if (allDaysAbove4Percent)
-        //             filteredTickers.Add(ticker);
-        //     }
-        //     catch
-        //     {
-        //         // Ignore tickers with missing data
-        //     }
-        // }
-        // tickers = ["TSLA", "NVDA", "MARA", "AMD", "BA", "LI", "ENPH", "PLTR", "HUT"];
-        // tickers = ["TSLA", "BABA", "LI", "PLTR", "HUT"];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
 
