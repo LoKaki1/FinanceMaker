@@ -58,11 +58,11 @@ public class RangeAlgoritm : QCAlgorithm
             // Cars
             "TSLA", 
             // Best buyers
-            "NVDA",  "AMD", "BABA", "BA", "ENPH", "PLTR",
+            "NVDA",  "AMD", "BABA", "ENPH", "PLTR",
             // Big 7
             "AAPL", "MSFT", "GOOGL", "NVDA", "TSLA",
             // More large-cap tech
-            "INTC", "NFLX", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
+            "NFLX", "CRM", "ORCL", "AVGO", "CSCO",  "AMD"
         ];
         var rangeAlgorithm = serviceProvider.GetService<RangeAlgorithmsRunner>();
         List<Task> tickersKeyLevelsLoader = [];
