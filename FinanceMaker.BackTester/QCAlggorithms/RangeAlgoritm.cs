@@ -60,7 +60,7 @@ public class RangeAlgoritm : QCAlgorithm
             // Best buyers
             "NVDA",  "AMD", "BABA", "BA", "ENPH", "PLTR",
             // Big 7
-            "AAPL", "MSFT", "GOOGL", "AMZN", "META", "NVDA", "TSLA",
+            "AAPL", "MSFT", "GOOGL", "NVDA", "TSLA",
             // More large-cap tech
             "INTC", "NFLX", "CRM", "ORCL", "AVGO", "CSCO", "QCOM", "AMD", "IBM"
         ];
@@ -109,9 +109,7 @@ public class RangeAlgoritm : QCAlgorithm
 
         if (!m_TickerToKeyLevels.TryGetValue(ticker, out var keyLevels)) return;
 
-        var minTradeAmount = Portfolio.CashBook.TotalValueInAccountCurrency / 2m;
-
-        if (Portfolio.Cash < minTradeAmount) return;
+        // if (Portfolio.Cash < 500m) return;
 
         foreach (var value in keyLevels)
         {
